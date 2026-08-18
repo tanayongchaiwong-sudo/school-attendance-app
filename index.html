@@ -233,11 +233,11 @@
             action: "recordAttendance",
             studentId: document.getElementById("studentId").value,
             type: currentType,
-            // ถ้าเข้างาน จะส่งค่าว่างไป แต่ถ้าออกงาน จะส่งค่าที่เลือก
             duty: currentType === "ออกงาน" ? document.getElementById("duty").value : "",
             teacherId: currentType === "ออกงาน" ? document.getElementById("teacherId").value : "",
             location: document.getElementById("location").value,
-            remark: document.getElementById("remark").value
+            remark: document.getElementById("remark").value,
+            submitterUid: "" // สร้างตัวแปรมารอรับค่า LINE UID จากเครื่องที่กด
         };
 
         if(!payload.studentId || !document.getElementById("fullName").value || document.getElementById("fullName").value === "กำลังค้นหา...") {
@@ -245,7 +245,6 @@
             return;
         }
         
-        // ตรวจสอบเงื่อนไขบังคับเลือกเฉพาะตอนออกงาน
         if(payload.type === "ออกงาน") {
             if (!payload.duty) {
                 Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณาระบุเวรงานที่อยู่ประจำวันสำหรับการออกงานครับ' });
@@ -263,15 +262,32 @@
         }
 
         Swal.fire({
-            title: 'กำลังบันทึกข้อมูล...',
+            title: 'กำลังตรวจสอบข้อมูล...',
             allowOutsideClick: false,
             didOpen: () => { Swal.showLoading(); }
         });
         
+        // ดึงค่าผู้ใช้งานปัจจุบันจาก LINE ก่อนส่งข้อมูลไปที่เซิร์ฟเวอร์
+        if (typeof liff !== 'undefined' && liff.isLoggedIn()) {
+            liff.getProfile().then(profile => {
+                payload.submitterUid = profile.userId; 
+                sendDataToServer(payload);
+            }).catch(err => {
+                sendDataToServer(payload); // กรณีดึงข้อมูลไม่ได้ ให้ส่งไปตรวจสอบปกติ
+            });
+        } else {
+            sendDataToServer(payload); // กรณีเปิดเบราว์เซอร์ปกติ
+        }
+    }
+
+    // ฟังก์ชันย่อยสำหรับจัดการสถานะหลังส่งข้อมูล (ตรวจเจอลงแทนกัน หรือ บันทึกสำเร็จ)
+    function sendDataToServer(payload) {
         fetch(API_URL, {
             method: "POST",
             body: JSON.stringify(payload)
         }).then(res => res.json()).then(data => {
+            
+            // 1. กรณีลงเวลาสำเร็จตามปกติ
             if(data.status === "success") {
                 Swal.fire({
                     icon: 'success',
@@ -280,14 +296,51 @@
                     confirmButtonText: 'ตกลง',
                     confirmButtonColor: '#10b981'
                 }).then(() => {
-                    // การแก้ไขจุดสำคัญ: เช็กและสั่งปิดหน้าต่าง LINE
                     if (typeof liff !== 'undefined' && liff.isInClient()) {
                         liff.closeWindow(); 
                     } else {
                         window.location.reload(); 
                     }
                 });
-            } else {
+            } 
+            // 2. กรณีตรวจพบว่า "ลงเวลาแทนกัน"
+            else if (data.status === "buddy_detected") {
+                Swal.fire({
+                    title: 'ลงเวลาแทนเพื่อน?',
+                    text: data.message,
+                    icon: 'warning',
+                    input: 'text',
+                    inputPlaceholder: 'เช่น มือถือเพื่อนแบตหมด, เพื่อนฝากลง',
+                    showCancelButton: true,
+                    confirmButtonColor: '#f59e0b', // สีส้มเตือน
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'ยืนยันลงเวลาแทน',
+                    cancelButtonText: 'ยกเลิก',
+                    inputValidator: (value) => {
+                        if (!value) {
+                            return 'กรุณาระบุเหตุผลด้วยครับ!'
+                        }
+                    }
+                }).then((result) => {
+                    // ถ้าผู้ใช้พิมพ์เหตุผลและกดยืนยัน
+                    if (result.isConfirmed) {
+                        // เพิ่มตัวแปรบังคับลงเวลา และแนบเหตุผลไปด้วย
+                        payload.forceBuddy = true;
+                        payload.buddyReason = result.value;
+                        
+                        Swal.fire({
+                            title: 'กำลังบันทึกข้อมูล...',
+                            allowOutsideClick: false,
+                            didOpen: () => { Swal.showLoading(); }
+                        });
+                        
+                        // สั่งยิงข้อมูลไปหาเซิร์ฟเวอร์อีกรอบพร้อมเหตุผล!
+                        sendDataToServer(payload);
+                    }
+                });
+            } 
+            // 3. กรณีเกิดข้อผิดพลาดอื่นๆ (เช่น อยู่นอกพื้นที่)
+            else {
                 Swal.fire({ icon: 'error', title: 'บันทึกไม่สำเร็จ', text: data.message });
             }
         }).catch(err => {
