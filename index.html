@@ -8,184 +8,31 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
     <style>
-        :root {
-            --primary-color: #4f46e5;
-            --primary-hover: #4338ca;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --bg-color: #f3f4f6;
-            --text-dark: #1f2937;
-            --text-light: #6b7280;
-            --border-radius: 12px;
-        }
-
-        body { 
-            font-family: 'Prompt', sans-serif; 
-            background-color: var(--bg-color); 
-            margin: 0; 
-            padding: 20px; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: var(--text-dark);
-        }
-
-        .app-container { 
-            width: 100%;
-            max-width: 450px; 
-            background: white; 
-            padding: 30px 25px; 
-            border-radius: 20px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
-            box-sizing: border-box;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        .header i {
-            font-size: 40px;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-        }
-
-        .header h2 { 
-            margin: 0; 
-            font-size: 22px;
-            font-weight: 600;
-        }
-
-        .header p {
-            margin: 5px 0 0 0;
-            font-size: 14px;
-            color: var(--text-light);
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        label { 
-            font-size: 14px;
-            font-weight: 500; 
-            margin-bottom: 8px; 
-            display: block; 
-            color: var(--text-dark);
-        }
-
-        .input-wrapper {
-            position: relative;
-        }
-
-        .input-wrapper i {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9ca3af;
-        }
-
-        input, select { 
-            width: 100%; 
-            padding: 12px 14px 12px 40px; 
-            font-family: 'Prompt', sans-serif;
-            font-size: 15px;
-            border: 1px solid #d1d5db; 
-            border-radius: var(--border-radius); 
-            box-sizing: border-box; 
-            transition: all 0.3s;
-            background-color: #f9fafb;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
-            background-color: white;
-        }
-
-        input[readonly] {
-            background-color: #e5e7eb;
-            color: #4b5563;
-            cursor: not-allowed;
-        }
-
-        .btn { 
-            width: 100%; 
-            padding: 14px; 
-            font-family: 'Prompt', sans-serif;
-            font-weight: 600;
-            border: none; 
-            border-radius: var(--border-radius); 
-            cursor: pointer; 
-            font-size: 16px; 
-            transition: all 0.3s;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color); 
-            color: white; 
-            margin-top: 25px;
-            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);
-        }
-
-        .btn-primary:hover { 
-            background-color: var(--primary-hover); 
-            transform: translateY(-2px);
-        }
-
-        .btn-check-name { 
-            background-color: #e0e7ff; 
-            color: var(--primary-color); 
-            padding: 10px; 
-            font-size: 14px; 
-            margin-top: 8px; 
-        }
-
-        .btn-check-name:hover {
-            background-color: #c7d2fe;
-        }
-
-        .btn-check-loc { 
-            background-color: #fef3c7; 
-            color: var(--warning-color); 
-            padding: 10px; 
-            font-size: 14px; 
-            margin-top: 8px; 
-        }
-
-        .btn-check-loc:hover {
-            background-color: #fde68a;
-        }
-
-        #teacherSection { 
-            display: none; 
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        #locationStatus { 
-            font-size: 13px; 
-            font-weight: 500; 
-            margin-top: 8px; 
-            text-align: center; 
-            padding: 8px;
-            border-radius: 8px;
-            display: none; /* ซ่อนไว้ก่อนจนกว่าจะตรวจสอบ */
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        :root { --primary-color: #4f46e5; --primary-hover: #4338ca; --success-color: #10b981; --warning-color: #f59e0b; --bg-color: #f3f4f6; --text-dark: #1f2937; --text-light: #6b7280; --border-radius: 12px; }
+        body { font-family: 'Prompt', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-dark); }
+        .app-container { width: 100%; max-width: 450px; background: white; padding: 30px 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); box-sizing: border-box; }
+        .header { text-align: center; margin-bottom: 25px; }
+        .header i { font-size: 40px; color: var(--primary-color); margin-bottom: 10px; }
+        .header h2 { margin: 0; font-size: 22px; font-weight: 600; }
+        .header p { margin: 5px 0 0 0; font-size: 14px; color: var(--text-light); }
+        .form-group { margin-bottom: 18px; }
+        label { font-size: 14px; font-weight: 500; margin-bottom: 8px; display: block; color: var(--text-dark); }
+        .input-wrapper { position: relative; }
+        .input-wrapper i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+        input, select { width: 100%; padding: 12px 14px 12px 40px; font-family: 'Prompt', sans-serif; font-size: 15px; border: 1px solid #d1d5db; border-radius: var(--border-radius); box-sizing: border-box; transition: all 0.3s; background-color: #f9fafb; }
+        input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); background-color: white; }
+        input[readonly] { background-color: #e5e7eb; color: #4b5563; cursor: not-allowed; }
+        .btn { width: 100%; padding: 14px; font-family: 'Prompt', sans-serif; font-weight: 600; border: none; border-radius: var(--border-radius); cursor: pointer; font-size: 16px; transition: all 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn-primary { background-color: var(--primary-color); color: white; margin-top: 25px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25); }
+        .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+        .btn-check-name { background-color: #e0e7ff; color: var(--primary-color); padding: 10px; font-size: 14px; margin-top: 8px; }
+        .btn-check-loc { background-color: #fef3c7; color: var(--warning-color); padding: 10px; font-size: 14px; margin-top: 8px; }
+        #dutySection, #teacherSection { display: none; animation: fadeIn 0.3s ease-in-out; }
+        #locationStatus { font-size: 13px; font-weight: 500; margin-top: 8px; text-align: center; padding: 8px; border-radius: 8px; display: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -220,15 +67,15 @@
         <label>สถานะการลงเวลา</label>
         <div class="input-wrapper">
             <i class="fa-solid fa-right-to-bracket"></i>
-            <select id="type" onchange="toggleTeacherField()">
+            <select id="type" onchange="toggleFields()">
                 <option value="เข้างาน">เข้างาน</option>
                 <option value="ออกงาน">ออกงาน</option>
             </select>
         </div>
     </div>
 
-    <div class="form-group">
-        <label>เวรงานที่อยู่ประจำวัน</label>
+    <div class="form-group" id="dutySection">
+        <label>เวรงานที่อยู่ประจำวัน (เฉพาะตอนออกงาน)</label>
         <div class="input-wrapper">
             <i class="fa-solid fa-clipboard-list"></i>
             <select id="duty">
@@ -239,15 +86,16 @@
             </select>
         </div>
     </div>
+
     <div class="form-group" id="teacherSection">
         <label>ครูผู้ดูแล (เฉพาะตอนออกงาน)</label>
         <div class="input-wrapper">
             <i class="fa-solid fa-chalkboard-user"></i>
             <select id="teacherId">
                 <option value="" disabled selected>-- กรุณาเลือกครูผู้ดูแล --</option>
-                <option value="T001">1. น.ส.อรพินท์ ถิ่นคง</option>
-                <option value="T002">2. น.ส.ทัศนีย์ ปันแก้ว</option>
-                <option value="T003">3. นาย ธนยง ไชยวงศ์</option>
+                <option value="น.ส.อรพินท์ ถิ่นคง">1. น.ส.อรพินท์ ถิ่นคง</option>
+                <option value="น.ส.ทัศนีย์ ปันแก้ว">2. น.ส.ทัศนีย์ ปันแก้ว</option>
+                <option value="นาย ธนยง ไชยวงศ์">3. นาย ธนยง ไชยวงศ์</option>
             </select>
         </div>
     </div>
@@ -278,10 +126,16 @@
 </div>
 
 <script>
-    // *** เปลี่ยนเป็น URL Web App ของคุณ ***
+    // *** 1. เอา LIFF ID (อันเดียวกันกับตอนลงทะเบียน) มาใส่ตรงนี้เพื่อให้ปิดหน้าต่างได้ ***
+    const LIFF_ID = "2011162626-0uPwuvmW"; 
+    // *** 2. ใส่ URL ของ Google Apps Script ***
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec"; 
 
     window.onload = function() {
+        // 1. สั่งรัน LIFF ทันที เพื่อให้ฟังก์ชันปิดหน้าจอของ LINE ทำงานได้
+        liff.init({ liffId: LIFF_ID }).catch(err => console.error("LIFF Init Error: ", err));
+
+        // 2. ดึงพิกัด GPS ทันทีที่เปิดหน้าเว็บ
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
@@ -290,22 +144,24 @@
                 (error) => {
                     document.getElementById("location").value = "ไม่สามารถดึงพิกัดได้ โปรดเปิด GPS";
                 },
-                { 
-                    enableHighAccuracy: true, // บังคับใช้ GPS ความแม่นยำสูง
-                    maximumAge: 0, // ไม่ให้ใช้ข้อมูลพิกัดเก่าที่จำไว้ (Cache)
-                    timeout: 10000 // ให้เวลาระบบค้นหาพิกัดไม่เกิน 10 วินาที
-                }
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
             );
         } else {
             document.getElementById("location").value = "เบราว์เซอร์ไม่รองรับ GPS";
         }
+        
+        // 3. เรียกฟังก์ชันตรวจสอบช่องเวรงาน เพื่อซ่อน/แสดง ให้ถูกต้องตั้งแต่ตอนเปิดหน้าเว็บ
+        toggleFields();
     };
 
-    function toggleTeacherField() {
+    // ฟังก์ชันซ่อน-แสดงช่องข้อมูล
+    function toggleFields() {
         let type = document.getElementById("type").value;
         if (type === "ออกงาน") {
+            document.getElementById("dutySection").style.display = "block";
             document.getElementById("teacherSection").style.display = "block";
         } else {
+            document.getElementById("dutySection").style.display = "none";
             document.getElementById("teacherSection").style.display = "none";
         }
     }
@@ -318,13 +174,10 @@
         }
 
         document.getElementById("fullName").value = "กำลังค้นหา...";
-        
         fetch(API_URL, {
             method: "POST",
             body: JSON.stringify({ action: "getStudentName", studentId: studentId })
-        })
-        .then(res => res.json())
-        .then(data => {
+        }).then(res => res.json()).then(data => {
             if(data.status === "success") {
                 document.getElementById("fullName").value = data.fullName;
                 Swal.fire({ icon: 'success', title: 'พบข้อมูล', text: 'ดึงชื่อนักเรียนสำเร็จ', timer: 1500, showConfirmButton: false });
@@ -356,9 +209,7 @@
         fetch(API_URL, {
             method: "POST",
             body: JSON.stringify({ action: "checkLocation", location: locationVal })
-        })
-        .then(res => res.json())
-        .then(data => {
+        }).then(res => res.json()).then(data => {
             if(data.status === "success") {
                 statusDiv.style.backgroundColor = "#d1fae5";
                 statusDiv.style.color = "#059669";
@@ -376,30 +227,41 @@
     }
 
     function submitAttendance() {
+        let currentType = document.getElementById("type").value;
+        
         let payload = {
             action: "recordAttendance",
             studentId: document.getElementById("studentId").value,
-            type: document.getElementById("type").value,
-            duty: document.getElementById("duty").value,
-            teacherId: document.getElementById("teacherId").value,
+            type: currentType,
+            // ถ้าเข้างาน จะส่งค่าว่างไป แต่ถ้าออกงาน จะส่งค่าที่เลือก
+            duty: currentType === "ออกงาน" ? document.getElementById("duty").value : "",
+            teacherId: currentType === "ออกงาน" ? document.getElementById("teacherId").value : "",
             location: document.getElementById("location").value,
             remark: document.getElementById("remark").value
         };
 
         if(!payload.studentId || !document.getElementById("fullName").value || document.getElementById("fullName").value === "กำลังค้นหา...") {
-            Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกรหัสและกดค้นหาชื่อให้สำเร็จก่อนครับ' });
+            Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกรหัสและค้นหาชื่อก่อนครับ' });
             return;
         }
-        if(payload.type === "ออกงาน" && !payload.teacherId) {
-            Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณาระบุรหัสครูผู้ดูแลสำหรับการออกงานครับ' });
-            return;
+        
+        // ตรวจสอบเงื่อนไขบังคับเลือกเฉพาะตอนออกงาน
+        if(payload.type === "ออกงาน") {
+            if (!payload.duty) {
+                Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณาระบุเวรงานที่อยู่ประจำวันสำหรับการออกงานครับ' });
+                return;
+            }
+            if (!payload.teacherId) {
+                Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณาระบุครูผู้ดูแลสำหรับการออกงานครับ' });
+                return;
+            }
         }
+        
         if (!payload.location || payload.location.includes("ไม่") || payload.location.includes("รอ")) {
             Swal.fire({ icon: 'error', title: 'พิกัดมีปัญหา', text: 'ไม่สามารถบันทึกได้เนื่องจากยังไม่ได้พิกัด GPS ครับ' });
             return;
         }
 
-        // แสดง Pop-up โหลดข้อมูล
         Swal.fire({
             title: 'กำลังบันทึกข้อมูล...',
             allowOutsideClick: false,
@@ -409,9 +271,7 @@
         fetch(API_URL, {
             method: "POST",
             body: JSON.stringify(payload)
-        })
-        .then(res => res.json())
-        .then(data => {
+        }).then(res => res.json()).then(data => {
             if(data.status === "success") {
                 Swal.fire({
                     icon: 'success',
@@ -420,7 +280,12 @@
                     confirmButtonText: 'ตกลง',
                     confirmButtonColor: '#10b981'
                 }).then(() => {
-                    window.location.reload(); 
+                    // การแก้ไขจุดสำคัญ: เช็กและสั่งปิดหน้าต่าง LINE
+                    if (typeof liff !== 'undefined' && liff.isInClient()) {
+                        liff.closeWindow(); 
+                    } else {
+                        window.location.reload(); 
+                    }
                 });
             } else {
                 Swal.fire({ icon: 'error', title: 'บันทึกไม่สำเร็จ', text: data.message });
