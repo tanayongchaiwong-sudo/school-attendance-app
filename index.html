@@ -126,16 +126,11 @@
 </div>
 
 <script>
-    // *** 1. เอา LIFF ID (อันเดียวกันกับตอนลงทะเบียน) มาใส่ตรงนี้เพื่อให้ปิดหน้าต่างได้ ***
     const LIFF_ID = "2011162626-lcdf4ybN"; 
-    // *** 2. ใส่ URL ของ Google Apps Script ***
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec"; 
 
     window.onload = function() {
-        // 1. สั่งรัน LIFF ทันที เพื่อให้ฟังก์ชันปิดหน้าจอของ LINE ทำงานได้
         liff.init({ liffId: LIFF_ID }).catch(err => console.error("LIFF Init Error: ", err));
-
-        // 2. ดึงพิกัด GPS ทันทีที่เปิดหน้าเว็บ
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
@@ -149,12 +144,9 @@
         } else {
             document.getElementById("location").value = "เบราว์เซอร์ไม่รองรับ GPS";
         }
-        
-        // 3. เรียกฟังก์ชันตรวจสอบช่องเวรงาน เพื่อซ่อน/แสดง ให้ถูกต้องตั้งแต่ตอนเปิดหน้าเว็บ
         toggleFields();
     };
 
-    // ฟังก์ชันซ่อน-แสดงช่องข้อมูล
     function toggleFields() {
         let type = document.getElementById("type").value;
         if (type === "ออกงาน") {
@@ -237,7 +229,7 @@
             teacherId: currentType === "ออกงาน" ? document.getElementById("teacherId").value : "",
             location: document.getElementById("location").value,
             remark: document.getElementById("remark").value,
-            submitterUid: "" // สร้างตัวแปรมารอรับค่า LINE UID จากเครื่องที่กด
+            submitterUid: "" 
         };
 
         if(!payload.studentId || !document.getElementById("fullName").value || document.getElementById("fullName").value === "กำลังค้นหา...") {
@@ -257,7 +249,7 @@
         }
         
         if (!payload.location || payload.location.includes("ไม่") || payload.location.includes("รอ")) {
-            Swal.fire({ icon: 'error', title: 'พิกัดมีปัญหา', text: 'ไม่สามารถบันทึกได้เนื่องจากยังไม่ได้พิกัด GPS ครับ' });
+            Swal.fire({ icon: 'error', title: 'พิกัดมีปัญหา', text: 'ไม่สามารถบันทึกได้เนื่องจากยังไม่ได้เปิดพิกัด GPS ครับ' });
             return;
         }
 
@@ -267,27 +259,26 @@
             didOpen: () => { Swal.showLoading(); }
         });
         
-        // ดึงค่าผู้ใช้งานปัจจุบันจาก LINE ก่อนส่งข้อมูลไปที่เซิร์ฟเวอร์
         if (typeof liff !== 'undefined' && liff.isLoggedIn()) {
             liff.getProfile().then(profile => {
                 payload.submitterUid = profile.userId; 
                 sendDataToServer(payload);
             }).catch(err => {
-                sendDataToServer(payload); // กรณีดึงข้อมูลไม่ได้ ให้ส่งไปตรวจสอบปกติ
+                sendDataToServer(payload); 
             });
         } else {
-            sendDataToServer(payload); // กรณีเปิดเบราว์เซอร์ปกติ
+            sendDataToServer(payload); 
         }
     }
 
-    // ฟังก์ชันย่อยสำหรับจัดการสถานะหลังส่งข้อมูล (ตรวจเจอลงแทนกัน หรือ บันทึกสำเร็จ)
+    // ฟังก์ชันย่อยสำหรับส่งข้อมูลไปเซิร์ฟเวอร์
     function sendDataToServer(payload) {
         fetch(API_URL, {
             method: "POST",
             body: JSON.stringify(payload)
         }).then(res => res.json()).then(data => {
             
-            // 1. กรณีลงเวลาสำเร็จตามปกติ
+            // 1. ลงเวลาสำเร็จ
             if(data.status === "success") {
                 Swal.fire({
                     icon: 'success',
@@ -303,7 +294,7 @@
                     }
                 });
             } 
-            // 2. กรณีตรวจพบว่า "ลงเวลาแทนกัน"
+            // 2. ตรวจพบว่า "ลงเวลาแทนกัน"
             else if (data.status === "buddy_detected") {
                 Swal.fire({
                     title: 'ลงเวลาแทนเพื่อน?',
@@ -312,34 +303,48 @@
                     input: 'text',
                     inputPlaceholder: 'เช่น มือถือเพื่อนแบตหมด, เพื่อนฝากลง',
                     showCancelButton: true,
-                    confirmButtonColor: '#f59e0b', // สีส้มเตือน
+                    confirmButtonColor: '#f59e0b', 
                     cancelButtonColor: '#6b7280',
                     confirmButtonText: 'ยืนยันลงเวลาแทน',
                     cancelButtonText: 'ยกเลิก',
                     inputValidator: (value) => {
-                        if (!value) {
-                            return 'กรุณาระบุเหตุผลด้วยครับ!'
-                        }
+                        if (!value) return 'กรุณาระบุเหตุผลด้วยครับ!'
                     }
                 }).then((result) => {
-                    // ถ้าผู้ใช้พิมพ์เหตุผลและกดยืนยัน
                     if (result.isConfirmed) {
-                        // เพิ่มตัวแปรบังคับลงเวลา และแนบเหตุผลไปด้วย
                         payload.forceBuddy = true;
                         payload.buddyReason = result.value;
-                        
-                        Swal.fire({
-                            title: 'กำลังบันทึกข้อมูล...',
-                            allowOutsideClick: false,
-                            didOpen: () => { Swal.showLoading(); }
-                        });
-                        
-                        // สั่งยิงข้อมูลไปหาเซิร์ฟเวอร์อีกรอบพร้อมเหตุผล!
+                        Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
                         sendDataToServer(payload);
                     }
                 });
             } 
-            // 3. กรณีเกิดข้อผิดพลาดอื่นๆ (เช่น อยู่นอกพื้นที่)
+            // 3. ตรวจพบว่า "อยู่นอกพื้นที่"
+            else if (data.status === "out_of_bounds") {
+                Swal.fire({
+                    title: 'อยู่นอกพื้นที่กำหนด',
+                    text: data.message,
+                    icon: 'warning',
+                    input: 'text',
+                    inputPlaceholder: 'เช่น ไปราชการ, ลากิจ, ออกตรวจงาน, หรือ GPS เพี้ยน',
+                    showCancelButton: true,
+                    confirmButtonColor: '#f59e0b', 
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'ยืนยันลงเวลา',
+                    cancelButtonText: 'ยกเลิก',
+                    inputValidator: (value) => {
+                        if (!value) return 'กรุณาระบุเหตุผลด้วยครับ!'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        payload.forceOutOfBounds = true;
+                        payload.outOfBoundsReason = result.value;
+                        Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                        sendDataToServer(payload);
+                    }
+                });
+            }
+            // 4. ข้อผิดพลาดอื่นๆ
             else {
                 Swal.fire({ icon: 'error', title: 'บันทึกไม่สำเร็จ', text: data.message });
             }
