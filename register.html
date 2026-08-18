@@ -132,16 +132,17 @@
             })
             .then(res => res.json())
             .then(data => {
-                if(data.status === "success") {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'สำเร็จ!',
-                        text: data.message,
-                        confirmButtonText: 'รับทราบ'
-                    }).then(() => {
-                        liff.closeWindow(); 
-                    });
-                } else {
+            if(data.status === "success") {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'สำเร็จ!',
+                    text: data.message,
+                    confirmButtonText: 'ตกลง',
+                    confirmButtonColor: '#10b981'
+                }).then(() => {
+                    liff.closeWindow(); // <--- เปลี่ยนเป็นคำสั่งปิดหน้าต่าง
+                });
+            } else {
                     Swal.fire('เกิดข้อผิดพลาด', data.message, 'error');
                 }
             }).catch(err => {
