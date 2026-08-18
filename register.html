@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ลงทะเบียนผูกบัญชี LINE</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --primary-color: #00b900; /* สีเขียว LINE */
+            --primary-hover: #009900;
+            --bg-color: #f3f4f6;
+            --text-dark: #1f2937;
+            --border-radius: 12px;
+        }
+        body { 
+            font-family: 'Prompt', sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; padding: 20px; 
+            display: flex; justify-content: center; align-items: center; 
+            min-height: 100vh; color: var(--text-dark);
+        }
+        .app-container { 
+            width: 100%; max-width: 400px; background: white; 
+            padding: 30px 25px; border-radius: 20px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); box-sizing: border-box;
+        }
+        .header { text-align: center; margin-bottom: 25px; }
+        .header img { width: 60px; margin-bottom: 15px; }
+        .header h2 { margin: 0; font-size: 20px; font-weight: 600; color: #333; }
+        .header p { margin: 5px 0 0 0; font-size: 14px; color: #666; }
+        .form-group { margin-bottom: 18px; }
+        label { font-size: 14px; font-weight: 500; margin-bottom: 8px; display: block; }
+        .input-wrapper { position: relative; }
+        .input-wrapper i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+        input, select { 
+            width: 100%; padding: 12px 14px 12px 40px; 
+            font-family: 'Prompt', sans-serif; font-size: 15px;
+            border: 1px solid #d1d5db; border-radius: var(--border-radius); 
+            box-sizing: border-box; transition: all 0.3s; background-color: #f9fafb;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0, 185, 0, 0.2); background-color: white; }
+        .btn-primary {
+            width: 100%; padding: 14px; font-family: 'Prompt', sans-serif; font-weight: 600; font-size: 16px;
+            background-color: var(--primary-color); color: white; border: none; border-radius: var(--border-radius); 
+            cursor: pointer; transition: all 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 25px;
+        }
+        .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+        #profileInfo { display: none; text-align: center; margin-bottom: 20px; padding: 10px; background: #e6ffe6; border-radius: 12px; }
+        #profileInfo img { width: 50px; border-radius: 50%; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" style="width: 50px; fill: #00b900; margin-bottom: 10px;"><path d="M273.4 200.2H258c-4.4 0-8 3.6-8 8v111.3c0 4.4 3.6 8 8 8h15.4c4.4 0 8-3.6 8-8V208.2c0-4.4-3.6-8-8-8zm-54.7 0h-15.4c-4.4 0-8 3.6-8 8v80.5l-51.1-79c-1.5-2.2-3.8-3.6-6.4-3.6h-15.5c-4.4 0-8 3.6-8 8v111.3c0 4.4 3.6 8 8 8h15.4c4.4 0 8-3.6 8-8v-80.5l51.1 79c1.5 2.2 3.8 3.6 6.4 3.6h15.5c4.4 0 8-3.6 8-8V208.2c0-4.4-3.6-8-8-8zm166.5 0h-53.9c-4.4 0-8 3.6-8 8v111.3c0 4.4 3.6 8 8 8h53.9c4.4 0 8-3.6 8-8v-14.7c0-4.4-3.6-8-8-8h-38.5v-23.7h38.5c4.4 0 8-3.6 8-8v-14.7c0-4.4-3.6-8-8-8h-38.5v-23.7h38.5c4.4 0 8-3.6 8-8v-14.7c0-4.4-3.6-8-8-8zM111.4 200.2H57.5c-4.4 0-8 3.6-8 8v111.3c0 4.4 3.6 8 8 8h53.9c4.4 0 8-3.6 8-8v-14.7c0-4.4-3.6-8-8-8H73.1v-23.7h38.3c4.4 0 8-3.6 8-8v-14.7c0-4.4-3.6-8-8-8H73.1v-23.7h38.3c4.4 0 8-3.6 8-8v-14.7c0-4.4-3.6-8-8-8zM224 0C100.3 0 0 80.3 0 179.3c0 89 77.2 163.6 186.2 176.7 8.3 1.1 19.5 3.3 22.3 9.4 2.2 4.9 1.4 12.6 1.1 17.5l-3.5 21.1c-.5 3.1-2.4 11.8 10.4 17.2 12.8 5.4 50.1-29.5 68.6-43.2l5.1-3.7C378.1 316.3 448 253.9 448 179.3 448 80.3 347.7 0 224 0z"/></svg>
+        <h2>ผูกบัญชีระบบ</h2>
+        <p>เชื่อมต่อ LINE เข้ากับฐานข้อมูลของโรงเรียน</p>
+    </div>
+
+    <div id="profileInfo">
+        <img id="pictureUrl" src="">
+        <div style="font-size: 14px; font-weight: bold; color: var(--primary-color);">สวัสดีคุณ <span id="displayName"></span></div>
+    </div>
+    
+    <div class="form-group">
+        <label>เลือกสถานะของคุณ</label>
+        <div class="input-wrapper">
+            <i class="fa-solid fa-users"></i>
+            <select id="userRole">
+                <option value="student">👨‍🎓 นักเรียน / นักศึกษา</option>
+                <option value="teacher">👨‍🏫 คุณครู / ผู้ดูแล</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>รหัสประจำตัว (ID)</label>
+        <div class="input-wrapper">
+            <i class="fa-solid fa-id-card"></i>
+            <input type="number" id="inputId" placeholder="กรอกรหัสประจำตัวของคุณ">
+        </div>
+    </div>
+
+    <button class="btn-primary" onclick="submitRegistration()">
+        <i class="fa-solid fa-link"></i> ยืนยันการผูกบัญชี
+    </button>
+</div>
+
+<script>
+    // *** 1. ใส่ LIFF ID ที่ได้จากระบบ LINE Developers ***
+    const LIFF_ID = "2011162626-0uPwuvmW"; 
+    // *** 2. ใส่ URL ของ Google Apps Script ***
+    const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec"; 
+
+    // ทันทีที่โหลดหน้าเว็บ ให้เริ่มทำงาน LIFF
+    window.onload = function() {
+        liff.init({ liffId: LIFF_ID }).then(() => {
+            if (liff.isLoggedIn()) {
+                // ถ้าล็อกอินแล้ว ให้ดึงรูปและชื่อมาโชว์
+                liff.getProfile().then(profile => {
+                    document.getElementById('profileInfo').style.display = "block";
+                    document.getElementById('pictureUrl').src = profile.pictureUrl;
+                    document.getElementById('displayName').innerText = profile.displayName;
+                }).catch(err => console.error(err));
+            } else {
+                // ถ้ายังไม่ล็อกอิน ให้เด้งไปหน้าล็อกอินของ LINE
+                liff.login();
+            }
+        }).catch((err) => {
+            console.error("LIFF Init Error: ", err);
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อระบบ LINE ได้', 'error');
+        });
+    };
+
+    function submitRegistration() {
+        let inputId = document.getElementById("inputId").value;
+        let role = document.getElementById("userRole").value;
+
+        if(!inputId) { 
+            Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสประจำตัวของคุณก่อนครับ', 'warning'); 
+            return; 
+        }
+
+        Swal.fire({
+            title: 'กำลังตรวจสอบข้อมูล...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        // ดึง UID จาก LINE แล้วส่งไปให้ระบบหลังบ้านบันทึก
+        liff.getProfile().then(profile => {
+            let userId = profile.userId; // นี่คือค่า line_token ที่เราต้องการ
+
+            let payload = {
+                action: "registerLine",
+                userId: userId,
+                inputId: inputId,
+                role: role
+            };
+
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'สำเร็จ!',
+                        text: data.message,
+                        confirmButtonText: 'ปิดหน้าต่าง'
+                    }).then(() => {
+                        liff.closeWindow(); // ปิดแชท LINE อัตโนมัติเมื่อทำเสร็จ
+                    });
+                } else {
+                    Swal.fire('ไม่พบข้อมูล', data.message, 'error');
+                }
+            }).catch(err => {
+                Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+            });
+            
+        }).catch((err) => {
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลโปรไฟล์ LINE ได้ กรุณาเปิดผ่านแอป LINE', 'error');
+        });
+    }
+</script>
+
+</body>
+</html>
