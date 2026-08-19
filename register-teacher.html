@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ลงทะเบียนคุณครู</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root { --primary-color: #f97316; --primary-hover: #ea580c; --bg-color: #f3f4f6; --text-dark: #1f2937; --border-radius: 12px; }
+        body { font-family: 'Prompt', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-dark); }
+        .app-container { width: 100%; max-width: 400px; background: white; padding: 30px 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); box-sizing: border-box; }
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h2 { margin: 0; font-size: 20px; font-weight: 600; color: #333; }
+        .header p { margin: 5px 0 0 0; font-size: 14px; color: #666; }
+        .form-group { margin-bottom: 18px; }
+        label { font-size: 14px; font-weight: 500; margin-bottom: 8px; display: block; }
+        .input-wrapper { position: relative; }
+        .input-wrapper i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+        input { width: 100%; padding: 12px 14px 12px 40px; font-family: 'Prompt', sans-serif; font-size: 15px; border: 1px solid #d1d5db; border-radius: var(--border-radius); box-sizing: border-box; transition: all 0.3s; background-color: #f9fafb; }
+        input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2); background-color: white; }
+        .btn-primary { width: 100%; padding: 14px; font-family: 'Prompt', sans-serif; font-weight: 600; font-size: 16px; background-color: var(--primary-color); color: white; border: none; border-radius: var(--border-radius); cursor: pointer; transition: all 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 25px; }
+        .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+        #profileInfo { display: none; text-align: center; margin-bottom: 20px; padding: 10px; background: #fff7ed; border-radius: 12px; }
+        #profileInfo img { width: 50px; border-radius: 50%; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <i class="fa-solid fa-chalkboard-user" style="font-size: 45px; color: #f97316; margin-bottom: 10px;"></i>
+        <h2>ลงทะเบียนคุณครู</h2>
+        <p>สร้างประวัติและเชื่อมต่อระบบประเมินคะแนน</p>
+    </div>
+
+    <div id="profileInfo">
+        <img id="pictureUrl" src="">
+        <div style="font-size: 14px; font-weight: bold; color: var(--primary-color);">สวัสดีคุณ <span id="displayName"></span></div>
+    </div>
+
+    <div class="form-group">
+        <label>1. รหัสประจำตัวคุณครู (ถ้ามี)</label>
+        <div class="input-wrapper">
+            <i class="fa-solid fa-id-card"></i>
+            <input type="number" id="inputId" placeholder="กรอกรหัสประจำตัวของคุณ">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>2. ชื่อ-นามสกุล</label>
+        <div class="input-wrapper">
+            <i class="fa-solid fa-user"></i>
+            <input type="text" id="fullName" placeholder="เช่น น.ส.อรพินท์ ถิ่นคง">
+        </div>
+    </div>
+
+    <button class="btn-primary" onclick="submitRegistration()">
+        <i class="fa-solid fa-paper-plane"></i> บันทึกข้อมูลคุณครู
+    </button>
+</div>
+
+<script>
+    // *** 1. 🚨 เอา LIFF ID ที่สร้างจาก "บอทของคุณครู" มาใส่ตรงนี้ ***
+    const LIFF_ID = "2011162626-7Q4oXQxi"; 
+    
+    // *** 2. URL ของ Google Apps Script (อันเดิมใช้ร่วมกันได้เลย) ***
+    const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec"; 
+
+    window.onload = function() {
+        liff.init({ liffId: LIFF_ID }).then(() => {
+            if (liff.isLoggedIn()) {
+                liff.getProfile().then(profile => {
+                    document.getElementById('profileInfo').style.display = "block";
+                    document.getElementById('pictureUrl').src = profile.pictureUrl;
+                    document.getElementById('displayName').innerText = profile.displayName;
+                }).catch(err => console.error(err));
+            } else {
+                liff.login();
+            }
+        }).catch((err) => {
+            console.error("LIFF Init Error: ", err);
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อระบบ LINE ได้', 'error');
+        });
+    };
+
+    function submitRegistration() {
+        let inputId = document.getElementById("inputId").value;
+        let fullName = document.getElementById("fullName").value;
+        
+        // 🚨 สำคัญที่สุด: กำหนดสถานะให้เป็น teacher อัตโนมัติ!
+        let role = "teacher"; 
+
+        // บังคับกรอกแค่รหัสและชื่อ (ไม่มีกลุ่มเรียนแล้ว)
+        if(!inputId || !fullName) { 
+            Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัส และชื่อให้ครบถ้วนครับ', 'warning'); 
+            return; 
+        }
+
+        Swal.fire({
+            title: 'กำลังบันทึกข้อมูล...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        liff.getProfile().then(profile => {
+            let userId = profile.userId; 
+
+            // ส่งข้อมูลไปให้ API 
+            let payload = {
+                action: "registerLine",
+                userId: userId,
+                inputId: inputId,
+                fullName: fullName,
+                role: role // ส่งสถานะ teacher ไปให้หลังบ้าน
+            };
+
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+            if(data.status === "success") {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'สำเร็จ!',
+                    text: data.message,
+                    confirmButtonText: 'ตกลง',
+                    confirmButtonColor: '#f97316'
+                }).then(() => {
+                    liff.closeWindow(); 
+                });
+            } else {
+                    Swal.fire('เกิดข้อผิดพลาด', data.message, 'error');
+                }
+            }).catch(err => {
+                Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+            });
+            
+        }).catch((err) => {
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลโปรไฟล์ LINE ได้ กรุณาเปิดผ่านแอป LINE', 'error');
+        });
+    }
+</script>
+
+</body>
+</html>
