@@ -14,17 +14,30 @@
         :root { --primary: #4f46e5; --bg: #f3f4f6; --text: #1f2937; --border: #d1d5db; }
         body { font-family: 'Prompt', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: var(--text); display: flex; justify-content: center; }
         .container { width: 100%; max-width: 450px; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .header { text-align: center; margin-bottom: 20px; }
+        
+        .header { text-align: center; margin-bottom: 20px; position: relative; }
         .header i { font-size: 35px; color: var(--primary); margin-bottom: 5px; }
         .header h2 { margin: 0; font-size: 20px; font-weight: 600; }
+        
+        /* สไตล์ปุ่มเมนูหลัก (หน้าแรก) */
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .menu-btn { background: white; border: 2px solid #f3f4f6; padding: 20px 10px; border-radius: 16px; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .menu-btn:hover { border-color: var(--c); background: #f8fafc; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .menu-btn i { font-size: 30px; color: var(--c); }
+        .menu-btn span { font-family: 'Prompt'; font-size: 14px; font-weight: 500; color: #334155; }
+
+        /* ฟอร์มและอินพุต */
         .form-group { margin-bottom: 15px; }
         label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; }
         .input-wrapper { position: relative; }
         .input-wrapper i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
         input, select { width: 100%; padding: 12px 14px 12px 40px; font-family: 'Prompt', sans-serif; font-size: 14px; border: 1px solid var(--border); border-radius: 10px; background-color: #f9fafb; transition: 0.3s; box-sizing: border-box;}
         input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); background: white; }
-        .btn-primary { width: 100%; padding: 14px; font-family: 'Prompt', sans-serif; font-weight: 600; font-size: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; margin-top: 15px; display: flex; justify-content: center; gap: 8px;}
-        .hidden { display: none; }
+        
+        .btn-primary { width: 100%; padding: 14px; font-family: 'Prompt'; font-weight: 600; font-size: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; margin-top: 15px; display: flex; justify-content: center; gap: 8px;}
+        .btn-back { position: absolute; left: 0; top: 0; background: none; border: none; color: #64748b; font-size: 18px; cursor: pointer; padding: 5px; }
+        
+        .hidden { display: none !important; }
         .gps-box { background: #eff6ff; padding: 10px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #bfdbfe; font-size: 12px; }
         .gps-btn { width: 100%; padding: 8px; font-family: 'Prompt'; background: white; border: 1px solid var(--primary); color: var(--primary); border-radius: 8px; cursor: pointer; margin-top: 5px; }
     </style>
@@ -32,90 +45,107 @@
 <body>
 
 <div class="container">
-    <div class="header">
-        <i class="fa-solid fa-graduation-cap"></i>
-        <h2>ส่งคำขอ และ ลงเวลา</h2>
-    </div>
-
-    <div class="form-group">
-        <label>รหัสประจำตัวนักเรียน</label>
-        <div class="input-wrapper">
-            <i class="fa-solid fa-id-card"></i>
-            <input type="number" id="studentId" placeholder="กรอกรหัสนักเรียน" onblur="checkName()">
+    <div id="step1">
+        <div class="header">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <h2>ศูนย์บริการนักเรียน</h2>
+            <p style="font-size: 14px; color: #6b7280; margin-top: 5px;">กรุณาเลือกรายการที่ต้องการทำ</p>
         </div>
-    </div>
-    <div class="form-group">
-        <label>ชื่อ-นามสกุล</label>
-        <div class="input-wrapper">
-            <i class="fa-solid fa-user"></i>
-            <input type="text" id="fullName" readonly placeholder="ระบบจะดึงชื่ออัตโนมัติ">
-        </div>
-    </div>
 
-    <hr style="border: 0; border-top: 1px dashed #e5e7eb; margin: 20px 0;">
-
-    <div class="form-group">
-        <label>เลือกรายการที่ต้องการทำ</label>
-        <div class="input-wrapper">
-            <i class="fa-solid fa-list-check"></i>
-            <select id="category" onchange="updateForm()">
-                <option value="" disabled selected>-- กรุณาเลือก --</option>
-                <option value="ลงเวลาเข้า-ออก">1. ลงเวลาเข้า - ออกงาน</option>
-                <option value="ส่งใบงาน">2. ส่งใบงาน</option>
-                <option value="สอบปฏิบัติ">3. ขอสอบปฏิบัติ (ใน/นอกช่องปาก)</option>
-                <option value="สอบประเมินภาพ">4. ขอสอบประเมินภาพ</option>
-            </select>
+        <div class="menu-grid">
+            <button class="menu-btn" style="--c: #3b82f6;" onclick="selectCategory('ลงเวลาเข้า-ออก')">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>ลงเวลาเข้า-ออก</span>
+            </button>
+            <button class="menu-btn" style="--c: #10b981;" onclick="selectCategory('ส่งใบงาน')">
+                <i class="fa-solid fa-file-arrow-up"></i>
+                <span>ส่งใบงาน</span>
+            </button>
+            <button class="menu-btn" style="--c: #f59e0b;" onclick="selectCategory('สอบปฏิบัติ')">
+                <i class="fa-solid fa-stethoscope"></i>
+                <span>สอบปฏิบัติ</span>
+            </button>
+            <button class="menu-btn" style="--c: #8b5cf6;" onclick="selectCategory('สอบประเมินภาพ')">
+                <i class="fa-solid fa-x-ray"></i>
+                <span>สอบประเมินภาพ</span>
+            </button>
         </div>
     </div>
 
-    <div class="form-group hidden" id="divSubCategory">
-        <label id="lblSubCategory">เลือกหัวข้อ</label>
-        <div class="input-wrapper">
-            <i class="fa-solid fa-tag"></i>
-            <select id="subCategory" onchange="updateDetail()"></select>
+    <div id="step2" class="hidden">
+        <div class="header">
+            <button class="btn-back" onclick="goBack()"><i class="fa-solid fa-chevron-left"></i></button>
+            <h2 id="formTitle" style="color: var(--primary);">หัวข้อที่เลือก</h2>
         </div>
-    </div>
 
-    <div class="form-group hidden" id="divDetail">
-        <label id="lblDetail">รายละเอียดเพิ่มเติม</label>
-        <div class="input-wrapper">
-            <i class="fa-solid fa-bars-staggered"></i>
-            <select id="detail"></select>
+        <input type="hidden" id="category"> <div class="form-group">
+            <label>รหัสประจำตัวนักเรียน</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-id-card"></i>
+                <input type="number" id="studentId" placeholder="กรอกรหัสนักเรียน" onblur="checkName()">
+            </div>
         </div>
-    </div>
-
-    <div class="form-group hidden" id="divTeacher">
-        <label>ส่งถึงคุณครูผู้ประเมิน</label>
-        <div class="input-wrapper">
-            <i class="fa-solid fa-chalkboard-user"></i>
-            <select id="teacherId">
-                <option value="" disabled selected>-- กำลังโหลดรายชื่อครู... --</option>
-            </select>
+        <div class="form-group">
+            <label>ชื่อ-นามสกุล</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-user"></i>
+                <input type="text" id="fullName" readonly placeholder="ระบบจะดึงชื่ออัตโนมัติ">
+            </div>
         </div>
-    </div>
 
-    <div class="gps-box hidden" id="divGps">
-        <label style="margin-bottom: 2px;"><i class="fa-solid fa-location-dot"></i> พิกัด GPS (บังคับ)</label>
-        <input type="text" id="location" readonly placeholder="กำลังค้นหาพิกัด..." style="margin-bottom: 5px; border:none; padding:5px 10px; background: transparent;">
-        <button class="gps-btn" onclick="verifyLocation()">ตรวจสอบพิกัดเป้าหมาย</button>
-        <div id="locationStatus" style="margin-top: 5px; font-weight: 600;"></div>
-    </div>
+        <hr style="border: 0; border-top: 1px dashed #e5e7eb; margin: 20px 0;">
 
-    <div class="form-group">
-        <label>หมายเหตุ (ถ้ามี)</label>
-        <div class="input-wrapper">
-            <i class="fa-solid fa-comment-dots"></i>
-            <input type="text" id="remark" placeholder="พิมพ์ข้อความเพิ่มเติม...">
+        <div class="form-group" id="divSubCategory">
+            <label id="lblSubCategory">เลือกหัวข้อ</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-tag"></i>
+                <select id="subCategory" onchange="updateDetail()"></select>
+            </div>
         </div>
-    </div>
 
-    <button class="btn-primary" onclick="submitForm()">
-        <i class="fa-solid fa-paper-plane"></i> ยืนยันการส่งข้อมูล
-    </button>
+        <div class="form-group hidden" id="divDetail">
+            <label id="lblDetail">รายละเอียดเพิ่มเติม</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-bars-staggered"></i>
+                <select id="detail"></select>
+            </div>
+        </div>
+
+        <div class="form-group hidden" id="divTeacher">
+            <label>ส่งถึงคุณครูผู้ประเมิน</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-chalkboard-user"></i>
+                <select id="teacherId">
+                    <option value="" disabled selected>-- กำลังโหลดรายชื่อครู... --</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="gps-box hidden" id="divGps">
+            <label style="margin-bottom: 2px;"><i class="fa-solid fa-location-dot"></i> พิกัด GPS (บังคับ)</label>
+            <input type="text" id="location" readonly placeholder="กำลังค้นหาพิกัด..." style="margin-bottom: 5px; border:none; padding:5px 10px; background: transparent;">
+            <button class="gps-btn" onclick="verifyLocation()">ตรวจสอบพิกัดเป้าหมาย</button>
+            <div id="locationStatus" style="margin-top: 5px; font-weight: 600;"></div>
+        </div>
+
+        <div class="form-group">
+            <label>หมายเหตุ (ถ้ามี)</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-comment-dots"></i>
+                <input type="text" id="remark" placeholder="พิมพ์ข้อความเพิ่มเติม...">
+            </div>
+        </div>
+
+        <button class="btn-primary" onclick="submitForm()">
+            <i class="fa-solid fa-paper-plane"></i> ยืนยันการส่งข้อมูล
+        </button>
+    </div>
 </div>
 
 <script>
+    // 🚨 ใส่ LIFF ID ของนักเรียน ตรงนี้
     const LIFF_ID = "2011162626-lcdf4ybN"; 
+    // 🚨 ใส่ URL ของ Web App ตรงนี้
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec"; 
 
     // โครงสร้างข้อมูลแบบฉลาด (Dynamic Data)
@@ -155,6 +185,28 @@
         }
     };
 
+    // นำทาง UI (UI Navigation)
+    function selectCategory(cat) {
+        document.getElementById("category").value = cat;
+        document.getElementById("formTitle").innerText = cat;
+        
+        document.getElementById("step1").classList.add("hidden");
+        document.getElementById("step2").classList.remove("hidden");
+        
+        updateForm();
+    }
+
+    function goBack() {
+        document.getElementById("step2").classList.add("hidden");
+        document.getElementById("step1").classList.remove("hidden");
+        
+        // เคลียร์ค่า
+        document.getElementById("subCategory").innerHTML = "";
+        document.getElementById("detail").innerHTML = "";
+        document.getElementById("divDetail").classList.add("hidden");
+    }
+
+    // ดึงชื่อครูและนักเรียน
     function fetchTeachersList() {
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getTeachersList" }) })
         .then(res => res.json()).then(data => {
@@ -170,7 +222,7 @@
                 .then(res => res.json()).then(data => document.getElementById("fullName").value = data.status==="success" ? data.fullName : "ไม่พบรหัสนี้");
     }
 
-    // ฟังก์ชันเปลี่ยนหน้าตาฟอร์ม
+    // อัปเดตฟอร์มตามหมวดหมู่
     function updateForm() {
         let cat = document.getElementById("category").value;
         let subSelect = document.getElementById("subCategory");
@@ -179,13 +231,11 @@
         subSelect.innerHTML = '<option value="" disabled selected>-- เลือก --</option>';
         Object.keys(formData[cat].options).forEach(opt => subSelect.innerHTML += `<option value="${opt}">${opt}</option>`);
         
-        document.getElementById("divSubCategory").classList.remove("hidden");
-        document.getElementById("divDetail").classList.add("hidden");
-        
-        // เช็กเรื่อง GPS และครู
         document.getElementById("divGps").classList.toggle("hidden", cat !== "ลงเวลาเข้า-ออก");
+        
+        // รีเซ็ตการเลือกครู
         document.getElementById("divTeacher").classList.remove("hidden");
-        if(cat === "ลงเวลาเข้า-ออก") document.getElementById("divTeacher").classList.add("hidden"); // ซ่อนก่อน รอเช็กว่าเป็นออกงานไหม
+        if(cat === "ลงเวลาเข้า-ออก") document.getElementById("divTeacher").classList.add("hidden");
     }
 
     function updateDetail() {
@@ -194,7 +244,6 @@
         let detailArr = formData[cat].options[sub];
         let detailSelect = document.getElementById("detail");
 
-        // จัดการโชว์/ซ่อน ช่องเลือกครู (เข้างานไม่ต้องเลือกครู, ออกงานและอื่นๆ ต้องเลือก)
         if(cat === "ลงเวลาเข้า-ออก" && sub === "เข้างาน") document.getElementById("divTeacher").classList.add("hidden");
         else document.getElementById("divTeacher").classList.remove("hidden");
 
@@ -234,11 +283,7 @@
         };
 
         if(!payload.studentId || !payload.category || !payload.subCategory) return Swal.fire('แจ้งเตือน', 'กรอกข้อมูลให้ครบถ้วนครับ', 'warning');
-        
-        // ถ้ามี Detail ให้เลือก แต่ไม่ยอมเลือก
         if(!document.getElementById("divDetail").classList.contains("hidden") && !payload.detail) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกรายละเอียดเพิ่มเติมครับ', 'warning');
-        
-        // ถ้าต้องเลือกครู แต่ไม่เลือก
         if(!document.getElementById("divTeacher").classList.contains("hidden") && !payload.teacherId) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกคุณครูผู้ประเมินครับ', 'warning');
 
         Swal.fire({ title: 'กำลังส่งข้อมูล...', didOpen: () => Swal.showLoading() });
@@ -251,7 +296,10 @@
     function sendData(payload) {
         fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
         .then(res => res.json()).then(data => {
-            if(data.status === "success") Swal.fire({ icon: 'success', title: 'สำเร็จ', text: data.message }).then(() => liff.closeWindow());
+            if(data.status === "success") Swal.fire({ icon: 'success', title: 'สำเร็จ', text: data.message }).then(() => {
+                if (typeof liff !== 'undefined' && liff.isInClient()) liff.closeWindow(); 
+                else window.location.reload();
+            });
             else if (data.status === "buddy_detected" || data.status === "out_of_bounds") {
                 Swal.fire({
                     title: 'แจ้งเตือน', text: data.message, icon: 'warning', input: 'text', showCancelButton: true, confirmButtonText: 'ยืนยัน',
