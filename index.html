@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ระบบลงเวลานักเรียน</title>
+    <title>ศูนย์บริการนักเรียน</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,84 +11,81 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
     <style>
-        :root { --primary-color: #4f46e5; --primary-hover: #4338ca; --success-color: #10b981; --warning-color: #f59e0b; --bg-color: #f3f4f6; --text-dark: #1f2937; --text-light: #6b7280; --border-radius: 12px; }
-        body { font-family: 'Prompt', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-dark); }
-        .app-container { width: 100%; max-width: 450px; background: white; padding: 30px 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); box-sizing: border-box; }
-        .header { text-align: center; margin-bottom: 25px; }
-        .header i { font-size: 40px; color: var(--primary-color); margin-bottom: 10px; }
-        .header h2 { margin: 0; font-size: 22px; font-weight: 600; }
-        .header p { margin: 5px 0 0 0; font-size: 14px; color: var(--text-light); }
-        .form-group { margin-bottom: 18px; }
-        label { font-size: 14px; font-weight: 500; margin-bottom: 8px; display: block; color: var(--text-dark); }
+        :root { --primary: #4f46e5; --bg: #f3f4f6; --text: #1f2937; --border: #d1d5db; }
+        body { font-family: 'Prompt', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: var(--text); display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 450px; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header i { font-size: 35px; color: var(--primary); margin-bottom: 5px; }
+        .header h2 { margin: 0; font-size: 20px; font-weight: 600; }
+        .form-group { margin-bottom: 15px; }
+        label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; }
         .input-wrapper { position: relative; }
         .input-wrapper i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
-        input, select { width: 100%; padding: 12px 14px 12px 40px; font-family: 'Prompt', sans-serif; font-size: 15px; border: 1px solid #d1d5db; border-radius: var(--border-radius); box-sizing: border-box; transition: all 0.3s; background-color: #f9fafb; }
-        input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); background-color: white; }
-        input[readonly] { background-color: #e5e7eb; color: #4b5563; cursor: not-allowed; }
-        .btn { width: 100%; padding: 14px; font-family: 'Prompt', sans-serif; font-weight: 600; border: none; border-radius: var(--border-radius); cursor: pointer; font-size: 16px; transition: all 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; }
-        .btn-primary { background-color: var(--primary-color); color: white; margin-top: 25px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25); }
-        .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
-        .btn-check-name { background-color: #e0e7ff; color: var(--primary-color); padding: 10px; font-size: 14px; margin-top: 8px; }
-        .btn-check-loc { background-color: #fef3c7; color: var(--warning-color); padding: 10px; font-size: 14px; margin-top: 8px; }
-        #dutySection, #teacherSection { display: none; animation: fadeIn 0.3s ease-in-out; }
-        #locationStatus { font-size: 13px; font-weight: 500; margin-top: 8px; text-align: center; padding: 8px; border-radius: 8px; display: none; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        input, select { width: 100%; padding: 12px 14px 12px 40px; font-family: 'Prompt', sans-serif; font-size: 14px; border: 1px solid var(--border); border-radius: 10px; background-color: #f9fafb; transition: 0.3s; box-sizing: border-box;}
+        input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); background: white; }
+        .btn-primary { width: 100%; padding: 14px; font-family: 'Prompt', sans-serif; font-weight: 600; font-size: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; margin-top: 15px; display: flex; justify-content: center; gap: 8px;}
+        .hidden { display: none; }
+        .gps-box { background: #eff6ff; padding: 10px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #bfdbfe; font-size: 12px; }
+        .gps-btn { width: 100%; padding: 8px; font-family: 'Prompt'; background: white; border: 1px solid var(--primary); color: var(--primary); border-radius: 8px; cursor: pointer; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
+<div class="container">
     <div class="header">
-        <i class="fa-solid fa-clock"></i>
-        <h2>ระบบลงเวลาเข้า-ออก</h2>
-        <p>บันทึกเวลาเรียนและปฏิบัติงาน</p>
+        <i class="fa-solid fa-graduation-cap"></i>
+        <h2>ส่งคำขอ และ ลงเวลา</h2>
     </div>
-    
+
     <div class="form-group">
         <label>รหัสประจำตัวนักเรียน</label>
         <div class="input-wrapper">
             <i class="fa-solid fa-id-card"></i>
-            <input type="number" id="studentId" placeholder="กรอกรหัสนักเรียน">
+            <input type="number" id="studentId" placeholder="กรอกรหัสนักเรียน" onblur="checkName()">
         </div>
-        <button class="btn btn-check-name" onclick="checkName()">
-            <i class="fa-solid fa-magnifying-glass"></i> ค้นหาชื่อ
-        </button>
     </div>
-
     <div class="form-group">
-        <label>ชื่อ-สกุล (ดึงอัตโนมัติ)</label>
+        <label>ชื่อ-นามสกุล</label>
         <div class="input-wrapper">
             <i class="fa-solid fa-user"></i>
-            <input type="text" id="fullName" readonly placeholder="ระบบจะแสดงชื่อที่นี่">
+            <input type="text" id="fullName" readonly placeholder="ระบบจะดึงชื่ออัตโนมัติ">
         </div>
     </div>
+
+    <hr style="border: 0; border-top: 1px dashed #e5e7eb; margin: 20px 0;">
 
     <div class="form-group">
-        <label>สถานะการลงเวลา</label>
+        <label>เลือกรายการที่ต้องการทำ</label>
         <div class="input-wrapper">
-            <i class="fa-solid fa-right-to-bracket"></i>
-            <select id="type" onchange="toggleFields()">
-                <option value="เข้างาน">เข้างาน</option>
-                <option value="ออกงาน">ออกงาน</option>
+            <i class="fa-solid fa-list-check"></i>
+            <select id="category" onchange="updateForm()">
+                <option value="" disabled selected>-- กรุณาเลือก --</option>
+                <option value="ลงเวลาเข้า-ออก">1. ลงเวลาเข้า - ออกงาน</option>
+                <option value="ส่งใบงาน">2. ส่งใบงาน</option>
+                <option value="สอบปฏิบัติ">3. ขอสอบปฏิบัติ (ใน/นอกช่องปาก)</option>
+                <option value="สอบประเมินภาพ">4. ขอสอบประเมินภาพ</option>
             </select>
         </div>
     </div>
 
-    <div class="form-group" id="dutySection">
-        <label>เวรงานที่อยู่ประจำวัน (เฉพาะตอนออกงาน)</label>
+    <div class="form-group hidden" id="divSubCategory">
+        <label id="lblSubCategory">เลือกหัวข้อ</label>
         <div class="input-wrapper">
-            <i class="fa-solid fa-clipboard-list"></i>
-            <select id="duty">
-                <option value="" disabled selected>-- กรุณาเลือกเวรงาน --</option>
-                <option value="ฟิล์มนอกช่องปาก">1. ฟิล์มนอกช่องปาก</option>
-                <option value="ฟิล์มในช่องปาก">2. ฟิล์มในช่องปาก</option>
-                <option value="ฟิล์มผู้ป่วยนอกเวลา">3. ฟิล์มผู้ป่วยนอกเวลา</option>
-            </select>
+            <i class="fa-solid fa-tag"></i>
+            <select id="subCategory" onchange="updateDetail()"></select>
         </div>
     </div>
 
-    <div class="form-group" id="teacherSection">
-        <label>ครูผู้ดูแล (เฉพาะตอนออกงาน)</label>
+    <div class="form-group hidden" id="divDetail">
+        <label id="lblDetail">รายละเอียดเพิ่มเติม</label>
+        <div class="input-wrapper">
+            <i class="fa-solid fa-bars-staggered"></i>
+            <select id="detail"></select>
+        </div>
+    </div>
+
+    <div class="form-group hidden" id="divTeacher">
+        <label>ส่งถึงคุณครูผู้ประเมิน</label>
         <div class="input-wrapper">
             <i class="fa-solid fa-chalkboard-user"></i>
             <select id="teacherId">
@@ -97,282 +94,178 @@
         </div>
     </div>
 
-    <div class="form-group">
-        <label>พิกัด GPS</label>
-        <div class="input-wrapper">
-            <i class="fa-solid fa-location-dot"></i>
-            <input type="text" id="location" readonly placeholder="กำลังค้นหาพิกัด...">
-        </div>
-        <button class="btn btn-check-loc" onclick="verifyLocation()">
-            <i class="fa-solid fa-location-crosshairs"></i> ตรวจสอบระยะพิกัดเป้าหมาย
-        </button>
-        <div id="locationStatus"></div>
+    <div class="gps-box hidden" id="divGps">
+        <label style="margin-bottom: 2px;"><i class="fa-solid fa-location-dot"></i> พิกัด GPS (บังคับ)</label>
+        <input type="text" id="location" readonly placeholder="กำลังค้นหาพิกัด..." style="margin-bottom: 5px; border:none; padding:5px 10px; background: transparent;">
+        <button class="gps-btn" onclick="verifyLocation()">ตรวจสอบพิกัดเป้าหมาย</button>
+        <div id="locationStatus" style="margin-top: 5px; font-weight: 600;"></div>
     </div>
 
     <div class="form-group">
         <label>หมายเหตุ (ถ้ามี)</label>
         <div class="input-wrapper">
             <i class="fa-solid fa-comment-dots"></i>
-            <input type="text" id="remark" placeholder="ระบุหมายเหตุเพิ่มเติม">
+            <input type="text" id="remark" placeholder="พิมพ์ข้อความเพิ่มเติม...">
         </div>
     </div>
 
-    <button class="btn btn-primary" onclick="submitAttendance()">
-        <i class="fa-solid fa-paper-plane"></i> บันทึกการลงเวลา
+    <button class="btn-primary" onclick="submitForm()">
+        <i class="fa-solid fa-paper-plane"></i> ยืนยันการส่งข้อมูล
     </button>
 </div>
 
 <script>
-    // 🚨 ใส่ LIFF ID ลงเวลานักเรียน ตรงนี้ 
     const LIFF_ID = "2011162626-lcdf4ybN"; 
-    // 🚨 ใส่ URL ของ Google Apps Script ตรงนี้
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec"; 
 
-    window.onload = function() {
-        liff.init({ liffId: LIFF_ID }).catch(err => console.error("LIFF Init Error: ", err));
-
-        // 🌟 ดึงรายชื่อครูจากฐานข้อมูลทันทีที่เปิดหน้าเว็บ
-        fetchTeachersList();
-
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    document.getElementById("location").value = position.coords.latitude + "," + position.coords.longitude;
-                },
-                (error) => {
-                    document.getElementById("location").value = "ไม่สามารถดึงพิกัดได้ โปรดเปิด GPS";
-                },
-                { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
-            );
-        } else {
-            document.getElementById("location").value = "เบราว์เซอร์ไม่รองรับ GPS";
+    // โครงสร้างข้อมูลแบบฉลาด (Dynamic Data)
+    const formData = {
+        "ลงเวลาเข้า-ออก": {
+            options: { "เข้างาน": [], "ออกงาน": ["ฟิล์มนอกช่องปาก", "ฟิล์มในช่องปาก", "ฟิล์มผู้ป่วยนอกเวลา"] },
+            subLabel: "สถานะ", detailLabel: "เวรปฏิบัติงาน (เฉพาะออกงาน)"
+        },
+        "ส่งใบงาน": {
+            options: { "นอกช่องปาก": ["ใบงานที่ 1", "ใบงานที่ 2", "ใบงานที่ 3"], "ในช่องปาก": ["ใบงานที่ 1", "ใบงานที่ 2", "ใบงานที่ 3"] },
+            subLabel: "หมวดหมู่ใบงาน", detailLabel: "เลือกใบงานที่ส่ง"
+        },
+        "สอบปฏิบัติ": {
+            options: { 
+                "สอบถ่ายนอกช่องปาก (OPG)": ["ครั้งที่ 1", "ครั้งที่ 2", "ครั้งที่ 3"],
+                "Pa (Anterior)": ["ครั้งที่ 1", "ครั้งที่ 2", "ครั้งที่ 3"],
+                "Pa (Posterior)": ["ครั้งที่ 1", "ครั้งที่ 2", "ครั้งที่ 3"],
+                "Bite Wing": ["ครั้งที่ 1", "ครั้งที่ 2", "ครั้งที่ 3"],
+                "สอบเรียงภาพ FM": ["ครั้งที่ 1", "ครั้งที่ 2", "ครั้งที่ 3"]
+            },
+            subLabel: "เลือกหัวข้อการสอบ", detailLabel: "ครั้งที่สอบ"
+        },
+        "สอบประเมินภาพ": {
+            options: { "การวิเคราะห์ภาพรังสีในช่องปาก": [], "การวิเคราะห์ภาพรังสีนอกช่องปาก": [] },
+            subLabel: "เลือกหัวข้อสอบ", detailLabel: "" // ไม่มี detail ย่อย
         }
-        toggleFields();
     };
 
-    // 🌟 ฟังก์ชันใหม่: เรียก API เพื่อดึงชื่อครูมาสร้าง Dropdown
-    function fetchTeachersList() {
-        fetch(API_URL, {
-            method: "POST",
-            body: JSON.stringify({ action: "getTeachersList" })
-        }).then(res => res.json()).then(data => {
-            if(data.status === "success") {
-                let select = document.getElementById("teacherId");
-                // รีเซ็ตตัวเลือกแรก
-                select.innerHTML = '<option value="" disabled selected>-- กรุณาเลือกครูผู้ดูแล --</option>';
-                
-                // นำชื่อครูจาก Google Sheets มาเรียงใส่
-                data.data.forEach(teacher => {
-                    let option = document.createElement("option");
-                    // ส่งรหัส ID ครู ไปให้หลังบ้าน (เช่น T001)
-                    option.value = teacher.id; 
-                    // โชว์หน้าเว็บเป็นชื่อครู (เช่น ครูอรพินท์)
-                    option.text = teacher.name; 
-                    select.appendChild(option);
-                });
-            }
-        }).catch(err => console.error("Error fetching teachers: ", err));
-    }
-
-    function toggleFields() {
-        let type = document.getElementById("type").value;
-        if (type === "ออกงาน") {
-            document.getElementById("dutySection").style.display = "block";
-            document.getElementById("teacherSection").style.display = "block";
-        } else {
-            document.getElementById("dutySection").style.display = "none";
-            document.getElementById("teacherSection").style.display = "none";
+    window.onload = function() {
+        liff.init({ liffId: LIFF_ID });
+        fetchTeachersList();
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                p => document.getElementById("location").value = p.coords.latitude + "," + p.coords.longitude,
+                e => document.getElementById("location").value = "ไม่สามารถดึงพิกัดได้"
+            );
         }
+    };
+
+    function fetchTeachersList() {
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getTeachersList" }) })
+        .then(res => res.json()).then(data => {
+            let select = document.getElementById("teacherId");
+            select.innerHTML = '<option value="" disabled selected>-- เลือกคุณครู --</option>';
+            data.data.forEach(t => select.innerHTML += `<option value="${t.id}">${t.name}</option>`);
+        });
     }
 
     function checkName() {
-        let studentId = document.getElementById("studentId").value;
-        if(!studentId) { 
-            Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'กรุณากรอกรหัสนักเรียนก่อนครับ' });
-            return; 
-        }
+        let sid = document.getElementById("studentId").value;
+        if(sid) fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentName", studentId: sid }) })
+                .then(res => res.json()).then(data => document.getElementById("fullName").value = data.status==="success" ? data.fullName : "ไม่พบรหัสนี้");
+    }
 
-        document.getElementById("fullName").value = "กำลังค้นหา...";
-        fetch(API_URL, {
-            method: "POST",
-            body: JSON.stringify({ action: "getStudentName", studentId: studentId })
-        }).then(res => res.json()).then(data => {
-            if(data.status === "success") {
-                document.getElementById("fullName").value = data.fullName;
-                Swal.fire({ icon: 'success', title: 'พบข้อมูล', text: 'ดึงชื่อนักเรียนสำเร็จ', timer: 1500, showConfirmButton: false });
-            } else {
-                document.getElementById("fullName").value = "";
-                Swal.fire({ icon: 'error', title: 'ไม่พบข้อมูล', text: data.message });
-            }
-        }).catch(err => {
-            Swal.fire({ icon: 'error', title: 'ข้อผิดพลาด', text: 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์' });
-        });
+    // ฟังก์ชันเปลี่ยนหน้าตาฟอร์ม
+    function updateForm() {
+        let cat = document.getElementById("category").value;
+        let subSelect = document.getElementById("subCategory");
+        
+        document.getElementById("lblSubCategory").innerText = formData[cat].subLabel;
+        subSelect.innerHTML = '<option value="" disabled selected>-- เลือก --</option>';
+        Object.keys(formData[cat].options).forEach(opt => subSelect.innerHTML += `<option value="${opt}">${opt}</option>`);
+        
+        document.getElementById("divSubCategory").classList.remove("hidden");
+        document.getElementById("divDetail").classList.add("hidden");
+        
+        // เช็กเรื่อง GPS และครู
+        document.getElementById("divGps").classList.toggle("hidden", cat !== "ลงเวลาเข้า-ออก");
+        document.getElementById("divTeacher").classList.remove("hidden");
+        if(cat === "ลงเวลาเข้า-ออก") document.getElementById("divTeacher").classList.add("hidden"); // ซ่อนก่อน รอเช็กว่าเป็นออกงานไหม
+    }
+
+    function updateDetail() {
+        let cat = document.getElementById("category").value;
+        let sub = document.getElementById("subCategory").value;
+        let detailArr = formData[cat].options[sub];
+        let detailSelect = document.getElementById("detail");
+
+        // จัดการโชว์/ซ่อน ช่องเลือกครู (เข้างานไม่ต้องเลือกครู, ออกงานและอื่นๆ ต้องเลือก)
+        if(cat === "ลงเวลาเข้า-ออก" && sub === "เข้างาน") document.getElementById("divTeacher").classList.add("hidden");
+        else document.getElementById("divTeacher").classList.remove("hidden");
+
+        if(detailArr && detailArr.length > 0) {
+            document.getElementById("lblDetail").innerText = formData[cat].detailLabel;
+            detailSelect.innerHTML = '<option value="" disabled selected>-- เลือก --</option>';
+            detailArr.forEach(d => detailSelect.innerHTML += `<option value="${d}">${d}</option>`);
+            document.getElementById("divDetail").classList.remove("hidden");
+        } else {
+            detailSelect.innerHTML = "";
+            document.getElementById("divDetail").classList.add("hidden");
+        }
     }
 
     function verifyLocation() {
-        let locationVal = document.getElementById("location").value;
-        let statusDiv = document.getElementById("locationStatus");
-        statusDiv.style.display = "block";
-
-        if (!locationVal || locationVal.includes("ไม่")) {
-            statusDiv.style.backgroundColor = "#fee2e2";
-            statusDiv.style.color = "#dc2626";
-            statusDiv.innerHTML = "<i class='fa-solid fa-circle-xmark'></i> ไม่พบพิกัด กรุณาเปิด GPS และรีเฟรชหน้าเว็บ";
-            return;
-        }
-
-        statusDiv.style.backgroundColor = "#e0e7ff";
-        statusDiv.style.color = "#4f46e5";
-        statusDiv.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> กำลังตรวจสอบพิกัดเป้าหมาย...";
-
-        fetch(API_URL, {
-            method: "POST",
-            body: JSON.stringify({ action: "checkLocation", location: locationVal })
-        }).then(res => res.json()).then(data => {
-            if(data.status === "success") {
-                statusDiv.style.backgroundColor = "#d1fae5";
-                statusDiv.style.color = "#059669";
-                statusDiv.innerHTML = "<i class='fa-solid fa-circle-check'></i> " + data.message;
-            } else {
-                statusDiv.style.backgroundColor = "#fee2e2";
-                statusDiv.style.color = "#dc2626";
-                statusDiv.innerHTML = "<i class='fa-solid fa-circle-xmark'></i> " + data.message;
-            }
-        }).catch(err => {
-            statusDiv.style.backgroundColor = "#fee2e2";
-            statusDiv.style.color = "#dc2626";
-            statusDiv.innerHTML = "<i class='fa-solid fa-triangle-exclamation'></i> เกิดข้อผิดพลาดในการเชื่อมต่อ";
+        let loc = document.getElementById("location").value;
+        let stat = document.getElementById("locationStatus");
+        stat.style.color = "#4f46e5"; stat.innerText = "กำลังตรวจสอบ...";
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "checkLocation", location: loc }) })
+        .then(res => res.json()).then(data => {
+            stat.style.color = data.status === "success" ? "#059669" : "#dc2626";
+            stat.innerText = data.message;
         });
     }
 
-    function submitAttendance() {
-        let currentType = document.getElementById("type").value;
-        
+    function submitForm() {
         let payload = {
-            action: "recordAttendance",
+            action: "submitStudentRequest",
             studentId: document.getElementById("studentId").value,
-            type: currentType,
-            duty: currentType === "ออกงาน" ? document.getElementById("duty").value : "",
-            teacherId: currentType === "ออกงาน" ? document.getElementById("teacherId").value : "",
+            category: document.getElementById("category").value,
+            subCategory: document.getElementById("subCategory").value,
+            detail: document.getElementById("detail").value,
+            teacherId: document.getElementById("teacherId").value,
             location: document.getElementById("location").value,
             remark: document.getElementById("remark").value,
-            submitterUid: "" 
+            submitterUid: ""
         };
 
-        if(!payload.studentId || !document.getElementById("fullName").value || document.getElementById("fullName").value === "กำลังค้นหา...") {
-            Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกรหัสและค้นหาชื่อก่อนครับ' });
-            return;
-        }
+        if(!payload.studentId || !payload.category || !payload.subCategory) return Swal.fire('แจ้งเตือน', 'กรอกข้อมูลให้ครบถ้วนครับ', 'warning');
         
-        if(payload.type === "ออกงาน") {
-            if (!payload.duty) {
-                Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณาระบุเวรงานที่อยู่ประจำวันสำหรับการออกงานครับ' });
-                return;
-            }
-            if (!payload.teacherId) {
-                Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณาระบุครูผู้ดูแลสำหรับการออกงานครับ' });
-                return;
-            }
-        }
+        // ถ้ามี Detail ให้เลือก แต่ไม่ยอมเลือก
+        if(!document.getElementById("divDetail").classList.contains("hidden") && !payload.detail) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกรายละเอียดเพิ่มเติมครับ', 'warning');
         
-        if (!payload.location || payload.location.includes("ไม่") || payload.location.includes("รอ")) {
-            Swal.fire({ icon: 'error', title: 'พิกัดมีปัญหา', text: 'ไม่สามารถบันทึกได้เนื่องจากยังไม่ได้เปิดพิกัด GPS ครับ' });
-            return;
-        }
+        // ถ้าต้องเลือกครู แต่ไม่เลือก
+        if(!document.getElementById("divTeacher").classList.contains("hidden") && !payload.teacherId) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกคุณครูผู้ประเมินครับ', 'warning');
 
-        Swal.fire({
-            title: 'กำลังตรวจสอบข้อมูล...',
-            allowOutsideClick: false,
-            didOpen: () => { Swal.showLoading(); }
-        });
-        
+        Swal.fire({ title: 'กำลังส่งข้อมูล...', didOpen: () => Swal.showLoading() });
+
         if (typeof liff !== 'undefined' && liff.isLoggedIn()) {
-            liff.getProfile().then(profile => {
-                payload.submitterUid = profile.userId; 
-                sendDataToServer(payload);
-            }).catch(err => {
-                sendDataToServer(payload); 
-            });
-        } else {
-            sendDataToServer(payload); 
-        }
+            liff.getProfile().then(p => { payload.submitterUid = p.userId; sendData(payload); }).catch(() => sendData(payload));
+        } else sendData(payload);
     }
 
-    function sendDataToServer(payload) {
-        fetch(API_URL, {
-            method: "POST",
-            body: JSON.stringify(payload)
-        }).then(res => res.json()).then(data => {
-            
-            if(data.status === "success") {
+    function sendData(payload) {
+        fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+        .then(res => res.json()).then(data => {
+            if(data.status === "success") Swal.fire({ icon: 'success', title: 'สำเร็จ', text: data.message }).then(() => liff.closeWindow());
+            else if (data.status === "buddy_detected" || data.status === "out_of_bounds") {
                 Swal.fire({
-                    icon: 'success',
-                    title: 'สำเร็จ!',
-                    text: data.message,
-                    confirmButtonText: 'ตกลง',
-                    confirmButtonColor: '#10b981'
-                }).then(() => {
-                    if (typeof liff !== 'undefined' && liff.isInClient()) {
-                        liff.closeWindow(); 
-                    } else {
-                        window.location.reload(); 
+                    title: 'แจ้งเตือน', text: data.message, icon: 'warning', input: 'text', showCancelButton: true, confirmButtonText: 'ยืนยัน',
+                    inputValidator: (v) => !v ? 'กรุณาระบุเหตุผล' : null
+                }).then(res => {
+                    if (res.isConfirmed) {
+                        if(data.status === "buddy_detected") { payload.forceBuddy = true; payload.buddyReason = res.value; }
+                        if(data.status === "out_of_bounds") { payload.forceOutOfBounds = true; payload.outOfBoundsReason = res.value; }
+                        Swal.fire({ title: 'กำลังส่ง...', didOpen: () => Swal.showLoading() });
+                        sendData(payload);
                     }
                 });
-            } 
-            else if (data.status === "buddy_detected") {
-                Swal.fire({
-                    title: 'ลงเวลาแทนเพื่อน?',
-                    text: data.message,
-                    icon: 'warning',
-                    input: 'text',
-                    inputPlaceholder: 'เช่น มือถือเพื่อนแบตหมด, เพื่อนฝากลง',
-                    showCancelButton: true,
-                    confirmButtonColor: '#f59e0b', 
-                    cancelButtonColor: '#6b7280',
-                    confirmButtonText: 'ยืนยันลงเวลาแทน',
-                    cancelButtonText: 'ยกเลิก',
-                    inputValidator: (value) => {
-                        if (!value) return 'กรุณาระบุเหตุผลด้วยครับ!'
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        payload.forceBuddy = true;
-                        payload.buddyReason = result.value;
-                        Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-                        sendDataToServer(payload);
-                    }
-                });
-            } 
-            else if (data.status === "out_of_bounds") {
-                Swal.fire({
-                    title: 'อยู่นอกพื้นที่กำหนด',
-                    text: data.message,
-                    icon: 'warning',
-                    input: 'text',
-                    inputPlaceholder: 'เช่น ไปราชการ, ลากิจ, ออกตรวจงาน, หรือ GPS เพี้ยน',
-                    showCancelButton: true,
-                    confirmButtonColor: '#f59e0b', 
-                    cancelButtonColor: '#6b7280',
-                    confirmButtonText: 'ยืนยันลงเวลา',
-                    cancelButtonText: 'ยกเลิก',
-                    inputValidator: (value) => {
-                        if (!value) return 'กรุณาระบุเหตุผลด้วยครับ!'
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        payload.forceOutOfBounds = true;
-                        payload.outOfBoundsReason = result.value;
-                        Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-                        sendDataToServer(payload);
-                    }
-                });
-            }
-            else {
-                Swal.fire({ icon: 'error', title: 'บันทึกไม่สำเร็จ', text: data.message });
-            }
-        }).catch(err => {
-            Swal.fire({ icon: 'error', title: 'ข้อผิดพลาด', text: 'บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง' });
-        });
+            } else Swal.fire('ผิดพลาด', data.message, 'error');
+        }).catch(() => Swal.fire('ผิดพลาด', 'ไม่สามารถติดต่อ Server ได้', 'error'));
     }
 </script>
 
