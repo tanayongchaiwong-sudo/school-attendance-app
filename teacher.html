@@ -75,7 +75,7 @@
                 <input type="text" id="remark1" placeholder="พิมพ์คำติชมเพื่อการพัฒนา...">
             </div>
 
-            <button class="btn-primary" onclick="submitPendingScore()"><i class="fa-solid fa-floppy-disk"></i> บันทึกและแปลงคะแนน</button>
+            <button class="btn-primary" onclick="submitPendingScore()"><i class="fa-solid fa-floppy-disk"></i> บันทึกและแยกคอลัมน์ลงฐานข้อมูล</button>
         </div>
     </div>
 
@@ -181,18 +181,18 @@
         if (req.category === "ประเมินรายวัน") {
             html += `<div class="rubric-box">
                 <h4><i class="fa-solid fa-star"></i> พฤติกรรม (เต็ม 40)</h4>
-                <div class="rubric-row"><label>1. ซื่อสัตย์ ตรงต่อเวลา</label><input type="number" class="b-score" placeholder="0-10" max="10"></div>
-                <div class="rubric-row"><label>2. รับผิดชอบ กระตือรือร้น</label><input type="number" class="b-score" placeholder="0-10" max="10"></div>
-                <div class="rubric-row"><label>3. ทำงานเป็นทีม เอื้อเฟื้อ</label><input type="number" class="b-score" placeholder="0-10" max="10"></div>
-                <div class="rubric-row"><label>4. ปฏิภาณไหวพริบ คล่องแคล่ว</label><input type="number" class="b-score" placeholder="0-5" max="5"></div>
-                <div class="rubric-row"><label>5. กิริยามารยาท แต่งกาย</label><input type="number" class="b-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>ซื่อสัตย์ ตรงต่อเวลา</label><input type="number" class="b-score" placeholder="0-10" max="10"></div>
+                <div class="rubric-row"><label>รับผิดชอบ กระตือรือร้น</label><input type="number" class="b-score" placeholder="0-10" max="10"></div>
+                <div class="rubric-row"><label>ทำงานเป็นทีม เอื้อเฟื้อ</label><input type="number" class="b-score" placeholder="0-10" max="10"></div>
+                <div class="rubric-row"><label>ปฏิภาณไหวพริบ คล่องแคล่ว</label><input type="number" class="b-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>กิริยามารยาท แต่งกาย</label><input type="number" class="b-score" placeholder="0-5" max="5"></div>
             </div>
             <div class="rubric-box" style="background:#f0fdf4; border-color:#bbf7d0;">
                 <h4 style="color:#15803d;"><i class="fa-solid fa-wrench"></i> ทักษะปฏิบัติงาน (เต็ม 20)</h4>
-                <div class="rubric-row"><label>1. เตรียมเครื่อง/ห้อง</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
-                <div class="rubric-row"><label>2. เตรียมผู้ป่วย</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
-                <div class="rubric-row"><label>3. ถ่ายและประเมินภาพ</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
-                <div class="rubric-row"><label>4. ดูแลอุปกรณ์หลังใช้</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>เตรียมเครื่อง/ห้อง</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>เตรียมผู้ป่วย</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>ถ่ายและประเมินภาพ</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>ดูแลอุปกรณ์หลังใช้</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
             </div>`;
         } 
         else if (req.category === "ส่งใบงาน") {
@@ -236,7 +236,7 @@
         
         let req = pendingRequests[idx];
         let sumB = 0, sumS = 0, sumRaw = 0;
-        let subDetailsList = []; 
+        let subScoresList = []; // เก็บตัวเลขคะแนนแบบเรียงแถวเพื่อส่งไปกางเป็นคอลัมน์
         let isInvalid = false;
         let invalidMsg = "";
         
@@ -247,31 +247,26 @@
             let val = parseFloat(inp.value);
             let maxVal = parseFloat(inp.getAttribute('max'));
 
-            // เช็กความถูกต้อง (ต้องเป็นตัวเลข และต้องไม่เกิน max)
             if (isNaN(val) || val < 0 || val > maxVal) {
                 isInvalid = true;
                 invalidMsg = `คะแนนหัวข้อ "${label}" ไม่ถูกต้อง!\n(กรุณาระบุตัวเลขระหว่าง 0 ถึง ${maxVal} เท่านั้นครับ)`;
                 break;
             }
 
-            subDetailsList.push(`${label}=${val}`); 
-            
+            subScoresList.push(val); 
             if(inp.classList.contains('b-score')) sumB += val;
             if(inp.classList.contains('s-score')) sumS += val;
             if(inp.classList.contains('raw-score')) sumRaw += val;
         }
 
-        // ถ้ากรอกคะแนนผิด เด้ง Pop-up ห้ามส่งข้อมูล
-        if (isInvalid) return Swal.fire('ข้อมูลไม่ถูกต้อง', invalidMsg, 'warning');
-
-        let subScoresText = subDetailsList.join(" | "); 
+        if (isInvalid) return Swal.fire('ข้อมูลไม่ถูกต้อง', invalidMsg, 'error');
 
         let payload = {
             action: "submitScore", teacherId: currentTeacherId,
             logId: req.logId, studentId: req.studentId, studentName: req.studentName,
             category: req.category, subCategory: req.subCategory, detail: req.detail,
             behaviorScore: sumB, skillScore: sumS, rawScore: sumRaw,
-            subScoresText: subScoresText,
+            subScoresList: subScoresList, // ส่งก้อนตัวเลขไปหลังบ้าน
             remark: document.getElementById("remark1").value
         };
 
@@ -287,11 +282,10 @@
         if(!sVal || !part || score === "") return Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
         
         let parsedScore = parseFloat(score);
-        let maxScore = parseFloat(document.getElementById("pcScore").max); // ซึ่งคือ 10
+        let maxScore = parseFloat(document.getElementById("pcScore").max);
 
-        // 🚨 ป้องกันครูกรอกคะแนนเกิน
         if(isNaN(parsedScore) || parsedScore < 0 || parsedScore > maxScore) {
-            return Swal.fire('ข้อมูลไม่ถูกต้อง', `คะแนนต้องอยู่ระหว่าง 0 - ${maxScore} เท่านั้นครับ`, 'warning');
+            return Swal.fire('ข้อมูลไม่ถูกต้อง', `คะแนนต้องอยู่ระหว่าง 0 - ${maxScore} เท่านั้นครับ`, 'error');
         }
         
         let student = JSON.parse(sVal);
@@ -300,7 +294,7 @@
             logId: "", studentId: student.id, studentName: student.name,
             category: "สอบเข้าห้อง (Pre-Clinic)", subCategory: part, detail: "",
             behaviorScore: 0, skillScore: 0, rawScore: parsedScore,
-            subScoresText: `คะแนนสอบ=${parsedScore}`, 
+            subScoresList: [parsedScore], 
             remark: document.getElementById("remark2").value
         };
 
@@ -311,7 +305,7 @@
         Swal.fire({ title: 'กำลังประมวลผล...', didOpen: () => Swal.showLoading() });
         fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
         .then(res => res.json()).then(data => {
-            if(data.status === "success") Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'บันทึกคะแนนเรียบร้อย' }).then(() => window.location.reload());
+            if(data.status === "success") Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'บันทึกและแยกคอลัมน์เรียบร้อย' }).then(() => window.location.reload());
             else Swal.fire('ผิดพลาด', data.message, 'error');
         }).catch(() => Swal.fire('ผิดพลาด', 'ไม่สามารถติดต่อ Server ได้', 'error'));
     }
