@@ -19,14 +19,12 @@
         .header i { font-size: 35px; color: var(--primary); margin-bottom: 5px; }
         .header h2 { margin: 0; font-size: 20px; font-weight: 600; }
         
-        /* สไตล์ปุ่มเมนูหลัก (หน้าแรก) */
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .menu-btn { background: white; border: 2px solid #f3f4f6; padding: 20px 10px; border-radius: 16px; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .menu-btn { background: white; border: 2px solid #f3f4f6; padding: 15px 10px; border-radius: 16px; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         .menu-btn:hover { border-color: var(--c); background: #f8fafc; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .menu-btn i { font-size: 30px; color: var(--c); }
-        .menu-btn span { font-family: 'Prompt'; font-size: 14px; font-weight: 500; color: #334155; }
+        .menu-btn i { font-size: 28px; color: var(--c); }
+        .menu-btn span { font-family: 'Prompt'; font-size: 13px; font-weight: 500; color: #334155; }
 
-        /* ฟอร์มและอินพุต */
         .form-group { margin-bottom: 15px; }
         label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; }
         .input-wrapper { position: relative; }
@@ -34,7 +32,7 @@
         input, select { width: 100%; padding: 12px 14px 12px 40px; font-family: 'Prompt', sans-serif; font-size: 14px; border: 1px solid var(--border); border-radius: 10px; background-color: #f9fafb; transition: 0.3s; box-sizing: border-box;}
         input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); background: white; }
         
-        .btn-primary { width: 100%; padding: 14px; font-family: 'Prompt'; font-weight: 600; font-size: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; margin-top: 15px; display: flex; justify-content: center; gap: 8px;}
+        .btn-primary { width: 100%; padding: 14px; font-family: 'Prompt'; font-weight: 600; font-size: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; margin-top: 15px; display: flex; justify-content: center; gap: 8px; transition: 0.3s;}
         .btn-back { position: absolute; left: 0; top: 0; background: none; border: none; color: #64748b; font-size: 18px; cursor: pointer; padding: 5px; }
         
         .hidden { display: none !important; }
@@ -54,20 +52,19 @@
 
         <div class="menu-grid">
             <button class="menu-btn" style="--c: #3b82f6;" onclick="selectCategory('ลงเวลาเข้า-ออก')">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-                <span>ลงเวลาเข้า-ออก</span>
+                <i class="fa-solid fa-clock-rotate-left"></i><span>ลงเวลาเข้า-ออก</span>
             </button>
             <button class="menu-btn" style="--c: #10b981;" onclick="selectCategory('ส่งใบงาน')">
-                <i class="fa-solid fa-file-arrow-up"></i>
-                <span>ส่งใบงาน</span>
+                <i class="fa-solid fa-file-arrow-up"></i><span>ส่งใบงาน</span>
             </button>
             <button class="menu-btn" style="--c: #f59e0b;" onclick="selectCategory('สอบปฏิบัติ')">
-                <i class="fa-solid fa-stethoscope"></i>
-                <span>สอบปฏิบัติ</span>
+                <i class="fa-solid fa-stethoscope"></i><span>สอบปฏิบัติ</span>
             </button>
             <button class="menu-btn" style="--c: #8b5cf6;" onclick="selectCategory('สอบประเมินภาพ')">
-                <i class="fa-solid fa-x-ray"></i>
-                <span>สอบประเมินภาพ</span>
+                <i class="fa-solid fa-x-ray"></i><span>สอบประเมินภาพ</span>
+            </button>
+            <button class="menu-btn" style="--c: #ec4899; grid-column: span 2;" onclick="selectCategory('สอบเข้าห้อง (Pre-Clinic)')">
+                <i class="fa-solid fa-laptop-file"></i><span>สอบเข้าห้อง (Pre-Clinic)</span>
             </button>
         </div>
     </div>
@@ -78,7 +75,9 @@
             <h2 id="formTitle" style="color: var(--primary);">หัวข้อที่เลือก</h2>
         </div>
 
-        <input type="hidden" id="category"> <div class="form-group">
+        <input type="hidden" id="category">
+
+        <div class="form-group">
             <label>รหัสประจำตัวนักเรียน</label>
             <div class="input-wrapper">
                 <i class="fa-solid fa-id-card"></i>
@@ -128,7 +127,7 @@
             <div id="locationStatus" style="margin-top: 5px; font-weight: 600;"></div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" id="divRemark">
             <label>หมายเหตุ (ถ้ามี)</label>
             <div class="input-wrapper">
                 <i class="fa-solid fa-comment-dots"></i>
@@ -136,19 +135,22 @@
             </div>
         </div>
 
-        <button class="btn-primary" onclick="submitForm()">
-            <i class="fa-solid fa-paper-plane"></i> ยืนยันการส่งข้อมูล
+        <button class="btn-primary" id="btnSubmit" onclick="submitForm()">
+            <i id="btnSubmitIcon" class="fa-solid fa-paper-plane"></i> 
+            <span id="btnSubmitText">ยืนยันการส่งข้อมูล</span>
         </button>
     </div>
 </div>
 
 <script>
-    // 🚨 ใส่ LIFF ID ของนักเรียน ตรงนี้
+    // 🚨 ใส่ LIFF ID และ API URL
     const LIFF_ID = "2011162626-lcdf4ybN"; 
-    // 🚨 ใส่ URL ของ Web App ตรงนี้
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec"; 
 
-    // โครงสร้างข้อมูลแบบฉลาด (Dynamic Data)
+    // ตัวแปรเก็บประวัติการสอบ (ดึงมาจาก Google Sheets)
+    let studentCompletedExams = [];
+
+    // โครงสร้างข้อมูลแบบฉลาด (เพิ่มหมวดสอบเข้าห้อง และลิงก์)
     const formData = {
         "ลงเวลาเข้า-ออก": {
             options: { "เข้างาน": [], "ออกงาน": ["ฟิล์มนอกช่องปาก", "ฟิล์มในช่องปาก", "ฟิล์มผู้ป่วยนอกเวลา"] },
@@ -169,8 +171,18 @@
             subLabel: "เลือกหัวข้อการสอบ", detailLabel: "ครั้งที่สอบ"
         },
         "สอบประเมินภาพ": {
-            options: { "การวิเคราะห์ภาพรังสีในช่องปาก": [], "การวิเคราะห์ภาพรังสีนอกช่องปาก": [] },
-            subLabel: "เลือกหัวข้อสอบ", detailLabel: "" // ไม่มี detail ย่อย
+            options: {}, 
+            subLabel: "", detailLabel: ""
+        },
+        // 🌟 หมวดหมู่ใหม่: สอบเข้าห้อง พร้อมลิงก์ไป Google Forms (คุณเปลี่ยนลิงก์ได้เลย)
+        "สอบเข้าห้อง (Pre-Clinic)": {
+            options: { "Part 1": [], "Part 2": [], "Part 3": [] },
+            subLabel: "เลือกหัวข้อที่ต้องการสอบ", detailLabel: "",
+            links: {
+                "Part 1": "https://forms.gle/ลิ้งก์ข้อสอบพาร์ท1",
+                "Part 2": "https://forms.gle/ลิ้งก์ข้อสอบพาร์ท2",
+                "Part 3": "https://forms.gle/ลิ้งก์ข้อสอบพาร์ท3"
+            }
         }
     };
 
@@ -185,28 +197,22 @@
         }
     };
 
-    // นำทาง UI (UI Navigation)
     function selectCategory(cat) {
         document.getElementById("category").value = cat;
         document.getElementById("formTitle").innerText = cat;
-        
         document.getElementById("step1").classList.add("hidden");
         document.getElementById("step2").classList.remove("hidden");
-        
         updateForm();
     }
 
     function goBack() {
         document.getElementById("step2").classList.add("hidden");
         document.getElementById("step1").classList.remove("hidden");
-        
-        // เคลียร์ค่า
         document.getElementById("subCategory").innerHTML = "";
         document.getElementById("detail").innerHTML = "";
         document.getElementById("divDetail").classList.add("hidden");
     }
 
-    // ดึงชื่อครูและนักเรียน
     function fetchTeachersList() {
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getTeachersList" }) })
         .then(res => res.json()).then(data => {
@@ -218,28 +224,90 @@
 
     function checkName() {
         let sid = document.getElementById("studentId").value;
-        if(sid) fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentName", studentId: sid }) })
-                .then(res => res.json()).then(data => document.getElementById("fullName").value = data.status==="success" ? data.fullName : "ไม่พบรหัสนี้");
+        if(sid) {
+            fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentName", studentId: sid }) })
+            .then(res => res.json()).then(data => {
+                if(data.status === "success") {
+                    document.getElementById("fullName").value = data.fullName;
+                    // 🌟 เก็บประวัติว่าพาร์ทไหนที่เคยสอบแล้ว
+                    studentCompletedExams = data.completedExams || []; 
+                    updateForm(); // โหลดฟอร์มใหม่เพื่ออัปเดตตัวเลือก
+                } else {
+                    document.getElementById("fullName").value = "ไม่พบรหัสนี้";
+                    studentCompletedExams = [];
+                }
+            });
+        }
     }
 
-    // อัปเดตฟอร์มตามหมวดหมู่
+    // 🌟 จัดการซ่อน/แสดงช่อง และจัดการปุ่มลิงก์ข้อสอบ
     function updateForm() {
         let cat = document.getElementById("category").value;
         let subSelect = document.getElementById("subCategory");
         
-        document.getElementById("lblSubCategory").innerText = formData[cat].subLabel;
-        subSelect.innerHTML = '<option value="" disabled selected>-- เลือก --</option>';
-        Object.keys(formData[cat].options).forEach(opt => subSelect.innerHTML += `<option value="${opt}">${opt}</option>`);
-        
-        document.getElementById("divGps").classList.toggle("hidden", cat !== "ลงเวลาเข้า-ออก");
-        
-        // รีเซ็ตการเลือกครู
-        document.getElementById("divTeacher").classList.remove("hidden");
-        if(cat === "ลงเวลาเข้า-ออก") document.getElementById("divTeacher").classList.add("hidden");
+        // รีเซ็ตปุ่มเป็นค่าเริ่มต้น (สีม่วง)
+        let btnSubmit = document.getElementById("btnSubmit");
+        let btnText = document.getElementById("btnSubmitText");
+        let btnIcon = document.getElementById("btnSubmitIcon");
+        btnText.innerText = "ยืนยันการส่งข้อมูล";
+        btnIcon.className = "fa-solid fa-paper-plane";
+        btnSubmit.style.background = "var(--primary)";
+
+        if (cat === "สอบประเมินภาพ") {
+            document.getElementById("divSubCategory").classList.add("hidden");
+            document.getElementById("divDetail").classList.add("hidden");
+            subSelect.innerHTML = '<option value="สอบประเมินภาพ" selected>สอบประเมินภาพ</option>';
+            document.getElementById("detail").innerHTML = ""; 
+            
+            document.getElementById("divGps").classList.add("hidden");
+            document.getElementById("divTeacher").classList.remove("hidden");
+            document.getElementById("divRemark").classList.remove("hidden");
+            
+        } else if (cat === "สอบเข้าห้อง (Pre-Clinic)") {
+            // 🌟 กรณีสอบเข้าห้อง
+            document.getElementById("lblSubCategory").innerText = formData[cat].subLabel;
+            subSelect.innerHTML = '<option value="" disabled selected>-- เลือก --</option>';
+            
+            // กรองพาร์ทที่เคยทำไปแล้วออก
+            let availableOptions = Object.keys(formData[cat].options).filter(opt => !studentCompletedExams.includes(opt));
+            
+            if (availableOptions.length === 0) {
+                subSelect.innerHTML = '<option value="" disabled selected>✅ คุณสอบครบทุก Part แล้ว</option>';
+            } else {
+                availableOptions.forEach(opt => subSelect.innerHTML += `<option value="${opt}">${opt}</option>`);
+            }
+
+            document.getElementById("divSubCategory").classList.remove("hidden");
+            document.getElementById("divDetail").classList.add("hidden"); 
+            document.getElementById("divGps").classList.add("hidden");
+            document.getElementById("divTeacher").classList.add("hidden"); // ไม่ต้องเลือกครู
+            document.getElementById("divRemark").classList.add("hidden"); // ไม่ต้องมีหมายเหตุ
+
+            // เปลี่ยนหน้าตาปุ่มเป็น "เปิดลิงก์ทำข้อสอบ" (สีชมพู)
+            btnText.innerText = "เปิดลิงก์ทำข้อสอบ";
+            btnIcon.className = "fa-solid fa-arrow-up-right-from-square";
+            btnSubmit.style.background = "#ec4899"; 
+
+        } else {
+            // กรณีอื่นๆ (ลงเวลา / สอบปฏิบัติ / ใบงาน)
+            document.getElementById("lblSubCategory").innerText = formData[cat].subLabel;
+            subSelect.innerHTML = '<option value="" disabled selected>-- เลือก --</option>';
+            Object.keys(formData[cat].options).forEach(opt => subSelect.innerHTML += `<option value="${opt}">${opt}</option>`);
+            
+            document.getElementById("divSubCategory").classList.remove("hidden");
+            document.getElementById("divDetail").classList.add("hidden"); 
+            document.getElementById("divGps").classList.toggle("hidden", cat !== "ลงเวลาเข้า-ออก");
+            document.getElementById("divTeacher").classList.remove("hidden");
+            document.getElementById("divRemark").classList.remove("hidden");
+            
+            if(cat === "ลงเวลาเข้า-ออก") document.getElementById("divTeacher").classList.add("hidden");
+        }
     }
 
     function updateDetail() {
         let cat = document.getElementById("category").value;
+        if (cat === "สอบประเมินภาพ" || cat === "สอบเข้าห้อง (Pre-Clinic)") return; // ข้ามไป
+
         let sub = document.getElementById("subCategory").value;
         let detailArr = formData[cat].options[sub];
         let detailSelect = document.getElementById("detail");
@@ -270,11 +338,32 @@
     }
 
     function submitForm() {
+        let cat = document.getElementById("category").value;
+        let sub = document.getElementById("subCategory").value;
+        let studentId = document.getElementById("studentId").value;
+        let fullName = document.getElementById("fullName").value;
+
+        if(!studentId || !fullName || fullName === "ไม่พบรหัสนี้" || fullName === "กำลังค้นหา...") return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสนักเรียนให้ถูกต้องก่อนครับ', 'warning');
+
+        // 🌟 ดักจับถ้าเป็นปุ่ม "สอบเข้าห้อง" (ให้เปิดลิงก์ Google Form ไปเลย ไม่ต้องส่งข้อมูลไป Server)
+        if (cat === "สอบเข้าห้อง (Pre-Clinic)") {
+            if (!sub || sub.includes("สอบครบทุก Part")) return Swal.fire('แจ้งเตือน', 'กรุณาเลือก Part ที่ต้องการสอบครับ', 'warning');
+            
+            let link = formData[cat].links[sub];
+            if (link && link.startsWith("http")) {
+                window.open(link, '_blank');
+            } else {
+                Swal.fire('แจ้งเตือน', 'ยังไม่ได้ตั้งค่าลิงก์ข้อสอบในระบบครับ', 'info');
+            }
+            return; // ⛔️ จบการทำงานตรงนี้ ไม่ต้องส่งลง Google Sheets
+        }
+
+        // กรณีส่งคำขออื่นๆ ปกติ
         let payload = {
             action: "submitStudentRequest",
-            studentId: document.getElementById("studentId").value,
-            category: document.getElementById("category").value,
-            subCategory: document.getElementById("subCategory").value,
+            studentId: studentId,
+            category: cat,
+            subCategory: sub,
             detail: document.getElementById("detail").value,
             teacherId: document.getElementById("teacherId").value,
             location: document.getElementById("location").value,
@@ -282,7 +371,7 @@
             submitterUid: ""
         };
 
-        if(!payload.studentId || !payload.category || !payload.subCategory) return Swal.fire('แจ้งเตือน', 'กรอกข้อมูลให้ครบถ้วนครับ', 'warning');
+        if(!payload.category || !payload.subCategory) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกหมวดหมู่ให้ครบถ้วนครับ', 'warning');
         if(!document.getElementById("divDetail").classList.contains("hidden") && !payload.detail) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกรายละเอียดเพิ่มเติมครับ', 'warning');
         if(!document.getElementById("divTeacher").classList.contains("hidden") && !payload.teacherId) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกคุณครูผู้ประเมินครับ', 'warning');
 
