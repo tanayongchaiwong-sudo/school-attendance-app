@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ระบบประเมินคะแนน (คุณครู)</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+    <style>
+        :root { --primary: #f97316; --bg: #f3f4f6; --text: #1f2937; --border: #d1d5db; }
+        body { font-family: 'Prompt', sans-serif; background-color: var(--bg); margin: 0; padding: 15px; color: var(--text); }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        
+        .header { text-align: center; margin-bottom: 20px; }
+        .header i { font-size: 35px; color: var(--primary); }
+        .header h2 { margin: 10px 0 0 0; font-size: 20px; font-weight: 600; }
+        
+        /* แท็บเมนู */
+        .tabs { display: flex; border-bottom: 2px solid #f3f4f6; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; text-align: center; font-family: 'Prompt'; font-weight: 600; cursor: pointer; border: none; background: none; color: #9ca3af; transition: 0.3s; }
+        .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
+
+        .form-group { margin-bottom: 15px; }
+        label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; color: #4b5563; }
+        select, input[type="number"], input[type="text"] { width: 100%; padding: 12px; font-family: 'Prompt'; font-size: 14px; border: 1px solid var(--border); border-radius: 10px; background-color: #f9fafb; box-sizing: border-box; }
+        select:focus, input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2); background: white; }
+        
+        /* กล่องให้คะแนน (Dynamic Form) */
+        .rubric-box { background: #fff7ed; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #ffedd5; }
+        .rubric-box h4 { margin: 0 0 10px 0; color: #c2410c; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .rubric-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px dashed #fed7aa; padding-bottom: 8px; }
+        .rubric-row:last-child { border: none; margin-bottom: 0; padding-bottom: 0; }
+        .rubric-row label { margin: 0; font-weight: 400; flex: 1; }
+        .rubric-row input { width: 80px; text-align: center; padding: 8px; }
+
+        .btn-primary { width: 100%; padding: 14px; font-family: 'Prompt'; font-weight: 600; font-size: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; margin-top: 10px; }
+        .empty-state { text-align: center; padding: 30px; color: #9ca3af; }
+        .empty-state i { font-size: 40px; margin-bottom: 10px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <i class="fa-solid fa-clipboard-check"></i>
+        <h2>ระบบประเมินคะแนน</h2>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('pendingTab')">📋 รอประเมิน</button>
+        <button class="tab-btn" onclick="switchTab('preClinicTab')">💻 สอบเข้าห้อง</button>
+    </div>
+
+    <div id="pendingTab">
+        <div id="emptyState" class="empty-state">
+            <i class="fa-solid fa-mug-hot"></i>
+            <p>ไม่มีรายการรอประเมินในขณะนี้ครับ</p>
+        </div>
+
+        <div id="evaluationForm" class="hidden">
+            <div class="form-group">
+                <label>เลือกรายการของนักเรียนที่ต้องการประเมิน</label>
+                <select id="requestSelect" onchange="generateDynamicForm()">
+                    <option value="" disabled selected>-- กำลังโหลด... --</option>
+                </select>
+            </div>
+
+            <div id="dynamicRubricArea"></div>
+
+            <div class="form-group">
+                <label>หมายเหตุ / ข้อเสนอแนะ (ถ้ามี)</label>
+                <input type="text" id="remark1" placeholder="พิมพ์คำติชมเพื่อการพัฒนา...">
+            </div>
+
+            <button class="btn-primary" onclick="submitPendingScore()"><i class="fa-solid fa-floppy-disk"></i> บันทึกและแปลงคะแนน</button>
+        </div>
+    </div>
+
+    <div id="preClinicTab" class="hidden">
+        <div class="rubric-box" style="background: #f0fdf4; border-color: #bbf7d0;">
+            <h4 style="color: #15803d;"><i class="fa-solid fa-laptop-file"></i> นำเข้าคะแนน Google Forms</h4>
+            
+            <div class="form-group" style="margin-top: 15px;">
+                <label>เลือกชื่อนักเรียน</label>
+                <select id="pcStudentSelect"><option value="" disabled selected>-- กำลังโหลดรายชื่อ... --</option></select>
+            </div>
+            
+            <div class="form-group">
+                <label>เลือกพาร์ทที่สอบ</label>
+                <select id="pcPartSelect">
+                    <option value="" disabled selected>-- เลือก Part --</option>
+                    <option value="Part 1">Part 1</option>
+                    <option value="Part 2">Part 2</option>
+                    <option value="Part 3">Part 3</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>กรอกคะแนนดิบที่ได้ (เต็ม 10)</label>
+                <input type="number" id="pcScore" placeholder="0-10" min="0" max="10">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>หมายเหตุ (ถ้ามี)</label>
+            <input type="text" id="remark2" placeholder="พิมพ์หมายเหตุ...">
+        </div>
+
+        <button class="btn-primary" style="background: #16a34a;" onclick="submitPreClinicScore()"><i class="fa-solid fa-cloud-arrow-up"></i> บันทึกคะแนนเข้าห้อง</button>
+    </div>
+</div>
+
+<script>
+    // 🚨 ใส่ LIFF ID บอทครู และ API URL
+    const LIFF_ID = "2011162626-dON8ee2c"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec"; 
+
+    let currentTeacherId = "";
+    let pendingRequests = [];
+
+    window.onload = function() {
+        Swal.fire({ title: 'กำลังเชื่อมต่อ...', didOpen: () => Swal.showLoading() });
+        liff.init({ liffId: LIFF_ID }).then(() => {
+            if (liff.isLoggedIn()) {
+                liff.getProfile().then(p => { fetchPendingRequests(p.userId); fetchStudentsList(); });
+            } else liff.login();
+        }).catch(() => Swal.fire('ผิดพลาด', 'เชื่อมต่อ LINE ไม่สำเร็จ', 'error'));
+    };
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById("pendingTab").classList.add("hidden");
+        document.getElementById("preClinicTab").classList.add("hidden");
+        
+        event.target.classList.add("active");
+        document.getElementById(tabId).classList.remove("hidden");
+    }
+
+    // ดึงคำขอจากนักเรียน
+    function fetchPendingRequests(uid) {
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getPendingRequests", teacherUid: uid }) })
+        .then(res => res.json()).then(data => {
+            if(data.status === "success") {
+                currentTeacherId = data.teacherId;
+                pendingRequests = data.data;
+                let select = document.getElementById("requestSelect");
+                select.innerHTML = '<option value="" disabled selected>-- เลือกรายการ --</option>';
+                
+                if (pendingRequests.length === 0) {
+                    document.getElementById("evaluationForm").classList.add("hidden");
+                    document.getElementById("emptyState").classList.remove("hidden");
+                } else {
+                    document.getElementById("evaluationForm").classList.remove("hidden");
+                    document.getElementById("emptyState").classList.add("hidden");
+                    pendingRequests.forEach((req, idx) => {
+                        let txt = `${req.studentName} [${req.category}] - ${req.subCategory}`;
+                        select.innerHTML += `<option value="${idx}">${txt}</option>`;
+                    });
+                }
+                Swal.close();
+            } else Swal.fire('ผิดพลาด', data.message, 'error');
+        });
+    }
+
+    // ดึงรายชื่อนักเรียนสำหรับแท็บ Pre-Clinic
+    function fetchStudentsList() {
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentsList" }) })
+        .then(res => res.json()).then(data => {
+            let select = document.getElementById("pcStudentSelect");
+            data.data.forEach(s => select.innerHTML += `<option value='{"id":"${s.id}","name":"${s.name}"}'>${s.id} - ${s.name}</option>`);
+        });
+    }
+
+    // 🌟 พระเอกของงาน: สร้างฟอร์มให้คะแนนอัตโนมัติตามเรื่องที่เด็กขอ
+    function generateDynamicForm() {
+        let idx = document.getElementById("requestSelect").value;
+        if(idx === "") return;
+        let req = pendingRequests[idx];
+        let html = '';
+
+        if (req.category === "ประเมินรายวัน") {
+            html += `<div class="rubric-box">
+                <h4><i class="fa-solid fa-star"></i> พฤติกรรม (เต็ม 40)</h4>
+                <div class="rubric-row"><label>1. ซื่อสัตย์ ตรงต่อเวลา</label><input type="number" class="b-score" placeholder="0-10" max="10"></div>
+                <div class="rubric-row"><label>2. รับผิดชอบ กระตือรือร้น</label><input type="number" class="b-score" placeholder="0-10" max="10"></div>
+                <div class="rubric-row"><label>3. ทำงานเป็นทีม เอื้อเฟื้อ</label><input type="number" class="b-score" placeholder="0-10" max="10"></div>
+                <div class="rubric-row"><label>4. ปฏิภาณไหวพริบ คล่องแคล่ว</label><input type="number" class="b-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>5. กิริยามารยาท แต่งกาย</label><input type="number" class="b-score" placeholder="0-5" max="5"></div>
+            </div>
+            <div class="rubric-box" style="background:#f0fdf4; border-color:#bbf7d0;">
+                <h4 style="color:#15803d;"><i class="fa-solid fa-wrench"></i> ทักษะปฏิบัติงาน (เต็ม 20)</h4>
+                <div class="rubric-row"><label>1. เตรียมเครื่อง/ห้อง</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>2. เตรียมผู้ป่วย</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>3. ถ่ายและประเมินภาพ</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>4. ดูแลอุปกรณ์หลังใช้</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
+            </div>`;
+        } 
+        else if (req.category === "ส่งใบงาน") {
+            let maxRaw = req.detail.includes("ที่ 1") ? 1 : 2; // ใบที่ 1 เต็ม 1 / ใบที่ 2,3 เต็ม 2
+            html += `<div class="rubric-box">
+                <h4><i class="fa-solid fa-file-pen"></i> ประเมินใบงาน (${req.subCategory} - ${req.detail})</h4>
+                <div class="rubric-row"><label>คะแนนที่ได้ (เต็ม ${maxRaw})</label><input type="number" class="raw-score" placeholder="0-${maxRaw}" max="${maxRaw}"></div>
+            </div>`;
+        }
+        else if (req.category === "สอบปฏิบัติ") {
+            if (req.subCategory.includes("OPG")) {
+                html += `<div class="rubric-box"><h4><i class="fa-solid fa-stethoscope"></i> สอบ OPG (${req.detail})</h4>
+                <div class="rubric-row"><label>เตรียมเครื่องมือ/ผู้ป่วย</label><input type="number" class="raw-score" placeholder="0-2" max="2"></div>
+                <div class="rubric-row"><label>จัดท่าผู้ป่วย/ถ่ายภาพ</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>การดูภาพ/แก้ไขปัญหา</label><input type="number" class="raw-score" placeholder="0-3" max="3"></div></div>`;
+            } else if (req.subCategory.includes("เรียงภาพ FM")) {
+                html += `<div class="rubric-box"><h4><i class="fa-solid fa-images"></i> สอบเรียงภาพ FM (${req.detail})</h4>
+                <div class="rubric-row"><label>คะแนนสอบเรียงภาพ</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div></div>`;
+            } else {
+                // Pa Ant, Pa Post, Bite Wing
+                html += `<div class="rubric-box"><h4><i class="fa-solid fa-tooth"></i> สอบ ${req.subCategory} (${req.detail})</h4>
+                <div class="rubric-row"><label>เตรียมเครื่องมือ</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>เตรียมผู้ป่วย</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>ถ่ายภาพรังสี</label><input type="number" class="raw-score" placeholder="0-10" max="10"></div>
+                <div class="rubric-row"><label>ดูแลเครื่องมือหลังใช้</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>ประเมิน/แก้ไขภาพ</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div></div>`;
+            }
+        }
+        else if (req.category === "สอบประเมินภาพ") {
+            html += `<div class="rubric-box"><h4><i class="fa-solid fa-magnifying-glass"></i> สอบประเมินภาพ</h4>
+                <div class="rubric-row"><label>วิเคราะห์ในช่องปาก</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>วิเคราะห์นอกช่องปาก</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div></div>`;
+        }
+
+        document.getElementById("dynamicRubricArea").innerHTML = html;
+    }
+
+    // 🌟 ส่งคะแนนจากคำขอ
+    function submitPendingScore() {
+        let idx = document.getElementById("requestSelect").value;
+        if(idx === "") return Swal.fire('แจ้งเตือน', 'กรุณาเลือกรายการประเมิน', 'warning');
+        
+        let req = pendingRequests[idx];
+        let sumB = 0, sumS = 0, sumRaw = 0;
+        
+        // กวาดคะแนนจากฟอร์มที่ครูกรอก
+        document.querySelectorAll('.b-score').forEach(inp => sumB += (parseFloat(inp.value)||0));
+        document.querySelectorAll('.s-score').forEach(inp => sumS += (parseFloat(inp.value)||0));
+        document.querySelectorAll('.raw-score').forEach(inp => sumRaw += (parseFloat(inp.value)||0));
+
+        let payload = {
+            action: "submitScore", teacherId: currentTeacherId,
+            logId: req.logId, studentId: req.studentId, studentName: req.studentName,
+            category: req.category, subCategory: req.subCategory, detail: req.detail,
+            behaviorScore: sumB, skillScore: sumS, rawScore: sumRaw,
+            remark: document.getElementById("remark1").value
+        };
+
+        sendToServer(payload);
+    }
+
+    // 🌟 ส่งคะแนนสอบเข้าห้อง (Pre-Clinic) โดยตรง
+    function submitPreClinicScore() {
+        let sVal = document.getElementById("pcStudentSelect").value;
+        let part = document.getElementById("pcPartSelect").value;
+        let score = document.getElementById("pcScore").value;
+
+        if(!sVal || !part || score === "") return Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
+        
+        let student = JSON.parse(sVal);
+        let payload = {
+            action: "submitScore", teacherId: currentTeacherId,
+            logId: "", studentId: student.id, studentName: student.name,
+            category: "สอบเข้าห้อง (Pre-Clinic)", subCategory: part, detail: "",
+            behaviorScore: 0, skillScore: 0, rawScore: score,
+            remark: document.getElementById("remark2").value
+        };
+
+        sendToServer(payload);
+    }
+
+    function sendToServer(payload) {
+        Swal.fire({ title: 'กำลังประมวลผลคะแนน...', didOpen: () => Swal.showLoading() });
+        fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+        .then(res => res.json()).then(data => {
+            if(data.status === "success") Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'บันทึกคะแนนเรียบร้อย' }).then(() => window.location.reload());
+            else Swal.fire('ผิดพลาด', data.message, 'error');
+        }).catch(() => Swal.fire('ผิดพลาด', 'ไม่สามารถติดต่อ Server ได้', 'error'));
+    }
+</script>
+
+</body>
+</html>
