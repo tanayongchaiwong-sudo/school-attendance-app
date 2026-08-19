@@ -199,7 +199,7 @@
             let maxRaw = req.detail.includes("ที่ 1") ? 1 : 2; 
             html += `<div class="rubric-box">
                 <h4><i class="fa-solid fa-file-pen"></i> ประเมินใบงาน (${req.subCategory} - ${req.detail})</h4>
-                <div class="rubric-row"><label>คะแนนที่ได้ (เต็ม ${maxRaw})</label><input type="number" class="raw-score" placeholder="0-${maxRaw}" max="${maxRaw}"></div>
+                <div class="rubric-row"><label>คะแนนที่ได้</label><input type="number" class="raw-score" placeholder="0-${maxRaw}" max="${maxRaw}"></div>
             </div>`;
         }
         else if (req.category === "สอบปฏิบัติ") {
@@ -229,7 +229,7 @@
         document.getElementById("dynamicRubricArea").innerHTML = html;
     }
 
-    // 🌟 ส่งคะแนนพร้อมกวาดรายละเอียดคะแนนย่อย
+    // 🌟 ดักจับข้อมูลคะแนนไม่ให้เกินกำหนด พร้อมรวมคะแนนย่อย
     function submitPendingScore() {
         let idx = document.getElementById("requestSelect").value;
         if(idx === "") return Swal.fire('แจ้งเตือน', 'กรุณาเลือกรายการประเมิน', 'warning');
@@ -237,18 +237,32 @@
         let req = pendingRequests[idx];
         let sumB = 0, sumS = 0, sumRaw = 0;
         let subDetailsList = []; 
+        let isInvalid = false;
+        let invalidMsg = "";
         
-        document.querySelectorAll('.rubric-row').forEach(row => {
-            let label = row.querySelector('label').innerText;
-            let inputTag = row.querySelector('input');
-            let val = parseFloat(inputTag.value) || 0;
+        let inputs = document.querySelectorAll('.rubric-row input[type="number"]');
+        for (let i = 0; i < inputs.length; i++) {
+            let inp = inputs[i];
+            let label = inp.parentElement.querySelector('label').innerText;
+            let val = parseFloat(inp.value);
+            let maxVal = parseFloat(inp.getAttribute('max'));
+
+            // เช็กความถูกต้อง (ต้องเป็นตัวเลข และต้องไม่เกิน max)
+            if (isNaN(val) || val < 0 || val > maxVal) {
+                isInvalid = true;
+                invalidMsg = `คะแนนหัวข้อ "${label}" ไม่ถูกต้อง!\n(กรุณาระบุตัวเลขระหว่าง 0 ถึง ${maxVal} เท่านั้นครับ)`;
+                break;
+            }
+
+            subDetailsList.push(`${label}=${val}`); 
             
-            subDetailsList.push(`${label} = ${val}`); 
-            
-            if(inputTag.classList.contains('b-score')) sumB += val;
-            if(inputTag.classList.contains('s-score')) sumS += val;
-            if(inputTag.classList.contains('raw-score')) sumRaw += val;
-        });
+            if(inp.classList.contains('b-score')) sumB += val;
+            if(inp.classList.contains('s-score')) sumS += val;
+            if(inp.classList.contains('raw-score')) sumRaw += val;
+        }
+
+        // ถ้ากรอกคะแนนผิด เด้ง Pop-up ห้ามส่งข้อมูล
+        if (isInvalid) return Swal.fire('ข้อมูลไม่ถูกต้อง', invalidMsg, 'warning');
 
         let subScoresText = subDetailsList.join(" | "); 
 
@@ -272,16 +286,21 @@
 
         if(!sVal || !part || score === "") return Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
         
+        let parsedScore = parseFloat(score);
+        let maxScore = parseFloat(document.getElementById("pcScore").max); // ซึ่งคือ 10
+
         // 🚨 ป้องกันครูกรอกคะแนนเกิน
-        if(parseFloat(score) < 0 || parseFloat(score) > 10) return Swal.fire('แจ้งเตือน', 'คะแนนต้องอยู่ระหว่าง 0 - 10 เท่านั้นครับ', 'error');
+        if(isNaN(parsedScore) || parsedScore < 0 || parsedScore > maxScore) {
+            return Swal.fire('ข้อมูลไม่ถูกต้อง', `คะแนนต้องอยู่ระหว่าง 0 - ${maxScore} เท่านั้นครับ`, 'warning');
+        }
         
         let student = JSON.parse(sVal);
         let payload = {
             action: "submitScore", teacherId: currentTeacherId,
             logId: "", studentId: student.id, studentName: student.name,
             category: "สอบเข้าห้อง (Pre-Clinic)", subCategory: part, detail: "",
-            behaviorScore: 0, skillScore: 0, rawScore: score,
-            subScoresText: `คะแนนสอบ = ${score}`, // บันทึกให้เห็นชัดๆ
+            behaviorScore: 0, skillScore: 0, rawScore: parsedScore,
+            subScoresText: `คะแนนสอบ=${parsedScore}`, 
             remark: document.getElementById("remark2").value
         };
 
