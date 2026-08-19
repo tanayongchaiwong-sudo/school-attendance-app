@@ -12,7 +12,13 @@
 
     <style>
         :root { --primary: #ec4899; --primary-hover: #db2777; --bg: #fdf2f8; --text: #1f2937; --border: #fbcfe8; }
-        body { font-family: 'Prompt', sans-serif; background-color: var(--bg); margin: 0; padding: 15px; color: var(--text); }
+        
+        /* 🛡️ ป้องกันการคลุมดำก๊อปปี้ข้อความ */
+        body { 
+            font-family: 'Prompt', sans-serif; background-color: var(--bg); margin: 0; padding: 15px; color: var(--text); 
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+        }
+        
         .container { max-width: 600px; margin: 0 auto; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.1); }
         .header { text-align: center; margin-bottom: 25px; border-bottom: 2px dashed var(--border); padding-bottom: 20px; }
         .header i { font-size: 40px; color: var(--primary); margin-bottom: 10px; }
@@ -22,13 +28,13 @@
         .question-card { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
         .question-title { font-size: 16px; font-weight: 600; margin: 0 0 15px 0; color: #be185d; line-height: 1.5; }
         .question-image { text-align: center; margin-bottom: 15px; }
-        .question-image img { max-width: 100%; max-height: 250px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+        .question-image img { max-width: 100%; max-height: 250px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid var(--border); pointer-events: none;}
         
         .option-label { display: flex; align-items: flex-start; background: #fdf2f8; padding: 12px 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border); cursor: pointer; transition: 0.2s; font-size: 15px; color: #4b5563; }
         .option-label:hover { background: #fce7f3; border-color: #f9a8d4; }
         .option-label input[type="radio"] { margin-right: 12px; margin-top: 3px; accent-color: var(--primary); transform: scale(1.2); }
         .option-text { flex: 1; }
-        .option-text img { max-width: 150px; border-radius: 6px; margin-top: 5px; display: block; border: 1px solid #e5e7eb; }
+        .option-text img { max-width: 150px; border-radius: 6px; margin-top: 5px; display: block; border: 1px solid #e5e7eb; pointer-events: none;}
 
         .btn-submit { width: 100%; padding: 15px; font-family: 'Prompt', sans-serif; font-weight: 600; font-size: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 6px rgba(236, 72, 153, 0.3); transition: 0.3s; }
         .btn-submit:hover { background: var(--primary-hover); transform: translateY(-2px); }
@@ -53,13 +59,13 @@
     <input type="hidden" id="studentName">
     <div id="questionsArea"></div>
 
-    <button class="btn-submit" onclick="submitExam()">
+    <button class="btn-submit" onclick="submitExam(false)">
         <i class="fa-solid fa-check-double"></i> ส่งคำตอบและตรวจคะแนน
     </button>
 </div>
 
 <script>
-    // 🚨 1. ใส่ LIFF ID ที่สร้างสำหรับหน้าข้อสอบตรงนี้
+    // 🚨 ใส่ LIFF ID ที่สร้างสำหรับหน้าข้อสอบตรงนี้
     const LIFF_ID = "2011162626-TL70LvNp"; 
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec"; 
 
@@ -68,45 +74,46 @@
     // ==========================================
     const quizData = {
         "Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก": [
-            { q: "1. แผ่นรับภาพรังสีมีกี่ขนาดและอะไรบ้าง?", image: "", options: ["ก. 4 ขนาด ได้แก่ เบอร์ 1, 2, 3 และ 4", "ข. 4 ขนาด ได้แก่ เบอร์ 0, 1, 2 และ 3", "ค. 5 ขนาด ได้แก่ เบอร์ 1, 2, 3, 4 และ 5", "ง. 5 ขนาด ได้แก่ เบอร์ 0, 1, 2, 3 และ 4"], answer: 3 },
-            { q: "2. ผู้ป่วยเด็กควรใช้แผ่นรับภาพรังสีขนาดอะไร?", image: "", options: ["ก. เบอร์ 0", "ข. เบอร์ 4", "ค. เบอร์ 2", "ง. เบอร์ 3"], answer: 0 },
-            { q: "3. แผ่นรับภาพรังสีขนาดใดที่นิยมใช้งานมากที่สุด?", image: "", options: ["ก. เบอร์ 0", "ข. เบอร์ 4", "ค. เบอร์ 2", "ง. เบอร์ 3"], answer: 2 },
-            { q: "4. SNAP A-RAY ใช้ถ่ายภาพรังสีกับฟันบริเวณใด?", image: "", options: ["ก. ฟันหน้า", "ข. ฟันหลัง", "ค. ฟันคุด", "ง. ฟันหน้าและฟันหลัง"], answer: 3 },
-            { q: "5. การถ่ายภาพรังสีของฟันหน้า ต้องวางแผ่นรับภาพแนวไหนและเพราะอะไร?", image: "", options: ["ก. วางแนวตั้ง เพราะ ใส่ง่ายกว่าแนวนอน", "ข. วางแนวตั้ง เพราะ รากฟันด้านหน้ามีลักษณะยาว", "ค. วางแนวนอน เพราะ ใส่ง่ายกว่าแนวตั้ง", "ง. วางแนวนอน เพราะ รากฟันด้านหน้ามีลักษณะสั้น"], answer: 1 },
-            { q: "6. Horizontal Bitewing มีการวางแผ่นรับภาพแบบใด และใช้ประเมินดูอะไร?", image: "", options: ["ก. วางแนวตั้ง เพื่อประเมินดูกระดูกและเหงือก", "ข. วางแนวตั้ง เพื่อประเมินดูรอยผุด้านประชิดของฟัน", "ค. วางแนวนอน เพื่อประเมินดูกระดูกและเหงือก", "ง. วางแนวนอน เพื่อประเมินดูรอยผุ ด้านประชิดของฟัน"], answer: 3 },
-            { q: "7. จากภาพแผ่นรับภาพรังสี ตำแหน่งไหนคือ DOT?", image: "https://i.postimg.cc/h4spn6CF/Film.jpg", options: ["ก. ตำแหน่งที่ 1", "ข. ตำแหน่งที่ 2", "ค. ตำแหน่งที่ 3", "ง. ตำแหน่งที่ 4"], answer: 0 },
-            { q: "8. อุปกรณ์ HANSHIN คือข้อใด?", image: "", options: ["ก. <br><img src='https://i.postimg.cc/jqcZTmMp/xcp-A.jpg'>", "ข. <br><img src='https://i.postimg.cc/3Jw9x1qc/Snap.jpg'>", "ค. <br><img src='https://i.postimg.cc/qBwjrSmr/Xcp-Bw.jpg'>", "ง. <br><img src='https://i.postimg.cc/44PBGq8Z/Hchin.png'>"], answer: 3 },
-            { q: "9. อุปกรณ์ XCP สำหรับถ่ายฟันหน้า คือข้อใด?", image: "", options: ["ก. <br><img src='https://i.postimg.cc/jqcZTmMp/xcp-A.jpg'>", "ข. <br><img src='https://i.postimg.cc/3Jw9x1qc/Snap.jpg'>", "ค. <br><img src='https://i.postimg.cc/qBwjrSmr/Xcp-Bw.jpg'>", "ง. <br><img src='https://i.postimg.cc/44PBGq8Z/Hchin.png'>"], answer: 0 },
-            { q: "10. อุปกรณ์ SNAP A-RAY คือข้อใด?", image: "", options: ["ก. <br><img src='https://i.postimg.cc/jqcZTmMp/xcp-A.jpg'>", "ข. <br><img src='https://i.postimg.cc/3Jw9x1qc/Snap.jpg'>", "ค. <br><img src='https://i.postimg.cc/qBwjrSmr/Xcp-Bw.jpg'>", "ง. <br><img src='https://i.postimg.cc/44PBGq8Z/Hchin.png'>"], answer: 1 }
+            { q: "แผ่นรับภาพรังสีมีกี่ขนาดและอะไรบ้าง?", image: "", options: ["ก. 4 ขนาด ได้แก่ เบอร์ 1, 2, 3 และ 4", "ข. 4 ขนาด ได้แก่ เบอร์ 0, 1, 2 และ 3", "ค. 5 ขนาด ได้แก่ เบอร์ 1, 2, 3, 4 และ 5", "ง. 5 ขนาด ได้แก่ เบอร์ 0, 1, 2, 3 และ 4"], answer: 3 },
+            { q: "ผู้ป่วยเด็กควรใช้แผ่นรับภาพรังสีขนาดอะไร?", image: "", options: ["ก. เบอร์ 0", "ข. เบอร์ 4", "ค. เบอร์ 2", "ง. เบอร์ 3"], answer: 0 },
+            { q: "แผ่นรับภาพรังสีขนาดใดที่นิยมใช้งานมากที่สุด?", image: "", options: ["ก. เบอร์ 0", "ข. เบอร์ 4", "ค. เบอร์ 2", "ง. เบอร์ 3"], answer: 2 },
+            { q: "SNAP A-RAY ใช้ถ่ายภาพรังสีกับฟันบริเวณใด?", image: "", options: ["ก. ฟันหน้า", "ข. ฟันหลัง", "ค. ฟันคุด", "ง. ฟันหน้าและฟันหลัง"], answer: 3 },
+            { q: "การถ่ายภาพรังสีของฟันหน้า ต้องวางแผ่นรับภาพแนวไหนและเพราะอะไร?", image: "", options: ["ก. วางแนวตั้ง เพราะ ใส่ง่ายกว่าแนวนอน", "ข. วางแนวตั้ง เพราะ รากฟันด้านหน้ามีลักษณะยาว", "ค. วางแนวนอน เพราะ ใส่ง่ายกว่าแนวตั้ง", "ง. วางแนวนอน เพราะ รากฟันด้านหน้ามีลักษณะสั้น"], answer: 1 },
+            { q: "Horizontal Bitewing มีการวางแผ่นรับภาพแบบใด และใช้ประเมินดูอะไร?", image: "", options: ["ก. วางแนวตั้ง เพื่อประเมินดูกระดูกและเหงือก", "ข. วางแนวตั้ง เพื่อประเมินดูรอยผุด้านประชิดของฟัน", "ค. วางแนวนอน เพื่อประเมินดูกระดูกและเหงือก", "ง. วางแนวนอน เพื่อประเมินดูรอยผุ ด้านประชิดของฟัน"], answer: 3 },
+            { q: "จากภาพแผ่นรับภาพรังสี ตำแหน่งไหนคือ DOT?", image: "https://i.postimg.cc/h4spn6CF/Film.jpg", options: ["ก. ตำแหน่งที่ 1", "ข. ตำแหน่งที่ 2", "ค. ตำแหน่งที่ 3", "ง. ตำแหน่งที่ 4"], answer: 0 },
+            { q: "อุปกรณ์ HANSHIN คือข้อใด?", image: "", options: ["ก. <br><img src='https://i.postimg.cc/jqcZTmMp/xcp-A.jpg'>", "ข. <br><img src='https://i.postimg.cc/3Jw9x1qc/Snap.jpg'>", "ค. <br><img src='https://i.postimg.cc/qBwjrSmr/Xcp-Bw.jpg'>", "ง. <br><img src='https://i.postimg.cc/44PBGq8Z/Hchin.png'>"], answer: 3 },
+            { q: "อุปกรณ์ XCP สำหรับถ่ายฟันหน้า คือข้อใด?", image: "", options: ["ก. <br><img src='https://i.postimg.cc/jqcZTmMp/xcp-A.jpg'>", "ข. <br><img src='https://i.postimg.cc/3Jw9x1qc/Snap.jpg'>", "ค. <br><img src='https://i.postimg.cc/qBwjrSmr/Xcp-Bw.jpg'>", "ง. <br><img src='https://i.postimg.cc/44PBGq8Z/Hchin.png'>"], answer: 0 },
+            { q: "อุปกรณ์ SNAP A-RAY คือข้อใด?", image: "", options: ["ก. <br><img src='https://i.postimg.cc/jqcZTmMp/xcp-A.jpg'>", "ข. <br><img src='https://i.postimg.cc/3Jw9x1qc/Snap.jpg'>", "ค. <br><img src='https://i.postimg.cc/qBwjrSmr/Xcp-Bw.jpg'>", "ง. <br><img src='https://i.postimg.cc/44PBGq8Z/Hchin.png'>"], answer: 1 }
         ],
         "Part 2: ขั้นตอนการถ่ายภาพรังสีชนิดในช่องปาก": [
-            { q: "1. การเรียกผู้ป่วยเข้าห้องเอกซเรย์ควรปฏิบัติอย่างไร?", image: "", options: ["ก. เรียกชื่อพร้อมนามสกุล", "ข. เรียกชื่อพร้อมนามสกุลและที่อยู่", "ค. เรียกชื่อพร้อมนามสกุลและญาติ", "ง. ถูกทุกข้อ"], answer: 0 },
-            { q: "2. ขั้นตอนการทำความสะอาดแผ่นรับภาพรังสีหลังถ่ายเอกซเรย์มีขั้นตอนอย่างไร?", image: "", options: ["ก. 1.ใช้ทิชชูเช็ดน้ำลาย 2.ใช้ Cloroxเช็ดฆ่าเชื้อ 3.ใช้ทิชชูเช็ดแห้ง", "ข. 1.ใช้ทิชชูเช็ดน้ำลาย 2.ใช้ Alcoholเช็ดฆ่าเชื้อ 3.ใช้ทิชชูเช็ดแห้ง", "ค. 1.ใช้ทิชชูเช็ดน้ำลาย 2.ใช้ Alcohol หรือ Cloroxเช็ดฆ่าเชื้อ 3.ใช้ทิชชูเช็ดแห้ง", "ง. ไม่มีข้อถูก"], answer: 0 },
-            { q: "3. การทำความสะอาดแผ่นรับภาพรังสีหลังออกจากปากผู้ป่วยใช้อะไรในการฆ่าเชื้อโรค?", image: "", options: ["ก. Clorox", "ข. Alcohol", "ค. น้ำเกลือ", "ง. ข้อ ก. และ ข. ถูก"], answer: 0 },
-            { q: "4. ในขั้นตอนการสแกนแผ่นรับภาพรังสีจำเป็นต้องใส่ถุงมือด้วยหรือไม่?", image: "", options: ["ก. จำเป็น เพราะ ช่วยป้องกันเชื้อโรค", "ข. ไม่จำเป็น เพราะ แผ่นรับภาพรังสีผ่านการฆ่าเชื้อมาแล้ว"], answer: 1 },
-            { q: "5. เพื่อป้องกันความผิดพลาดของภาพรังสีในผู้ป่วยแต่ละคน ก่อนสแกนแผ่นรับภาพรังสีควรตรวจสอบอะไร?", image: "", options: ["ก. เครื่องคอมพิวเตอร์เปิดหรือไม่", "ข. เครื่องสแกนมีไฟติดหรือไม่", "ค. ชื่อคนไข้บนเครื่องคอมพิวเตอร์กับเครื่องสแกนตรงกันหรือไม่", "ง. ไม่มีข้อใดถูก"], answer: 2 },
-            { q: "6. หลังเอกซเรย์เสร็จแล้ว ควรทำความสะอาดเครื่องมืออย่างไรก่อนเป็นอันดับแรก?", image: "", options: ["ก. ล้างน้ำเปล่า", "ข. นำไปแช่ในน้ำยาฆ่าเชื้อ", "ค. นำไปตากแห้ง", "ง. นำไปห่อส่งฆ่าเชื้อ"], answer: 1 },
-            { q: "7. อุปกรณ์ที่ต้องเตรียมก่อนถ่ายภาพรังสีชนิดในช่องปากได้แก่?", image: "", options: ["ก. ทิชชู 2 ชิ้น + สำลีชุบ Clorox + Needle holder + ถ้วยไอติม + ฟิล์มเอกซเรย์ + เครื่องมือเอกซเรย์", "ข. ทิชชู 1 ชิ้น + สำลีชุบ Clorox + Needle holder + ถ้วยไอติม + ฟิล์มเอกซเรย์ + เครื่องมือเอกซเรย์", "ค. ทิชชู 2 ชิ้น + สำลีชุบ Alcohol + Needle holder + ถ้วยไอติม + ฟิล์มเอกซเรย์ + เครื่องมือเอกซเรย์", "ง. ทิชชู 1 ชิ้น + สำลีชุบ Alcohol + Needle holder + ถ้วยไอติม + ฟิล์มเอกซเรย์ + เครื่องมือเอกซเรย์"], answer: 0 },
-            { q: "8. ข้อใดถูกต้อง?", image: "", options: ["ก. จุด dot บนแผ่นรับภาพรังสีต้องอยู่ปลายฟัน", "ข. จุด dot บนแผ่นรับภาพรังสีต้องอยู่ปลายรากฟัน", "ค. จุด dot บนแผ่นรับภาพรังสีต้องหันติดตัวฟัน", "ง. จุด dot บนแผ่นรับภาพรังสีอยู่ส่วนไหนของฟันก็ได้"], answer: 0 },
-            { q: "9. การวางแผ่นรับภาพรังสีในการถ่ายภาพ ควรหันด้านใดชิดฟันที่จะถ่าย?", image: "", options: ["ก. ด้านที่มีตัวหนังสือ", "ข. ด้านที่เป็นสีพื้นเรียบ"], answer: 1 },
-            { q: "10. จาก VDO การเตรียมผู้ป่วยในการถ่ายภาพรังสีในช่องปากใช้อะไรสำหรับป้องกันรังสี?", image: "", options: ["ก. ผ้ากันเปื้อน", "ข. ปลอกคอตะกั่ว", "ค. เสื้อตะกั่ว", "ง. ถูกทุกข้อ"], answer: 1 }
+            { q: "การเรียกผู้ป่วยเข้าห้องเอกซเรย์ควรปฏิบัติอย่างไร?", image: "", options: ["ก. เรียกชื่อพร้อมนามสกุล", "ข. เรียกชื่อพร้อมนามสกุลและที่อยู่", "ค. เรียกชื่อพร้อมนามสกุลและญาติ", "ง. ถูกทุกข้อ"], answer: 0 },
+            { q: "ขั้นตอนการทำความสะอาดแผ่นรับภาพรังสีหลังถ่ายเอกซเรย์มีขั้นตอนอย่างไร?", image: "", options: ["ก. 1.ใช้ทิชชูเช็ดน้ำลาย 2.ใช้ Cloroxเช็ดฆ่าเชื้อ 3.ใช้ทิชชูเช็ดแห้ง", "ข. 1.ใช้ทิชชูเช็ดน้ำลาย 2.ใช้ Alcoholเช็ดฆ่าเชื้อ 3.ใช้ทิชชูเช็ดแห้ง", "ค. 1.ใช้ทิชชูเช็ดน้ำลาย 2.ใช้ Alcohol หรือ Cloroxเช็ดฆ่าเชื้อ 3.ใช้ทิชชูเช็ดแห้ง", "ง. ไม่มีข้อถูก"], answer: 0 },
+            { q: "การทำความสะอาดแผ่นรับภาพรังสีหลังออกจากปากผู้ป่วยใช้อะไรในการฆ่าเชื้อโรค?", image: "", options: ["ก. Clorox", "ข. Alcohol", "ค. น้ำเกลือ", "ง. ข้อ ก. และ ข. ถูก"], answer: 0 },
+            { q: "ในขั้นตอนการสแกนแผ่นรับภาพรังสีจำเป็นต้องใส่ถุงมือด้วยหรือไม่?", image: "", options: ["ก. จำเป็น เพราะ ช่วยป้องกันเชื้อโรค", "ข. ไม่จำเป็น เพราะ แผ่นรับภาพรังสีผ่านการฆ่าเชื้อมาแล้ว"], answer: 1 },
+            { q: "เพื่อป้องกันความผิดพลาดของภาพรังสีในผู้ป่วยแต่ละคน ก่อนสแกนแผ่นรับภาพรังสีควรตรวจสอบอะไร?", image: "", options: ["ก. เครื่องคอมพิวเตอร์เปิดหรือไม่", "ข. เครื่องสแกนมีไฟติดหรือไม่", "ค. ชื่อคนไข้บนเครื่องคอมพิวเตอร์กับเครื่องสแกนตรงกันหรือไม่", "ง. ไม่มีข้อใดถูก"], answer: 2 },
+            { q: "หลังเอกซเรย์เสร็จแล้ว ควรทำความสะอาดเครื่องมืออย่างไรก่อนเป็นอันดับแรก?", image: "", options: ["ก. ล้างน้ำเปล่า", "ข. นำไปแช่ในน้ำยาฆ่าเชื้อ", "ค. นำไปตากแห้ง", "ง. นำไปห่อส่งฆ่าเชื้อ"], answer: 1 },
+            { q: "อุปกรณ์ที่ต้องเตรียมก่อนถ่ายภาพรังสีชนิดในช่องปากได้แก่?", image: "", options: ["ก. ทิชชู 2 ชิ้น + สำลีชุบ Clorox + Needle holder + ถ้วยไอติม + ฟิล์มเอกซเรย์ + เครื่องมือเอกซเรย์", "ข. ทิชชู 1 ชิ้น + สำลีชุบ Clorox + Needle holder + ถ้วยไอติม + ฟิล์มเอกซเรย์ + เครื่องมือเอกซเรย์", "ค. ทิชชู 2 ชิ้น + สำลีชุบ Alcohol + Needle holder + ถ้วยไอติม + ฟิล์มเอกซเรย์ + เครื่องมือเอกซเรย์", "ง. ทิชชู 1 ชิ้น + สำลีชุบ Alcohol + Needle holder + ถ้วยไอติม + ฟิล์มเอกซเรย์ + เครื่องมือเอกซเรย์"], answer: 0 },
+            { q: "ข้อใดถูกต้อง?", image: "", options: ["ก. จุด dot บนแผ่นรับภาพรังสีต้องอยู่ปลายฟัน", "ข. จุด dot บนแผ่นรับภาพรังสีต้องอยู่ปลายรากฟัน", "ค. จุด dot บนแผ่นรับภาพรังสีต้องหันติดตัวฟัน", "ง. จุด dot บนแผ่นรับภาพรังสีอยู่ส่วนไหนของฟันก็ได้"], answer: 0 },
+            { q: "การวางแผ่นรับภาพรังสีในการถ่ายภาพ ควรหันด้านใดชิดฟันที่จะถ่าย?", image: "", options: ["ก. ด้านที่มีตัวหนังสือ", "ข. ด้านที่เป็นสีพื้นเรียบ"], answer: 1 },
+            { q: "จาก VDO การเตรียมผู้ป่วยในการถ่ายภาพรังสีในช่องปากใช้อะไรสำหรับป้องกันรังสี?", image: "", options: ["ก. ผ้ากันเปื้อน", "ข. ปลอกคอตะกั่ว", "ค. เสื้อตะกั่ว", "ง. ถูกทุกข้อ"], answer: 1 }
         ],
         "Part 3: ขั้นตอนการถ่ายภาพรังสีชนิดนอกช่องปาก": [
-            { q: "1. ข้อใดเขียนถูกต้อง?", image: "", options: ["ก. Panoramic", "ข. Pannoramic", "ค. Panolamic", "ง. ไม่มีข้อใดถูก"], answer: 0 },
-            { q: "2. เครื่องเอกซเรย์ใดคือเครื่องเอกซเรย์นอกช่องปาก?", image: "", options: ["ก. <br><img src='https://i.postimg.cc/VNykN77Q/kher-xng-OPG.jpg'>", "ข. <br><img src='https://i.postimg.cc/wMb6YFth/kher-xng-Pa.jpg'>", "ค. <br><img src='https://i.postimg.cc/sDvj4F8c/kher-xngth-ay-phph-pha.jpg'>"], answer: 0 },
-            { q: "3. อุปกรณ์ในภาพ ใช้ทำอะไร?", image: "https://i.postimg.cc/6qTXcRHH/thae-nwang-khang.jpg", options: ["ก. กำหนดตำแหน่งกึ่งกลางใบหน้า", "ข. ที่วางคาง และล็อกศีรษะ", "ค. อุปกรณ์กัด", "ง. ข้อ ข. และ ค. ถูก"], answer: 1 },
-            { q: "4. อุปกรณ์ในภาพ ใช้ทำอะไร?", image: "https://i.postimg.cc/pLfgDq2q/thae-nk-d.jpg", options: ["ก. ที่กำหนดตำแหน่ง", "ข. แท่นสำหรับวัดความยาว", "ค. อุปกรณ์กัด", "ง. ถูกทุกข้อ"], answer: 2 },
-            { q: "5. อุปกรณ์ในภาพ ใช้ทำอะไร?", image: "https://i.postimg.cc/26gDHygt/phaeng-khwb-kh-m.jpg", options: ["ก. ปุ่มกดถ่ายเอกซเรย์", "ข. จอสำหรับสั่งถ่ายเอกซเรย์", "ค. ตัวควบคุมตั้งค่าถ่ายเอกซเรย์", "ง. ข้อ ข. และ ค. ถูกต้อง"], answer: 2 },
-            { q: "6. ข้อใดคือการเตรียมผู้ป่วยก่อนการถ่ายเอกซเรย์นอกช่องปาก?", image: "", options: ["ก. แจ้งผู้ป่วยให้ถอดเครื่องประดับและของมีค่า และใส่เสื้อกันรังสี", "ข. แจ้งผู้ป่วยให้ถอดสร้อยคอ ต่างหู กิ๊บผม และใส่เสื้อกันรังสี", "ค. แจ้งผู้ป่วยให้ถอดแว่นตา ฟันปลอมหรือโลหะที่ถอดได้ และใส่เสื้อกันรังสี", "ง. แจ้งผู้ป่วยให้ถอดสร้อยคอ ต่างหู กิ๊บผม ถอดแว่นตา ฟันปลอมหรือโลหะที่ถอดได้และใส่เสื้อกันรังสี"], answer: 3 },
-            { q: "7. การใส่เสื้อกันรังสีแบบนอกช่องปากข้อใดถูกต้อง?", image: "", options: ["ก. นำแผ่นยาวไว้ด้านหน้าผู้ป่วย <br><img src='https://i.postimg.cc/G2G7Cp4m/si-se-xk-nr-ngs-hn-a.jpg'>", "ข. นำแผ่นยาวไว้ด้านหลังผู้ป่วย <br><img src='https://i.postimg.cc/tRdSvY03/si-se-xk-nr-ngs-hl-ng.jpg'>"], answer: 1 },
-            { q: "8. ก่อนที่จะให้ผู้ป่วยกัดแท่นกัดควรทำสิ่งใดก่อน?", image: "", options: ["ก. ให้ผู้ป่วยแปรงฟัน", "ข. ทำความสะอาดแท่นกัด", "ค. ใช้แรปพลาสติก (Wrap) คลุมแท่นกัดก่อน", "ง. ใช้ถุงพลาสติกคลุมแท่นกัดก่อน"], answer: 3 },
-            { q: "9. หลังถ่ายเอกซเรย์เสร็จควรทำอะไรก่อนให้กับผู้ป่วย?", image: "", options: ["ก. ให้ผู้ป่วยยืนนิ่งๆ", "ข. ให้ผู้ป่วยบ้วนปากฆ่าเชื้อ", "ค. ถอดเสื้อกันรังสี", "ง. ถูกทุกข้อ"], answer: 2 },
-            { q: "10. หลังถ่ายเอกซเรย์เสร็จควรทำอย่างไร?", image: "", options: ["ก. นำถุงกัดพร้อมแท่นกัดทิ้งและเช็ดฆ่าเชื้อ", "ข. นำถุงกัดทิ้งและเช็ดฆ่าเชื้อ", "ค. นำถุงกัดพร้อมแท่นกัดทิ้งและเช็ดฆ่าเชื้อทิ้งไว้ 5 นาที", "ง. นำถุงกัดทิ้งและเช็ดฆ่าเชื้อทิ้งไว้ 5 นาที"], answer: 1 }
+            { q: "ข้อใดเขียนถูกต้อง?", image: "", options: ["ก. Panoramic", "ข. Pannoramic", "ค. Panolamic", "ง. ไม่มีข้อใดถูก"], answer: 0 },
+            { q: "เครื่องเอกซเรย์ใดคือเครื่องเอกซเรย์นอกช่องปาก?", image: "", options: ["ก. <br><img src='https://i.postimg.cc/VNykN77Q/kher-xng-OPG.jpg'>", "ข. <br><img src='https://i.postimg.cc/wMb6YFth/kher-xng-Pa.jpg'>", "ค. <br><img src='https://i.postimg.cc/sDvj4F8c/kher-xngth-ay-phph-pha.jpg'>"], answer: 0 },
+            { q: "อุปกรณ์ในภาพ ใช้ทำอะไร?", image: "https://i.postimg.cc/6qTXcRHH/thae-nwang-khang.jpg", options: ["ก. กำหนดตำแหน่งกึ่งกลางใบหน้า", "ข. ที่วางคาง และล็อกศีรษะ", "ค. อุปกรณ์กัด", "ง. ข้อ ข. และ ค. ถูก"], answer: 1 },
+            { q: "อุปกรณ์ในภาพ ใช้ทำอะไร?", image: "https://i.postimg.cc/pLfgDq2q/thae-nk-d.jpg", options: ["ก. ที่กำหนดตำแหน่ง", "ข. แท่นสำหรับวัดความยาว", "ค. อุปกรณ์กัด", "ง. ถูกทุกข้อ"], answer: 2 },
+            { q: "อุปกรณ์ในภาพ ใช้ทำอะไร?", image: "https://i.postimg.cc/26gDHygt/phaeng-khwb-kh-m.jpg", options: ["ก. ปุ่มกดถ่ายเอกซเรย์", "ข. จอสำหรับสั่งถ่ายเอกซเรย์", "ค. ตัวควบคุมตั้งค่าถ่ายเอกซเรย์", "ง. ข้อ ข. และ ค. ถูกต้อง"], answer: 2 },
+            { q: "ข้อใดคือการเตรียมผู้ป่วยก่อนการถ่ายเอกซเรย์นอกช่องปาก?", image: "", options: ["ก. แจ้งผู้ป่วยให้ถอดเครื่องประดับและของมีค่า และใส่เสื้อกันรังสี", "ข. แจ้งผู้ป่วยให้ถอดสร้อยคอ ต่างหู กิ๊บผม และใส่เสื้อกันรังสี", "ค. แจ้งผู้ป่วยให้ถอดแว่นตา ฟันปลอมหรือโลหะที่ถอดได้ และใส่เสื้อกันรังสี", "ง. แจ้งผู้ป่วยให้ถอดสร้อยคอ ต่างหู กิ๊บผม ถอดแว่นตา ฟันปลอมหรือโลหะที่ถอดได้และใส่เสื้อกันรังสี"], answer: 3 },
+            { q: "การใส่เสื้อกันรังสีแบบนอกช่องปากข้อใดถูกต้อง?", image: "", options: ["ก. นำแผ่นยาวไว้ด้านหน้าผู้ป่วย <br><img src='https://i.postimg.cc/G2G7Cp4m/si-se-xk-nr-ngs-hn-a.jpg'>", "ข. นำแผ่นยาวไว้ด้านหลังผู้ป่วย <br><img src='https://i.postimg.cc/tRdSvY03/si-se-xk-nr-ngs-hl-ng.jpg'>"], answer: 1 },
+            { q: "ก่อนที่จะให้ผู้ป่วยกัดแท่นกัดควรทำสิ่งใดก่อน?", image: "", options: ["ก. ให้ผู้ป่วยแปรงฟัน", "ข. ทำความสะอาดแท่นกัด", "ค. ใช้แรปพลาสติก (Wrap) คลุมแท่นกัดก่อน", "ง. ใช้ถุงพลาสติกคลุมแท่นกัดก่อน"], answer: 3 },
+            { q: "หลังถ่ายเอกซเรย์เสร็จควรทำอะไรก่อนให้กับผู้ป่วย?", image: "", options: ["ก. ให้ผู้ป่วยยืนนิ่งๆ", "ข. ให้ผู้ป่วยบ้วนปากฆ่าเชื้อ", "ค. ถอดเสื้อกันรังสี", "ง. ถูกทุกข้อ"], answer: 2 },
+            { q: "หลังถ่ายเอกซเรย์เสร็จควรทำอย่างไร?", image: "", options: ["ก. นำถุงกัดพร้อมแท่นกัดทิ้งและเช็ดฆ่าเชื้อ", "ข. นำถุงกัดทิ้งและเช็ดฆ่าเชื้อ", "ค. นำถุงกัดพร้อมแท่นกัดทิ้งและเช็ดฆ่าเชื้อทิ้งไว้ 5 นาที", "ง. นำถุงกัดทิ้งและเช็ดฆ่าเชื้อทิ้งไว้ 5 นาที"], answer: 1 }
         ]
     };
 
     let currentPartKey = "";
     let currentQuestions = [];
+    let isExamActive = false; // สถานะสำหรับดักจับการสลับหน้าจอ
 
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -119,7 +126,8 @@
             return;
         }
 
-        currentQuestions = quizData[currentPartKey];
+        // 🔀 สลับข้อสอบเพื่อป้องกันการลอก
+        currentQuestions = shuffleArray([...quizData[currentPartKey]]);
         document.getElementById("examPartTitle").innerText = currentPartKey.split(":")[0];
 
         liff.init({ liffId: LIFF_ID }).then(() => {
@@ -128,6 +136,14 @@
             } else { liff.login(); }
         });
     };
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
 
     function fetchStudentData(uid) {
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentDashboard", studentUid: uid }) })
@@ -145,21 +161,44 @@
     function renderQuestions() {
         let html = "";
         currentQuestions.forEach((q, idx) => {
-            html += `<div class="question-card"><h3 class="question-title">${q.q}</h3>`;
+            html += `<div class="question-card">
+                        <h3 class="question-title">${idx + 1}. ${q.q}</h3>`;
+            
             if (q.image && q.image.trim() !== "") {
                 html += `<div class="question-image"><img src="${q.image}" alt="ภาพประกอบข้อสอบ"></div>`;
             }
             q.options.forEach((opt, oIdx) => {
-                html += `<label class="option-label"><input type="radio" name="q${idx}" value="${oIdx}"><div class="option-text">${opt}</div></label>`;
+                html += `<label class="option-label">
+                            <input type="radio" name="q${idx}" value="${oIdx}"> 
+                            <div class="option-text">${opt}</div>
+                         </label>`;
             });
             html += `</div>`;
         });
         document.getElementById("questionsArea").innerHTML = html;
         document.getElementById("loadingDiv").classList.add("hidden");
         document.getElementById("quizContainer").classList.remove("hidden");
+        
+        // 🟢 เปิดสถานะสอบ เพื่อให้ระบบจับการพับหน้าจอเริ่มทำงาน
+        isExamActive = true;
     }
 
-    function submitExam() {
+    // 👁️‍🗨️ ดักจับการสลับหน้าจอ (พับแอปหนีไปดูรูปโพย)
+    let cheatWarnings = 0;
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden" && isExamActive) {
+            cheatWarnings++;
+            if (cheatWarnings === 1) {
+                Swal.fire('คำเตือน!', 'ห้ามสลับหน้าจอหรือพักแอปพลิเคชันระหว่างทำข้อสอบ!\nหากตรวจพบอีกครั้ง ระบบจะยุติการสอบและส่งคะแนนทันที', 'warning');
+            } else {
+                Swal.fire('ยุติการสอบ', 'คุณทำผิดกฎโดยการสลับหน้าจอหลายครั้ง\nระบบได้ส่งคำตอบและยุติการสอบของคุณแล้ว', 'error').then(() => {
+                    submitExam(true); // true = บังคับส่ง
+                });
+            }
+        }
+    });
+
+    function submitExam(isAutoSubmit = false) {
         let correctCount = 0;
         let isComplete = true;
         let totalQuestions = currentQuestions.length;
@@ -170,46 +209,58 @@
             else if (parseInt(selected.value) === q.answer) { correctCount++; }
         });
 
-        if (!isComplete) return Swal.fire('แจ้งเตือน', 'กรุณาตอบคำถามให้ครบถ้วนทุกข้อก่อนส่งครับ', 'warning');
+        if (!isComplete && !isAutoSubmit) {
+            return Swal.fire('แจ้งเตือน', 'กรุณาตอบคำถามให้ครบถ้วนทุกข้อก่อนส่งครับ', 'warning');
+        }
 
         let finalScore = (correctCount / totalQuestions) * 10;
         finalScore = Math.round(finalScore * 10) / 10; 
 
-        Swal.fire({
-            title: 'ยืนยันส่งข้อสอบ?',
-            text: "หากส่งคำตอบแล้วจะไม่สามารถกลับมาแก้ไขได้อีก",
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#ec4899',
-            cancelButtonColor: '#9ca3af',
-            confirmButtonText: 'ยืนยันการส่ง',
-            cancelButtonText: 'ยกเลิก'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({ title: 'กำลังตรวจคำตอบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        if (isAutoSubmit) {
+            processSubmission(finalScore, correctCount, totalQuestions);
+        } else {
+            Swal.fire({
+                title: 'ยืนยันส่งข้อสอบ?',
+                text: "หากส่งคำตอบแล้วจะไม่สามารถกลับมาแก้ไขได้อีก",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#ec4899',
+                cancelButtonColor: '#9ca3af',
+                confirmButtonText: 'ยืนยันการส่ง',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    processSubmission(finalScore, correctCount, totalQuestions);
+                }
+            });
+        }
+    }
 
-                let payload = {
-                    action: "submitAutoExamScore",
-                    studentId: document.getElementById("studentId").value,
-                    studentName: document.getElementById("studentName").value,
-                    part: currentPartKey.split(":")[0].trim(), 
-                    score: finalScore
-                };
+    function processSubmission(finalScore, correctCount, totalQuestions) {
+        isExamActive = false; // ปิดสถานะสอบเพื่อไม่ให้ดักจับการพับจอแล้ว
+        Swal.fire({ title: 'กำลังประมวลผล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-                fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
-                .then(res => res.json()).then(data => {
-                    if(data.status === "success") {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'สอบเสร็จสิ้น! 🎉',
-                            html: `ทำถูก: <b>${correctCount}</b> / ${totalQuestions} ข้อ<br><br>คิดเป็นคะแนน: <b style="color:#ec4899; font-size:22px;">${finalScore}</b> / 10<br><br><span style="font-size:13px; color:#6b7280;">(ระบบได้บันทึกคะแนนของคุณเรียบร้อยแล้ว)</span>`,
-                            confirmButtonColor: '#ec4899',
-                            confirmButtonText: 'ปิดหน้าต่าง'
-                        }).then(() => { liff.closeWindow(); });
-                    } else { Swal.fire('ข้อผิดพลาด', data.message, 'error'); }
-                });
-            }
-        });
+        let payload = {
+            action: "submitAutoExamScore",
+            studentId: document.getElementById("studentId").value,
+            studentName: document.getElementById("studentName").value,
+            part: currentPartKey.split(":")[0].trim(), 
+            score: finalScore
+        };
+
+        fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+        .then(res => res.json()).then(data => {
+            if(data.status === "success") {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'สอบเสร็จสิ้น! 🎉',
+                    html: `ทำถูก: <b>${correctCount}</b> / ${totalQuestions} ข้อ<br><br>คิดเป็นคะแนน: <b style="color:#ec4899; font-size:22px;">${finalScore}</b> / 10<br><br><span style="font-size:13px; color:#6b7280;">(ระบบได้บันทึกคะแนนของคุณเรียบร้อยแล้ว)</span>`,
+                    confirmButtonColor: '#ec4899',
+                    confirmButtonText: 'ปิดหน้าต่าง',
+                    allowOutsideClick: false
+                }).then(() => { liff.closeWindow(); });
+            } else { Swal.fire('ข้อผิดพลาด', data.message, 'error'); }
+        }).catch(() => { Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้', 'error'); });
     }
 </script>
 
