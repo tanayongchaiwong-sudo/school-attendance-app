@@ -23,7 +23,7 @@
         .menu-btn { background: white; border: 2px solid #f3f4f6; padding: 15px 10px; border-radius: 16px; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         .menu-btn:hover { border-color: var(--c); background: #f8fafc; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .menu-btn i { font-size: 28px; color: var(--c); }
-        .menu-btn span { font-family: 'Prompt'; font-size: 13px; font-weight: 500; color: #334155; }
+        .menu-btn span { font-family: 'Prompt'; font-size: 13px; font-weight: 500; color: #334155; text-align: center;}
 
         .form-group { margin-bottom: 15px; }
         label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; }
@@ -143,14 +143,15 @@
 </div>
 
 <script>
-    // 🚨 ใส่ LIFF ID และ API URL
+    // 🚨 1. ใส่ LIFF ID (ของศูนย์บริการนักเรียน)
     const LIFF_ID = "2011162626-lcdf4ybN"; 
+    // 🚨 2. ใส่ API URL 
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec"; 
 
-    // ตัวแปรเก็บประวัติการสอบ (ดึงมาจาก Google Sheets)
+    // ตัวแปรเก็บประวัติการสอบเข้าห้อง (ดึงมาจาก Google Sheets)
     let studentCompletedExams = [];
 
-    // โครงสร้างข้อมูลแบบฉลาด (เพิ่มหมวดสอบเข้าห้อง และลิงก์)
+    // โครงสร้างเมนู
     const formData = {
         "ลงเวลาเข้า-ออก": {
             options: { "เข้างาน": [], "ออกงาน": ["ฟิล์มนอกช่องปาก", "ฟิล์มในช่องปาก", "ฟิล์มผู้ป่วยนอกเวลา"] },
@@ -174,21 +175,19 @@
             options: {}, 
             subLabel: "", detailLabel: ""
         },
-        // 🌟 หมวดหมู่ใหม่: สอบเข้าห้อง พร้อมลิงก์ไป Google Forms (คุณเปลี่ยนลิงก์ได้เลย)
+        // 🌟 หมวดหมู่ข้อสอบ Pre-Clinic (แก้ชื่อให้ตรงกับระบบแล้ว)
         "สอบเข้าห้อง (Pre-Clinic)": {
-            // 🚨 ต้องเปลี่ยนชื่อ options ให้ตรงกับในไฟล์ exam.html
             options: { 
                 "Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก": [], 
                 "Part 2: ขั้นตอนการถ่ายภาพรังสีชนิดในช่องปาก": [], 
                 "Part 3: ขั้นตอนการถ่ายภาพรังสีชนิดนอกช่องปาก": [] 
             },
-            subLabel: "เลือกหัวข้อที่ต้องการสอบ", 
-            detailLabel: "",
+            subLabel: "เลือกหัวข้อที่ต้องการสอบ", detailLabel: "",
             links: {
-                // 🚨 ใส่ลิงก์ LIFF ของหน้าข้อสอบที่สร้างใหม่ พร้อมแนบพารามิเตอร์ ?part=...
-                "Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก": "https://liff.line.me/2011162626-TL70LvNp?part=Part 1",
-                "Part 2: ขั้นตอนการถ่ายภาพรังสีชนิดในช่องปาก": "https://liff.line.me/2011162626-TL70LvNp?part=Part 2",
-                "Part 3: ขั้นตอนการถ่ายภาพรังสีชนิดนอกช่องปาก": "https://liff.line.me/2011162626-TL70LvNp?part=Part 3"
+                // 🚨 3. อย่าลืมนำลิงก์ LIFF ของหน้าข้อสอบ (exam.html) มาใส่ตรงนี้นะครับ
+                "Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก": "https://liff.line.me/ใส่_LIFF_หน้าข้อสอบ?part=Part 1",
+                "Part 2: ขั้นตอนการถ่ายภาพรังสีชนิดในช่องปาก": "https://liff.line.me/ใส่_LIFF_หน้าข้อสอบ?part=Part 2",
+                "Part 3: ขั้นตอนการถ่ายภาพรังสีชนิดนอกช่องปาก": "https://liff.line.me/ใส่_LIFF_หน้าข้อสอบ?part=Part 3"
             }
         }
     };
@@ -236,9 +235,9 @@
             .then(res => res.json()).then(data => {
                 if(data.status === "success") {
                     document.getElementById("fullName").value = data.fullName;
-                    // 🌟 เก็บประวัติว่าพาร์ทไหนที่เคยสอบแล้ว
+                    // รับค่าข้อสอบที่เคยทำแล้วมาจากฐานข้อมูล (จะเป็นคำว่า Part 1, Part 2, Part 3)
                     studentCompletedExams = data.completedExams || []; 
-                    updateForm(); // โหลดฟอร์มใหม่เพื่ออัปเดตตัวเลือก
+                    updateForm(); 
                 } else {
                     document.getElementById("fullName").value = "ไม่พบรหัสนี้";
                     studentCompletedExams = [];
@@ -247,12 +246,10 @@
         }
     }
 
-    // 🌟 จัดการซ่อน/แสดงช่อง และจัดการปุ่มลิงก์ข้อสอบ
     function updateForm() {
         let cat = document.getElementById("category").value;
         let subSelect = document.getElementById("subCategory");
         
-        // รีเซ็ตปุ่มเป็นค่าเริ่มต้น (สีม่วง)
         let btnSubmit = document.getElementById("btnSubmit");
         let btnText = document.getElementById("btnSubmitText");
         let btnIcon = document.getElementById("btnSubmitIcon");
@@ -271,12 +268,14 @@
             document.getElementById("divRemark").classList.remove("hidden");
             
         } else if (cat === "สอบเข้าห้อง (Pre-Clinic)") {
-            // 🌟 กรณีสอบเข้าห้อง
             document.getElementById("lblSubCategory").innerText = formData[cat].subLabel;
             subSelect.innerHTML = '<option value="" disabled selected>-- เลือก --</option>';
             
-            // กรองพาร์ทที่เคยทำไปแล้วออก
-            let availableOptions = Object.keys(formData[cat].options).filter(opt => !studentCompletedExams.includes(opt));
+            // 🌟 พระเอกอยู่ตรงนี้: ดึงชื่อยาวๆ ไปตัดเหลือแค่ "Part X" แล้วเช็กว่ามีในฐานข้อมูลไหม
+            let availableOptions = Object.keys(formData[cat].options).filter(opt => {
+                let shortOpt = opt.split(":")[0].trim(); // เช่น "Part 1"
+                return !studentCompletedExams.includes(shortOpt) && !studentCompletedExams.includes(opt);
+            });
             
             if (availableOptions.length === 0) {
                 subSelect.innerHTML = '<option value="" disabled selected>✅ คุณสอบครบทุก Part แล้ว</option>';
@@ -287,16 +286,16 @@
             document.getElementById("divSubCategory").classList.remove("hidden");
             document.getElementById("divDetail").classList.add("hidden"); 
             document.getElementById("divGps").classList.add("hidden");
-            document.getElementById("divTeacher").classList.add("hidden"); // ไม่ต้องเลือกครู
-            document.getElementById("divRemark").classList.add("hidden"); // ไม่ต้องมีหมายเหตุ
+            document.getElementById("divTeacher").classList.add("hidden"); // ไม่ต้องเลือกครูแล้ว
+            document.getElementById("divRemark").classList.add("hidden"); 
 
-            // เปลี่ยนหน้าตาปุ่มเป็น "เปิดลิงก์ทำข้อสอบ" (สีชมพู)
-            btnText.innerText = "เปิดลิงก์ทำข้อสอบ";
+            // เปลียนปุ่มเป็นเปิดข้อสอบ
+            btnText.innerText = "เข้าสู่ห้องสอบ";
             btnIcon.className = "fa-solid fa-arrow-up-right-from-square";
             btnSubmit.style.background = "#ec4899"; 
 
         } else {
-            // กรณีอื่นๆ (ลงเวลา / สอบปฏิบัติ / ใบงาน)
+            // หมวดอื่นๆ ทั่วไป
             document.getElementById("lblSubCategory").innerText = formData[cat].subLabel;
             subSelect.innerHTML = '<option value="" disabled selected>-- เลือก --</option>';
             Object.keys(formData[cat].options).forEach(opt => subSelect.innerHTML += `<option value="${opt}">${opt}</option>`);
@@ -313,7 +312,7 @@
 
     function updateDetail() {
         let cat = document.getElementById("category").value;
-        if (cat === "สอบประเมินภาพ" || cat === "สอบเข้าห้อง (Pre-Clinic)") return; // ข้ามไป
+        if (cat === "สอบประเมินภาพ" || cat === "สอบเข้าห้อง (Pre-Clinic)") return; 
 
         let sub = document.getElementById("subCategory").value;
         let detailArr = formData[cat].options[sub];
@@ -352,20 +351,21 @@
 
         if(!studentId || !fullName || fullName === "ไม่พบรหัสนี้" || fullName === "กำลังค้นหา...") return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสนักเรียนให้ถูกต้องก่อนครับ', 'warning');
 
-        // 🌟 ดักจับถ้าเป็นปุ่ม "สอบเข้าห้อง" (ให้เปิดลิงก์ Google Form ไปเลย ไม่ต้องส่งข้อมูลไป Server)
+        // 🌟 ดักจับถ้าเป็นปุ่ม "สอบเข้าห้อง" ให้เปิดลิงก์แบบเนียนๆ
         if (cat === "สอบเข้าห้อง (Pre-Clinic)") {
-            if (!sub || sub.includes("สอบครบทุก Part")) return Swal.fire('แจ้งเตือน', 'กรุณาเลือก Part ที่ต้องการสอบครับ', 'warning');
+            if (!sub || sub.includes("สอบครบทุก Part")) return Swal.fire('แจ้งเตือน', 'คุณสอบผ่านครบทุกพาร์ทแล้วครับ เยี่ยมมาก!', 'info');
             
             let link = formData[cat].links[sub];
             if (link && link.startsWith("http")) {
-                window.open(link, '_blank');
+                // เปลี่ยนหน้าต่างไปที่ห้องสอบเลย
+                window.location.href = link;
             } else {
-                Swal.fire('แจ้งเตือน', 'ยังไม่ได้ตั้งค่าลิงก์ข้อสอบในระบบครับ', 'info');
+                Swal.fire('แจ้งเตือน', 'ยังไม่ได้ตั้งค่าลิงก์ข้อสอบในระบบครับ (กรุณาไปแก้โค้ดใส่ลิงก์ก่อน)', 'info');
             }
-            return; // ⛔️ จบการทำงานตรงนี้ ไม่ต้องส่งลง Google Sheets
+            return; // จบการทำงานตรงนี้ ไม่ต้องส่งข้อมูลไปหลังบ้าน (เพราะหน้าข้อสอบจะส่งเอง)
         }
 
-        // กรณีส่งคำขออื่นๆ ปกติ
+        // การส่งข้อมูลปกติ (ลงเวลา, ส่งงาน, ฯลฯ)
         let payload = {
             action: "submitStudentRequest",
             studentId: studentId,
