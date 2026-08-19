@@ -92,10 +92,7 @@
         <div class="input-wrapper">
             <i class="fa-solid fa-chalkboard-user"></i>
             <select id="teacherId">
-                <option value="" disabled selected>-- กรุณาเลือกครูผู้ดูแล --</option>
-                <option value="น.ส.อรพินท์ ถิ่นคง">1. น.ส.อรพินท์ ถิ่นคง</option>
-                <option value="น.ส.ทัศนีย์ ปันแก้ว">2. น.ส.ทัศนีย์ ปันแก้ว</option>
-                <option value="นาย ธนยง ไชยวงศ์">3. นาย ธนยง ไชยวงศ์</option>
+                <option value="" disabled selected>-- กำลังโหลดรายชื่อครู... --</option>
             </select>
         </div>
     </div>
@@ -126,11 +123,17 @@
 </div>
 
 <script>
+    // 🚨 ใส่ LIFF ID ลงเวลานักเรียน ตรงนี้ 
     const LIFF_ID = "2011162626-lcdf4ybN"; 
+    // 🚨 ใส่ URL ของ Google Apps Script ตรงนี้
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec"; 
 
     window.onload = function() {
         liff.init({ liffId: LIFF_ID }).catch(err => console.error("LIFF Init Error: ", err));
+
+        // 🌟 ดึงรายชื่อครูจากฐานข้อมูลทันทีที่เปิดหน้าเว็บ
+        fetchTeachersList();
+
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
@@ -146,6 +149,30 @@
         }
         toggleFields();
     };
+
+    // 🌟 ฟังก์ชันใหม่: เรียก API เพื่อดึงชื่อครูมาสร้าง Dropdown
+    function fetchTeachersList() {
+        fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "getTeachersList" })
+        }).then(res => res.json()).then(data => {
+            if(data.status === "success") {
+                let select = document.getElementById("teacherId");
+                // รีเซ็ตตัวเลือกแรก
+                select.innerHTML = '<option value="" disabled selected>-- กรุณาเลือกครูผู้ดูแล --</option>';
+                
+                // นำชื่อครูจาก Google Sheets มาเรียงใส่
+                data.data.forEach(teacher => {
+                    let option = document.createElement("option");
+                    // ส่งรหัส ID ครู ไปให้หลังบ้าน (เช่น T001)
+                    option.value = teacher.id; 
+                    // โชว์หน้าเว็บเป็นชื่อครู (เช่น ครูอรพินท์)
+                    option.text = teacher.name; 
+                    select.appendChild(option);
+                });
+            }
+        }).catch(err => console.error("Error fetching teachers: ", err));
+    }
 
     function toggleFields() {
         let type = document.getElementById("type").value;
@@ -271,14 +298,12 @@
         }
     }
 
-    // ฟังก์ชันย่อยสำหรับส่งข้อมูลไปเซิร์ฟเวอร์
     function sendDataToServer(payload) {
         fetch(API_URL, {
             method: "POST",
             body: JSON.stringify(payload)
         }).then(res => res.json()).then(data => {
             
-            // 1. ลงเวลาสำเร็จ
             if(data.status === "success") {
                 Swal.fire({
                     icon: 'success',
@@ -294,7 +319,6 @@
                     }
                 });
             } 
-            // 2. ตรวจพบว่า "ลงเวลาแทนกัน"
             else if (data.status === "buddy_detected") {
                 Swal.fire({
                     title: 'ลงเวลาแทนเพื่อน?',
@@ -319,7 +343,6 @@
                     }
                 });
             } 
-            // 3. ตรวจพบว่า "อยู่นอกพื้นที่"
             else if (data.status === "out_of_bounds") {
                 Swal.fire({
                     title: 'อยู่นอกพื้นที่กำหนด',
@@ -344,7 +367,6 @@
                     }
                 });
             }
-            // 4. ข้อผิดพลาดอื่นๆ
             else {
                 Swal.fire({ icon: 'error', title: 'บันทึกไม่สำเร็จ', text: data.message });
             }
