@@ -35,7 +35,7 @@
     <div class="header">
         <i class="fa-solid fa-chalkboard-user" style="font-size: 45px; color: #f97316; margin-bottom: 10px;"></i>
         <h2>ลงทะเบียนคุณครู</h2>
-        <p>สร้างประวัติและเชื่อมต่อระบบประเมินคะแนน</p>
+        <p>เชื่อมต่อระบบประเมินคะแนน (รหัสจะถูกสร้างอัตโนมัติ)</p>
     </div>
 
     <div id="profileInfo">
@@ -44,15 +44,7 @@
     </div>
 
     <div class="form-group">
-        <label>1. รหัสประจำตัวคุณครู (ถ้ามี)</label>
-        <div class="input-wrapper">
-            <i class="fa-solid fa-id-card"></i>
-            <input type="number" id="inputId" placeholder="กรอกรหัสประจำตัวของคุณ">
-        </div>
-    </div>
-
-    <div class="form-group">
-        <label>2. ชื่อ-นามสกุล</label>
+        <label>ชื่อ-นามสกุลคุณครู</label>
         <div class="input-wrapper">
             <i class="fa-solid fa-user"></i>
             <input type="text" id="fullName" placeholder="เช่น น.ส.อรพินท์ ถิ่นคง">
@@ -83,21 +75,16 @@
                 liff.login();
             }
         }).catch((err) => {
-            console.error("LIFF Init Error: ", err);
             Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อระบบ LINE ได้', 'error');
         });
     };
 
     function submitRegistration() {
-        let inputId = document.getElementById("inputId").value;
         let fullName = document.getElementById("fullName").value;
-        
-        // 🚨 สำคัญที่สุด: กำหนดสถานะให้เป็น teacher อัตโนมัติ!
         let role = "teacher"; 
 
-        // บังคับกรอกแค่รหัสและชื่อ (ไม่มีกลุ่มเรียนแล้ว)
-        if(!inputId || !fullName) { 
-            Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัส และชื่อให้ครบถ้วนครับ', 'warning'); 
+        if(!fullName) { 
+            Swal.fire('แจ้งเตือน', 'กรุณากรอกชื่อให้ครบถ้วนครับ', 'warning'); 
             return; 
         }
 
@@ -110,13 +97,13 @@
         liff.getProfile().then(profile => {
             let userId = profile.userId; 
 
-            // ส่งข้อมูลไปให้ API 
+            // ส่งข้อมูลไป API (สังเกตว่าเราไม่ส่ง inputId ไปแล้ว)
             let payload = {
                 action: "registerLine",
                 userId: userId,
-                inputId: inputId,
+                inputId: "", // ปล่อยว่างไว้ ให้หลังบ้านสร้างให้
                 fullName: fullName,
-                role: role // ส่งสถานะ teacher ไปให้หลังบ้าน
+                role: role
             };
 
             fetch(API_URL, {
@@ -143,7 +130,7 @@
             });
             
         }).catch((err) => {
-            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลโปรไฟล์ LINE ได้ กรุณาเปิดผ่านแอป LINE', 'error');
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลโปรไฟล์ LINE ได้', 'error');
         });
     }
 </script>
