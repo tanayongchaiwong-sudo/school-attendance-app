@@ -34,7 +34,7 @@
     <div class="student-list" id="studentListArea"></div>
 </div>
 <script>
-    const LIFF_ID = "ใส่_LIFF_ID_ของหน้า_Dashboard_ครู_ที่นี่";
+    const LIFF_ID = "2011162626-V8r8boat";
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec";
 
     window.onload = () => { liff.init({ liffId: LIFF_ID }).then(() => { if(liff.isLoggedIn()) liff.getProfile().then(p => fetchDashboard(p.userId)); else liff.login(); }); };
