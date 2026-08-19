@@ -19,7 +19,6 @@
         .header i { font-size: 35px; color: var(--primary); }
         .header h2 { margin: 10px 0 0 0; font-size: 20px; font-weight: 600; }
         
-        /* แท็บเมนู */
         .tabs { display: flex; border-bottom: 2px solid #f3f4f6; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 12px; text-align: center; font-family: 'Prompt'; font-weight: 600; cursor: pointer; border: none; background: none; color: #9ca3af; transition: 0.3s; }
         .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
@@ -29,7 +28,6 @@
         select, input[type="number"], input[type="text"] { width: 100%; padding: 12px; font-family: 'Prompt'; font-size: 14px; border: 1px solid var(--border); border-radius: 10px; background-color: #f9fafb; box-sizing: border-box; }
         select:focus, input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2); background: white; }
         
-        /* กล่องให้คะแนน (Dynamic Form) */
         .rubric-box { background: #fff7ed; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #ffedd5; }
         .rubric-box h4 { margin: 0 0 10px 0; color: #c2410c; font-size: 14px; display: flex; align-items: center; gap: 8px; }
         .rubric-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px dashed #fed7aa; padding-bottom: 8px; }
@@ -117,7 +115,7 @@
 
 <script>
     // 🚨 ใส่ LIFF ID บอทครู และ API URL
-    const LIFF_ID = "2011162626-dON8ee2c"; 
+    const LIFF_ID = "ใส่_LIFF_ID_ของบอทครู_ที่นี่"; 
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec"; 
 
     let currentTeacherId = "";
@@ -141,7 +139,6 @@
         document.getElementById(tabId).classList.remove("hidden");
     }
 
-    // ดึงคำขอจากนักเรียน
     function fetchPendingRequests(uid) {
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getPendingRequests", teacherUid: uid }) })
         .then(res => res.json()).then(data => {
@@ -167,7 +164,6 @@
         });
     }
 
-    // ดึงรายชื่อนักเรียนสำหรับแท็บ Pre-Clinic
     function fetchStudentsList() {
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentsList" }) })
         .then(res => res.json()).then(data => {
@@ -176,7 +172,6 @@
         });
     }
 
-    // 🌟 พระเอกของงาน: สร้างฟอร์มให้คะแนนอัตโนมัติตามเรื่องที่เด็กขอ
     function generateDynamicForm() {
         let idx = document.getElementById("requestSelect").value;
         if(idx === "") return;
@@ -201,7 +196,7 @@
             </div>`;
         } 
         else if (req.category === "ส่งใบงาน") {
-            let maxRaw = req.detail.includes("ที่ 1") ? 1 : 2; // ใบที่ 1 เต็ม 1 / ใบที่ 2,3 เต็ม 2
+            let maxRaw = req.detail.includes("ที่ 1") ? 1 : 2; 
             html += `<div class="rubric-box">
                 <h4><i class="fa-solid fa-file-pen"></i> ประเมินใบงาน (${req.subCategory} - ${req.detail})</h4>
                 <div class="rubric-row"><label>คะแนนที่ได้ (เต็ม ${maxRaw})</label><input type="number" class="raw-score" placeholder="0-${maxRaw}" max="${maxRaw}"></div>
@@ -217,7 +212,6 @@
                 html += `<div class="rubric-box"><h4><i class="fa-solid fa-images"></i> สอบเรียงภาพ FM (${req.detail})</h4>
                 <div class="rubric-row"><label>คะแนนสอบเรียงภาพ</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div></div>`;
             } else {
-                // Pa Ant, Pa Post, Bite Wing
                 html += `<div class="rubric-box"><h4><i class="fa-solid fa-tooth"></i> สอบ ${req.subCategory} (${req.detail})</h4>
                 <div class="rubric-row"><label>เตรียมเครื่องมือ</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div>
                 <div class="rubric-row"><label>เตรียมผู้ป่วย</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div>
@@ -235,31 +229,42 @@
         document.getElementById("dynamicRubricArea").innerHTML = html;
     }
 
-    // 🌟 ส่งคะแนนจากคำขอ
+    // 🌟 ส่งคะแนนพร้อมกวาดรายละเอียดคะแนนย่อย
     function submitPendingScore() {
         let idx = document.getElementById("requestSelect").value;
         if(idx === "") return Swal.fire('แจ้งเตือน', 'กรุณาเลือกรายการประเมิน', 'warning');
         
         let req = pendingRequests[idx];
         let sumB = 0, sumS = 0, sumRaw = 0;
+        let subDetailsList = []; 
         
-        // กวาดคะแนนจากฟอร์มที่ครูกรอก
-        document.querySelectorAll('.b-score').forEach(inp => sumB += (parseFloat(inp.value)||0));
-        document.querySelectorAll('.s-score').forEach(inp => sumS += (parseFloat(inp.value)||0));
-        document.querySelectorAll('.raw-score').forEach(inp => sumRaw += (parseFloat(inp.value)||0));
+        document.querySelectorAll('.rubric-row').forEach(row => {
+            let label = row.querySelector('label').innerText;
+            let inputTag = row.querySelector('input');
+            let val = parseFloat(inputTag.value) || 0;
+            
+            subDetailsList.push(`${label} = ${val}`); 
+            
+            if(inputTag.classList.contains('b-score')) sumB += val;
+            if(inputTag.classList.contains('s-score')) sumS += val;
+            if(inputTag.classList.contains('raw-score')) sumRaw += val;
+        });
+
+        let subScoresText = subDetailsList.join(" | "); 
 
         let payload = {
             action: "submitScore", teacherId: currentTeacherId,
             logId: req.logId, studentId: req.studentId, studentName: req.studentName,
             category: req.category, subCategory: req.subCategory, detail: req.detail,
             behaviorScore: sumB, skillScore: sumS, rawScore: sumRaw,
+            subScoresText: subScoresText,
             remark: document.getElementById("remark1").value
         };
 
         sendToServer(payload);
     }
 
-    // 🌟 ส่งคะแนนสอบเข้าห้อง (Pre-Clinic) โดยตรง
+    // 🌟 ส่งคะแนนสอบเข้าห้อง (บล็อกคะแนนเกิน 10)
     function submitPreClinicScore() {
         let sVal = document.getElementById("pcStudentSelect").value;
         let part = document.getElementById("pcPartSelect").value;
@@ -267,12 +272,16 @@
 
         if(!sVal || !part || score === "") return Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
         
+        // 🚨 ป้องกันครูกรอกคะแนนเกิน
+        if(parseFloat(score) < 0 || parseFloat(score) > 10) return Swal.fire('แจ้งเตือน', 'คะแนนต้องอยู่ระหว่าง 0 - 10 เท่านั้นครับ', 'error');
+        
         let student = JSON.parse(sVal);
         let payload = {
             action: "submitScore", teacherId: currentTeacherId,
             logId: "", studentId: student.id, studentName: student.name,
             category: "สอบเข้าห้อง (Pre-Clinic)", subCategory: part, detail: "",
             behaviorScore: 0, skillScore: 0, rawScore: score,
+            subScoresText: `คะแนนสอบ = ${score}`, // บันทึกให้เห็นชัดๆ
             remark: document.getElementById("remark2").value
         };
 
@@ -280,7 +289,7 @@
     }
 
     function sendToServer(payload) {
-        Swal.fire({ title: 'กำลังประมวลผลคะแนน...', didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: 'กำลังประมวลผล...', didOpen: () => Swal.showLoading() });
         fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
         .then(res => res.json()).then(data => {
             if(data.status === "success") Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'บันทึกคะแนนเรียบร้อย' }).then(() => window.location.reload());
