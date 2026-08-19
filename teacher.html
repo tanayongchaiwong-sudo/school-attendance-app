@@ -11,18 +11,18 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
     <style>
-        :root { --primary: #f97316; --bg: #f3f4f6; --text: #1f2937; --border: #d1d5db; }
+        :root { --primary: #f97316; --primary-hover: #ea580c; --bg: #f3f4f6; --text: #1f2937; --border: #d1d5db; }
         body { font-family: 'Prompt', sans-serif; background-color: var(--bg); margin: 0; padding: 15px; color: var(--text); }
-        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         
-        .header { text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px dashed var(--border); }
-        .header i { font-size: 35px; color: var(--primary); }
-        .header h2 { margin: 10px 0 0 0; font-size: 20px; font-weight: 600; }
-        .header p { margin: 5px 0 0; font-size: 14px; color: #6b7280; }
+        .header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px dashed var(--border); }
+        .header i { font-size: 40px; color: var(--primary); margin-bottom: 10px;}
+        .header h2 { margin: 0; font-size: 20px; font-weight: 600; color: #9a3412;}
+        .header p { margin: 5px 0 0; font-size: 14px; color: #6b7280; background: #ffedd5; display: inline-block; padding: 4px 12px; border-radius: 20px;}
 
         .form-group { margin-bottom: 15px; }
         label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; color: #4b5563; }
-        select, input[type="text"] { width: 100%; padding: 12px; font-family: 'Prompt'; font-size: 14px; border: 1px solid var(--border); border-radius: 10px; background-color: #f9fafb; box-sizing: border-box; }
+        select, input[type="text"] { width: 100%; padding: 12px; font-family: 'Prompt'; font-size: 14px; border: 1px solid var(--border); border-radius: 10px; background-color: #f9fafb; box-sizing: border-box; transition: 0.3s;}
         select:focus, input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2); background: white; }
         
         .rubric-box { background: #fff7ed; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #ffedd5; }
@@ -30,26 +30,33 @@
         .rubric-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px dashed #fed7aa; padding-bottom: 8px; }
         .rubric-row:last-child { border: none; margin-bottom: 0; padding-bottom: 0; }
         .rubric-row label { margin: 0; font-weight: 400; flex: 1; font-size: 14px;}
-        .rubric-row input[type="number"] { width: 80px; text-align: center; padding: 8px; border: 1px solid #fed7aa; border-radius: 8px; font-family: 'Prompt'; }
+        .rubric-row input[type="number"] { width: 80px; text-align: center; padding: 8px; border: 1px solid #fed7aa; border-radius: 8px; font-family: 'Prompt'; outline: none;}
+        .rubric-row input[type="number"]:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2); }
 
-        .btn-primary { width: 100%; padding: 14px; font-family: 'Prompt'; font-weight: 600; font-size: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; margin-top: 10px; }
-        .empty-state { text-align: center; padding: 30px; color: #9ca3af; }
-        .empty-state i { font-size: 40px; margin-bottom: 10px; }
-        .hidden { display: none; }
+        .btn-primary { padding: 14px; font-family: 'Prompt'; font-weight: 600; font-size: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;}
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .empty-state { text-align: center; padding: 40px 20px; color: #9ca3af; }
+        .empty-state i { font-size: 45px; margin-bottom: 15px; color: #d1d5db;}
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="loadingDiv" style="text-align: center; padding: 50px 20px;">
+    <i class="fa-solid fa-spinner fa-spin" style="font-size: 45px; color: #f97316; margin-bottom: 15px;"></i>
+    <p style="font-size: 15px; color: #4b5563;">กำลังเชื่อมต่อระบบ...</p>
+</div>
+
+<div class="container hidden" id="mainContainer">
     <div class="header">
         <i class="fa-solid fa-clipboard-check"></i>
         <h2>รายการรอประเมิน</h2>
         <p>ให้คะแนนการปฏิบัติงานนักเรียน</p>
     </div>
 
-    <div id="emptyState" class="empty-state">
+    <div id="emptyState" class="empty-state hidden">
         <i class="fa-solid fa-mug-hot"></i>
-        <p>ไม่มีรายการรอประเมินในขณะนี้ครับ</p>
+        <p style="font-size: 15px; font-weight: 500; color: #6b7280; margin:0;">ไม่มีรายการรอประเมินในขณะนี้ครับ</p>
     </div>
 
     <div id="evaluationForm" class="hidden">
@@ -62,37 +69,51 @@
 
         <div id="dynamicRubricArea"></div>
 
-        <div class="form-group">
+        <div class="form-group" style="margin-top: 20px;">
             <label>หมายเหตุ / ข้อเสนอแนะ (ถ้ามี)</label>
             <input type="text" id="remark1" placeholder="พิมพ์คำติชมเพื่อการพัฒนา...">
         </div>
 
-        <button class="btn-primary" onclick="submitPendingScore()">
-            <i class="fa-solid fa-floppy-disk"></i> บันทึกและแยกคอลัมน์ลงฐานข้อมูล
-        </button>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn-primary" style="flex: 1;" onclick="submitPendingScore()">
+                <i class="fa-solid fa-floppy-disk"></i> บันทึกคะแนน
+            </button>
+            <button class="btn-primary" style="background: #ef4444; width: auto; padding: 14px 20px;" onclick="rejectRequest()">
+                <i class="fa-solid fa-xmark"></i> ปฏิเสธ
+            </button>
+        </div>
     </div>
 </div>
 
 <script>
-    // 🚨 ใส่ LIFF ID บอทครู และ API URL
+    // 🚨 1. ใส่ LIFF ID (ของหน้าประเมินครู)
     const LIFF_ID = "2011162626-dON8ee2c"; 
+    // 🚨 2. ใส่ API URL
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec"; 
 
     let currentTeacherId = "";
     let pendingRequests = [];
 
     window.onload = function() {
-        Swal.fire({ title: 'กำลังเชื่อมต่อ...', didOpen: () => Swal.showLoading() });
         liff.init({ liffId: LIFF_ID }).then(() => {
             if (liff.isLoggedIn()) {
-                liff.getProfile().then(p => { fetchPendingRequests(p.userId); });
-            } else liff.login();
-        }).catch(() => Swal.fire('ผิดพลาด', 'เชื่อมต่อ LINE ไม่สำเร็จ', 'error'));
+                liff.getProfile().then(p => { 
+                    fetchPendingRequests(p.userId); 
+                });
+            } else {
+                liff.login();
+            }
+        }).catch(() => {
+            Swal.fire('ผิดพลาด', 'ไม่สามารถเชื่อมต่อ LINE LIFF ได้', 'error');
+        });
     };
 
     function fetchPendingRequests(uid) {
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getPendingRequests", teacherUid: uid }) })
         .then(res => res.json()).then(data => {
+            document.getElementById("loadingDiv").classList.add("hidden");
+            document.getElementById("mainContainer").classList.remove("hidden");
+
             if(data.status === "success") {
                 currentTeacherId = data.teacherId;
                 pendingRequests = data.data;
@@ -110,11 +131,15 @@
                         select.innerHTML += `<option value="${idx}">${txt}</option>`;
                     });
                 }
-                Swal.close();
-            } else Swal.fire('ผิดพลาด', data.message, 'error');
+            } else {
+                Swal.fire('ผิดพลาด', data.message, 'error');
+            }
+        }).catch(() => {
+            Swal.fire('ผิดพลาด', 'ไม่สามารถติดต่อ Server ได้', 'error');
         });
     }
 
+    // สร้างฟอร์มให้คะแนนอัตโนมัติตามเรื่องที่เลือก
     function generateDynamicForm() {
         let idx = document.getElementById("requestSelect").value;
         if(idx === "") return;
@@ -172,9 +197,10 @@
         document.getElementById("dynamicRubricArea").innerHTML = html;
     }
 
+    // บันทึกและดึงคะแนนย่อย
     function submitPendingScore() {
         let idx = document.getElementById("requestSelect").value;
-        if(idx === "") return Swal.fire('แจ้งเตือน', 'กรุณาเลือกรายการประเมิน', 'warning');
+        if(idx === "") return Swal.fire('แจ้งเตือน', 'กรุณาเลือกรายการที่ต้องการประเมินก่อนครับ', 'warning');
         
         let req = pendingRequests[idx];
         let sumB = 0, sumS = 0, sumRaw = 0;
@@ -182,6 +208,7 @@
         let isInvalid = false;
         let invalidMsg = "";
         
+        // กวาดข้อมูลและตรวจสอบค่า
         let inputs = document.querySelectorAll('.rubric-row input[type="number"]');
         for (let i = 0; i < inputs.length; i++) {
             let inp = inputs[i];
@@ -203,21 +230,83 @@
 
         if (isInvalid) return Swal.fire('ข้อมูลไม่ถูกต้อง', invalidMsg, 'error');
 
-        let payload = {
-            action: "submitScore", teacherId: currentTeacherId,
-            logId: req.logId, studentId: req.studentId, studentName: req.studentName,
-            category: req.category, subCategory: req.subCategory, detail: req.detail,
-            behaviorScore: sumB, skillScore: sumS, rawScore: sumRaw,
-            subScoresList: subScoresList,
-            remark: document.getElementById("remark1").value
-        };
+        Swal.fire({
+            title: 'ยืนยันการให้คะแนน?',
+            text: "ระบบจะบันทึกคะแนนและแจ้งเตือนไปยังนักเรียนทันที",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#f97316',
+            cancelButtonColor: '#9ca3af',
+            confirmButtonText: 'ยืนยันบันทึก',
+            cancelButtonText: 'ยกเลิก'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                let payload = {
+                    action: "submitScore", teacherId: currentTeacherId,
+                    logId: req.logId, studentId: req.studentId, studentName: req.studentName,
+                    category: req.category, subCategory: req.subCategory, detail: req.detail,
+                    behaviorScore: sumB, skillScore: sumS, rawScore: sumRaw,
+                    subScoresList: subScoresList,
+                    remark: document.getElementById("remark1").value
+                };
 
-        Swal.fire({ title: 'กำลังประมวลผล...', didOpen: () => Swal.showLoading() });
-        fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
-        .then(res => res.json()).then(data => {
-            if(data.status === "success") Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'บันทึกและแยกคอลัมน์เรียบร้อย' }).then(() => window.location.reload());
-            else Swal.fire('ผิดพลาด', data.message, 'error');
-        }).catch(() => Swal.fire('ผิดพลาด', 'ไม่สามารถติดต่อ Server ได้', 'error'));
+                Swal.fire({ title: 'กำลังประมวลผล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                
+                fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+                .then(res => res.json()).then(data => {
+                    if(data.status === "success") {
+                        Swal.fire('สำเร็จ!', 'บันทึกคะแนนและแยกคอลัมน์เรียบร้อย', 'success').then(() => window.location.reload());
+                    } else {
+                        Swal.fire('ผิดพลาด', data.message, 'error');
+                    }
+                }).catch(() => Swal.fire('ผิดพลาด', 'ไม่สามารถติดต่อ Server ได้', 'error'));
+            }
+        });
+    }
+
+    // ฟังก์ชันปฏิเสธคำขอ
+    function rejectRequest() {
+        let idx = document.getElementById("requestSelect").value;
+        if(idx === "") return Swal.fire('แจ้งเตือน', 'กรุณาเลือกรายการประเมินที่ต้องการปฏิเสธ', 'warning');
+        let req = pendingRequests[idx];
+
+        Swal.fire({
+            title: 'ปฏิเสธคำขอนี้?',
+            text: "ระบบจะแจ้งเตือนให้นักเรียนทราบ กรุณาระบุเหตุผล",
+            input: 'text',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#9ca3af',
+            confirmButtonText: 'ยืนยันปฏิเสธ',
+            cancelButtonText: 'ยกเลิก',
+            inputPlaceholder: 'เช่น ภาพไม่ชัด, ส่งผิดหัวข้อ...',
+            inputValidator: (value) => {
+                if (!value) return 'กรุณาระบุเหตุผลด้วยครับ!'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({ title: 'กำลังดำเนินการ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                
+                let payload = {
+                    action: "rejectRequest",
+                    logId: req.logId,
+                    studentId: req.studentId,
+                    category: req.category,
+                    subCategory: req.subCategory,
+                    reason: result.value
+                };
+
+                fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+                .then(res => res.json()).then(data => {
+                    if(data.status === "success") {
+                        Swal.fire('สำเร็จ', data.message, 'success').then(() => window.location.reload());
+                    } else {
+                        Swal.fire('ผิดพลาด', data.message, 'error');
+                    }
+                }).catch(() => Swal.fire('ผิดพลาด', 'ไม่สามารถติดต่อ Server ได้', 'error'));
+            }
+        });
     }
 </script>
 
