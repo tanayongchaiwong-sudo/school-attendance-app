@@ -8,60 +8,127 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    
     <style>
         body { font-family: 'Prompt', sans-serif; background: #f3f4f6; margin: 0; padding: 15px; color: #1f2937; }
         .container { max-width: 450px; margin: 0 auto; }
+        
+        /* Section 1: Profile */
         .profile-card { background: linear-gradient(135deg, #4f46e5, #3b82f6); color: white; padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); margin-bottom: 20px; position: relative;}
-        .profile-card img { width: 70px; height: 70px; border-radius: 50%; border: 3px solid white; margin-bottom: 10px; }
+        .profile-card img { width: 70px; height: 70px; border-radius: 50%; border: 3px solid white; margin-bottom: 10px; object-fit: cover;}
         .edit-btn { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 20px; font-family: 'Prompt'; font-size: 12px; cursor: pointer; transition: 0.3s; }
-        .edit-btn:hover { background: rgba(255,255,255,0.4); }
+        
+        /* Section 2: Core Stats */
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .stat-box { background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
         .stat-box i { font-size: 24px; color: #4f46e5; margin-bottom: 8px; display: block; }
         .stat-num { font-size: 22px; font-weight: 600; color: #111827; }
         .stat-label { font-size: 12px; color: #6b7280; }
-        .history-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
-        .history-card h3 { margin: 0 0 15px 0; font-size: 16px; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px; }
-        .history-item { padding: 10px 0; border-bottom: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center; }
-        .history-item:last-child { border: none; padding-bottom: 0; }
-        .h-title { font-size: 14px; font-weight: 500; }
-        .h-date { font-size: 11px; color: #9ca3af; }
-        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-        .status-Pending { background: #fef08a; color: #be123c; }
-        .status-Completed { background: #bbf7d0; color: #15803d; }
-        .status-Rejected { background: #fecaca; color: #be123c; }
         
-        /* สไตล์สำหรับฟอร์มแก้ไข SweetAlert */
-        .edit-input-label { text-align: left; font-size: 13px; margin-top: 15px; margin-bottom: 5px; font-weight: 500; color: #4b5563;}
+        /* Section 3: Exam Progress Tracker */
+        .card-box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 20px;}
+        .card-box h3 { margin: 0 0 15px 0; font-size: 16px; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        
+        .progress-container { margin-bottom: 15px; }
+        .progress-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #4b5563;}
+        .progress-bar-bg { width: 100%; height: 10px; background: #e5e7eb; border-radius: 10px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: #10b981; width: 0%; transition: width 1s ease-in-out; }
+        
+        .exam-checklist { font-size: 13px; line-height: 1.8; color: #4b5563; margin-top: 10px;}
+        .exam-checklist .passed { color: #059669; font-weight: 500; }
+        .exam-checklist .remaining { color: #ef4444; }
+
+        /* Section 4: History */
+        .history-item { padding: 12px 0; border-bottom: 1px dashed #e5e7eb; display: flex; justify-content: space-between; align-items: flex-start; }
+        .history-item:last-child { border: none; padding-bottom: 0; }
+        .h-title { font-size: 14px; font-weight: 500; color: #1f2937; margin-bottom: 2px;}
+        .h-date { font-size: 11px; color: #9ca3af; }
+        .h-reason { font-size: 11px; color: #be123c; margin-top: 6px; background: #ffe4e6; padding: 6px 10px; border-radius: 6px; display: inline-block;}
+        
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-top: 2px;}
+        .status-Pending { background: #fef08a; color: #b45309; }
+        .status-Completed { background: #dcfce3; color: #15803d; }
+        .status-Rejected { background: #fecaca; color: #be123c; }
     </style>
 </head>
 <body>
 <div class="container" id="loadingDiv" style="text-align: center; padding: 50px;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 40px; color: #4f46e5;"></i></div>
 <div class="container" id="mainDiv" style="display:none;">
+    
     <div class="profile-card">
         <button class="edit-btn" onclick="openEditModal()"><i class="fa-solid fa-pen"></i> แก้ไขข้อมูล</button>
         <img id="userImg" src="">
         <h2 id="userName" style="margin: 0; font-size: 18px;"></h2>
         <p id="userGroup" style="margin: 5px 0 0; font-size: 13px; opacity: 0.9;"></p>
     </div>
+    
     <div class="stat-grid">
         <div class="stat-box"><i class="fa-solid fa-clock"></i><div class="stat-num" id="sHours">0</div><div class="stat-label">ชั่วโมงสะสม</div></div>
-        <div class="stat-box"><i class="fa-solid fa-calendar-check"></i><div class="stat-num" id="sCheckin">0</div><div class="stat-label">มาทำงาน (วัน)</div></div>
-        <div class="stat-box"><i class="fa-solid fa-person-running"></i><div class="stat-num" id="sLate">0</div><div class="stat-label">มาสาย (ครั้ง)</div></div>
-        <div class="stat-box"><i class="fa-solid fa-graduation-cap"></i><div class="stat-num" id="sExam">0</div><div class="stat-label">สอบผ่าน (หัวข้อ)</div></div>
+        <div class="stat-box"><i class="fa-solid fa-calendar-check" style="color: #10b981;"></i><div class="stat-num" id="sCheckin">0</div><div class="stat-label">มาทำงาน (วัน)</div></div>
+        <div class="stat-box"><i class="fa-solid fa-person-running" style="color: #f59e0b;"></i><div class="stat-num" id="sLate">0</div><div class="stat-label">มาสาย (ครั้ง)</div></div>
+        <div class="stat-box"><i class="fa-solid fa-graduation-cap" style="color: #ec4899;"></i><div class="stat-num" id="sExam">0</div><div class="stat-label">สอบผ่าน (หัวข้อ)</div></div>
     </div>
-    <div class="history-card">
-        <h3><i class="fa-solid fa-clock-rotate-left"></i> ประวัติการส่งคำขอล่าสุด</h3>
+    
+    <div class="card-box">
+        <h3><i class="fa-solid fa-list-check" style="color: #10b981;"></i> เป้าหมายการสอบ</h3>
+        
+        <div class="progress-container">
+            <div class="progress-header">
+                <span>ความคืบหน้า</span>
+                <span id="progressText">0%</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="exam-checklist">
+            <div style="font-weight: 600; margin-bottom: 5px; color: #059669;">✅ ผ่านแล้ว:</div>
+            <div id="passedList" style="margin-bottom: 10px; padding-left: 10px;">-</div>
+            
+            <div style="font-weight: 600; margin-bottom: 5px; color: #ef4444;">❌ ยังไม่ผ่าน:</div>
+            <div id="remainingList" style="padding-left: 10px;">-</div>
+        </div>
+    </div>
+
+    <div class="card-box">
+        <h3><i class="fa-solid fa-clock-rotate-left" style="color: #6366f1;"></i> ประวัติการส่งคำขอล่าสุด</h3>
         <div id="historyList"></div>
     </div>
+
 </div>
+
 <script>
     const LIFF_ID = "2011162626-3ElMqLDI";
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec";
 
     let currentProfile = { id: "", name: "", group: "" };
 
-    window.onload = () => { liff.init({ liffId: LIFF_ID }).then(() => { if(liff.isLoggedIn()) liff.getProfile().then(p => { document.getElementById("userImg").src=p.pictureUrl; fetchDashboard(p.userId); }); else liff.login(); }); };
+    // 🌟 รายการข้อสอบบังคับทั้งหมด (Master List)
+    const MASTER_EXAMS = [
+        { name: "Pre-Clinic Part 1", key: "Part 1" },
+        { name: "Pre-Clinic Part 2", key: "Part 2" },
+        { name: "Pre-Clinic Part 3", key: "Part 3" },
+        { name: "สอบ OPG", key: "สอบถ่ายนอกช่องปาก (OPG)" },
+        { name: "สอบ Pa (Anterior)", key: "Pa (Anterior)" },
+        { name: "สอบ Pa (Posterior)", key: "Pa (Posterior)" },
+        { name: "สอบ Bite Wing", key: "Bite Wing" },
+        { name: "สอบเรียงภาพ FM", key: "สอบเรียงภาพ FM" },
+        { name: "สอบประเมินภาพ", key: "สอบประเมินภาพ" }
+    ];
+
+    window.onload = () => { 
+        liff.init({ liffId: LIFF_ID }).then(() => { 
+            if(liff.isLoggedIn()) {
+                liff.getProfile().then(p => { 
+                    document.getElementById("userImg").src = p.pictureUrl || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"; 
+                    fetchDashboard(p.userId); 
+                });
+            } else {
+                liff.login(); 
+            }
+        }); 
+    };
 
     function fetchDashboard(uid) {
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentDashboard", studentUid: uid }) })
@@ -72,21 +139,62 @@
                 currentProfile.name = d.studentName;
                 currentProfile.group = d.studentGroup;
 
+                // 📌 อัปเดตข้อมูล Profile & Stats
                 document.getElementById("userName").innerText = d.studentName + " (" + d.studentId + ")";
                 document.getElementById("userGroup").innerText = "กลุ่มเรียน: " + d.studentGroup;
                 document.getElementById("sHours").innerText = d.totalHours;
                 document.getElementById("sCheckin").innerText = d.totalCheckIn;
                 document.getElementById("sLate").innerText = d.lateCount;
-                document.getElementById("sExam").innerText = d.completedExams;
+                document.getElementById("sExam").innerText = d.completedExamsList.length;
 
+                // 📌 อัปเดต Section 3: Exam Tracker
+                let passedHtml = "", remainingHtml = "";
+                let passedCount = 0;
+                
+                MASTER_EXAMS.forEach(ex => {
+                    // ตรวจสอบว่าหัวข้อใน Master List ถูกสอบผ่านไปแล้วหรือยัง
+                    if(d.completedExamsList.includes(ex.key)) {
+                        passedHtml += `<div class="passed"><i class="fa-solid fa-check"></i> ${ex.name}</div>`;
+                        passedCount++;
+                    } else {
+                        remainingHtml += `<div class="remaining"><i class="fa-solid fa-circle-notch fa-spin fa-xs" style="margin-right:5px; opacity:0.5;"></i> ${ex.name}</div>`;
+                    }
+                });
+
+                document.getElementById("passedList").innerHTML = passedHtml || "<span style='color:#9ca3af;'>ยังไม่มีหัวข้อที่ผ่าน</span>";
+                document.getElementById("remainingList").innerHTML = remainingHtml || "<span style='color:#10b981;'>🎉 ยินดีด้วย! คุณผ่านครบทุกหัวข้อแล้ว</span>";
+                
+                // คำนวณเปอร์เซ็นต์
+                let pct = Math.round((passedCount / MASTER_EXAMS.length) * 100);
+                setTimeout(() => { document.getElementById("progressBar").style.width = pct + "%"; }, 500); // ดีเลย์ให้แถบวิ่งสวยๆ
+                document.getElementById("progressText").innerText = `${pct}% (${passedCount}/${MASTER_EXAMS.length})`;
+
+                // 📌 อัปเดต Section 4: History
                 let hList = document.getElementById("historyList");
                 if(d.recentHistory.length === 0) hList.innerHTML = "<p style='text-align:center; color:#9ca3af; font-size:13px;'>ยังไม่มีประวัติการส่งงานครับ</p>";
                 else {
                     d.recentHistory.forEach(h => {
-                        let stText = "รอประเมิน", stClass = "status-Pending";
-                        if(h.status === "Completed") { stText = "ประเมินแล้ว"; stClass = "status-Completed"; }
-                        else if(h.status.includes("Rejected")) { stText = "ถูกปฏิเสธ"; stClass = "status-Rejected"; }
-                        hList.innerHTML += `<div class="history-item"><div><div class="h-title">${h.title}</div><div class="h-date">${h.date}</div></div><span class="status-badge ${stClass}">${stText}</span></div>`;
+                        let stText = "รอประเมิน", stClass = "status-Pending", reasonHtml = "";
+                        
+                        if(h.status === "Completed") { 
+                            stText = "ประเมินแล้ว"; stClass = "status-Completed"; 
+                        }
+                        else if(h.status.includes("Rejected")) { 
+                            stText = "ถูกปฏิเสธ"; stClass = "status-Rejected"; 
+                            // 🌟 แกะเอาเหตุผลที่ครูพิมพ์ออกมาโชว์
+                            let reason = h.status.replace("Rejected:", "").trim();
+                            reasonHtml = `<div class="h-reason"><i class="fa-solid fa-triangle-exclamation"></i> เหตุผล: ${reason}</div>`;
+                        }
+                        
+                        hList.innerHTML += `
+                            <div class="history-item">
+                                <div style="flex:1; padding-right:15px;">
+                                    <div class="h-title">${h.title}</div>
+                                    <div class="h-date">${h.date}</div>
+                                    ${reasonHtml}
+                                </div>
+                                <span class="status-badge ${stClass}">${stText}</span>
+                            </div>`;
                     });
                 }
                 document.getElementById("loadingDiv").style.display = "none"; document.getElementById("mainDiv").style.display = "block";
@@ -94,15 +202,16 @@
         });
     }
 
+    // 📌 ฟังก์ชันแก้ไขข้อมูล
     function openEditModal() {
         Swal.fire({
             title: 'แก้ไขข้อมูลส่วนตัว',
             html: `
-                <div class="edit-input-label" style="margin-top:0;">รหัสประจำตัว</div>
+                <div style="text-align: left; font-size: 13px; margin-top: 15px; margin-bottom: 5px; font-weight: 500; color: #4b5563;">รหัสประจำตัว</div>
                 <input id="swal-id" class="swal2-input" value="${currentProfile.id}" type="number" style="margin-top:0; max-width:90%;">
-                <div class="edit-input-label">ชื่อ-นามสกุล</div>
+                <div style="text-align: left; font-size: 13px; margin-top: 15px; margin-bottom: 5px; font-weight: 500; color: #4b5563;">ชื่อ-นามสกุล</div>
                 <input id="swal-name" class="swal2-input" value="${currentProfile.name}" style="margin-top:0; max-width:90%;">
-                <div class="edit-input-label">กลุ่มเรียน</div>
+                <div style="text-align: left; font-size: 13px; margin-top: 15px; margin-bottom: 5px; font-weight: 500; color: #4b5563;">กลุ่มเรียน</div>
                 <input id="swal-group" class="swal2-input" value="${currentProfile.group}" style="margin-top:0; max-width:90%;">
             `,
             showCancelButton: true,
