@@ -14,31 +14,25 @@
         body { font-family: 'Prompt', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--text); }
         .container { max-width: 500px; margin: 0 auto; padding-bottom: 30px;}
         
-        /* 🌟 Profile Card */
+        /* Profile Card & Stats */
         .profile-card { background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 25px 20px; border-radius: 16px; text-align: center; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3); margin-bottom: 20px; position: relative; }
         .profile-card img { width: 75px; height: 75px; border-radius: 50%; border: 3px solid white; margin-bottom: 10px; object-fit: cover; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .edit-btn { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 20px; font-family: 'Prompt'; font-size: 12px; cursor: pointer; transition: 0.3s; }
-        
-        /* 🚀 ปุ่มลัดไปหน้าประเมิน */
         .eval-btn { background: white; color: var(--primary); padding: 10px 20px; border-radius: 30px; font-size: 14px; font-weight: 600; font-family: 'Prompt'; border: none; cursor: pointer; margin-top: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.2s;}
         .eval-btn:hover { background: #ffedd5; transform: translateY(-2px); }
 
-        /* 📊 Stat Grid */
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .stat-box { background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #ffedd5;}
         .stat-box i { font-size: 26px; color: var(--primary); margin-bottom: 8px; display: block; }
         .stat-num { font-size: 24px; font-weight: 600; color: #111827; }
         .stat-label { font-size: 13px; color: #6b7280; font-weight: 500; }
         
-        /* 탭เมนู (Tabs) */
         .tabs { display: flex; background: white; border-radius: 12px; padding: 5px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
         .tab-btn { flex: 1; padding: 10px; text-align: center; font-family: 'Prompt'; font-size: 14px; font-weight: 600; color: #6b7280; background: none; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s;}
         .tab-btn.active { background: #ffedd5; color: var(--primary); }
         
-        /* 📋 Card Lists */
+        /* Lists */
         .list-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #f3f4f6;}
-        
-        /* สไตล์รายชื่อนักเรียน */
         .student-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #e5e7eb; }
         .student-item:last-child { border: none; padding-bottom: 0; }
         .s-name { font-size: 15px; font-weight: 600; color: #111827; }
@@ -48,7 +42,6 @@
         .badge-hours { background: #ffedd5; color: #c2410c; }
         .badge-exams { background: #dcfce3; color: #15803d; }
 
-        /* 🌟 สไตล์ประวัติประเมิน (History) */
         .history-item { padding: 15px 0; border-bottom: 1px solid #f3f4f6; }
         .history-item:last-child { border: none; padding-bottom: 0; }
         .h-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;}
@@ -59,6 +52,16 @@
         .btn-sm { font-family: 'Prompt'; font-size: 11px; padding: 5px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 500;}
         .btn-edit { background: #e0e7ff; color: #4f46e5; }
         .btn-revoke { background: #fee2e2; color: #e11d48; }
+
+        /* 🌟 สไตล์กล่องให้คะแนนย่อย (ใช้ในหน้า Popup) */
+        .rubric-box { background: #fff7ed; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #ffedd5; text-align: left; }
+        .rubric-box h4 { margin: 0 0 10px 0; color: #c2410c; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .rubric-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px dashed #fed7aa; padding-bottom: 8px; }
+        .rubric-row:last-child { border: none; margin-bottom: 0; padding-bottom: 0; }
+        .rubric-row label { margin: 0; font-weight: 400; flex: 1; font-size: 14px; text-align: left;}
+        .rubric-row input[type="number"] { width: 70px; text-align: center; padding: 6px; border: 1px solid #fed7aa; border-radius: 8px; font-family: 'Prompt'; outline: none; font-size:14px; background: white;}
+        .rubric-row input[type="number"]:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2); }
+        .swal-wide { width: 95% !important; max-width: 500px !important; }
 
         .hidden { display: none !important; }
     </style>
@@ -84,16 +87,8 @@
     </div>
 
     <div class="stat-grid">
-        <div class="stat-box">
-            <i class="fa-solid fa-bell"></i>
-            <div class="stat-num" id="tPending">0</div>
-            <div class="stat-label">งานรอประเมิน</div>
-        </div>
-        <div class="stat-box">
-            <i class="fa-solid fa-users"></i>
-            <div class="stat-num" id="tStudents">0</div>
-            <div class="stat-label">นักเรียนในการดูแล</div>
-        </div>
+        <div class="stat-box"><i class="fa-solid fa-bell"></i><div class="stat-num" id="tPending">0</div><div class="stat-label">งานรอประเมิน</div></div>
+        <div class="stat-box"><i class="fa-solid fa-users"></i><div class="stat-num" id="tStudents">0</div><div class="stat-label">นักเรียนในการดูแล</div></div>
     </div>
 
     <div class="tabs">
@@ -101,13 +96,8 @@
         <button class="tab-btn" id="tabStud" onclick="switchTab('students')"><i class="fa-solid fa-chart-pie"></i> ภาพรวมนักเรียน</button>
     </div>
 
-    <div class="list-card" id="viewHistory">
-        <div id="historyListArea"></div>
-    </div>
-
-    <div class="list-card hidden" id="viewStudents">
-        <div id="studentListArea"></div>
-    </div>
+    <div class="list-card" id="viewHistory"><div id="historyListArea"></div></div>
+    <div class="list-card hidden" id="viewStudents"><div id="studentListArea"></div></div>
 
 </div>
 
@@ -121,46 +111,27 @@
     let gHistoryData = []; 
 
     window.onload = () => { 
-        if (LIFF_ID === "" || LIFF_ID.includes("ใส่_LIFF_ID")) {
-            Swal.fire('ข้อผิดพลาด', 'คุณยังไม่ได้นำ LIFF ID มาใส่ในโค้ดครับ', 'error');
-            return;
-        }
-
+        if (LIFF_ID === "" || LIFF_ID.includes("ใส่_LIFF_ID")) { Swal.fire('ข้อผิดพลาด', 'คุณยังไม่ได้นำ LIFF ID มาใส่ในโค้ดครับ', 'error'); return; }
         liff.init({ liffId: LIFF_ID }).then(() => { 
-            if(liff.isLoggedIn()) {
-                liff.getProfile().then(p => {
-                    document.getElementById("userImg").src = p.pictureUrl || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
-                    fetchDashboard(p.userId); 
-                }).catch(() => {
-                    Swal.fire('ผิดพลาด', 'ดึงข้อมูลโปรไฟล์ LINE ไม่สำเร็จ', 'error');
-                });
-            } else { liff.login(); }
-        }).catch(err => {
-            Swal.fire('ผิดพลาด', 'ตั้งค่า LIFF ID ไม่ถูกต้อง หรือเชื่อมต่อ LINE ไม่สำเร็จ', 'error');
+            if(liff.isLoggedIn()) { liff.getProfile().then(p => { document.getElementById("userImg").src = p.pictureUrl || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"; fetchDashboard(p.userId); }); } 
+            else { liff.login(); }
         }); 
     };
 
     function switchTab(tab) {
         if(tab === 'history') {
-            document.getElementById("tabHist").classList.add("active");
-            document.getElementById("tabStud").classList.remove("active");
-            document.getElementById("viewHistory").classList.remove("hidden");
-            document.getElementById("viewStudents").classList.add("hidden");
+            document.getElementById("tabHist").classList.add("active"); document.getElementById("tabStud").classList.remove("active");
+            document.getElementById("viewHistory").classList.remove("hidden"); document.getElementById("viewStudents").classList.add("hidden");
         } else {
-            document.getElementById("tabStud").classList.add("active");
-            document.getElementById("tabHist").classList.remove("active");
-            document.getElementById("viewStudents").classList.remove("hidden");
-            document.getElementById("viewHistory").classList.add("hidden");
+            document.getElementById("tabStud").classList.add("active"); document.getElementById("tabHist").classList.remove("active");
+            document.getElementById("viewStudents").classList.remove("hidden"); document.getElementById("viewHistory").classList.add("hidden");
         }
     }
 
     function fetchDashboard(uid) {
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getTeacherDashboard", teacherUid: uid }) })
         .then(res => res.json()).then(data => {
-            
-            // ปิดหน้าโหลด
             document.getElementById("loadingDiv").classList.add("hidden");
-
             if(data.status === "success") {
                 currentTeacherName = data.teacherName;
                 gHistoryData = data.history;
@@ -169,87 +140,135 @@
                 document.getElementById("tPending").innerText = data.pendingCount;
                 document.getElementById("tStudents").innerText = data.students.length;
 
-                // วาดรายชื่อนักเรียน
                 let sHtml = "";
                 if (data.students.length === 0) sHtml = "<p style='text-align:center; color:#9ca3af;'>ยังไม่มีข้อมูลนักเรียน</p>";
-                else {
-                    data.students.forEach(s => {
-                        sHtml += `<div class="student-item">
-                                    <div><div class="s-name">${s.name}</div><div class="s-id">รหัส: ${s.id}</div></div>
-                                    <div class="s-stats">
-                                        <div class="badge badge-hours"><i class="fa-regular fa-clock"></i> ${s.hours} ชม.</div>
-                                        <div class="badge badge-exams"><i class="fa-solid fa-check"></i> สอบ ${s.exams} เรื่อง</div>
-                                    </div>
-                                 </div>`;
-                    });
-                }
+                else { data.students.forEach(s => { sHtml += `<div class="student-item"><div><div class="s-name">${s.name}</div><div class="s-id">รหัส: ${s.id}</div></div><div class="s-stats"><div class="badge badge-hours"><i class="fa-regular fa-clock"></i> ${s.hours} ชม.</div><div class="badge badge-exams"><i class="fa-solid fa-check"></i> สอบ ${s.exams} เรื่อง</div></div></div>`; }); }
                 document.getElementById("studentListArea").innerHTML = sHtml;
 
-                // วาดประวัติการให้คะแนน
                 let hHtml = "";
                 if (data.history.length === 0) hHtml = "<p style='text-align:center; color:#9ca3af; font-size:14px;'>ยังไม่มีประวัติการให้คะแนนครับ</p>";
                 else {
                     data.history.forEach((h, idx) => {
                         hHtml += `<div class="history-item">
-                                    <div class="h-header">
-                                        <div class="h-title">${h.studentName}</div>
-                                        <div class="h-score">${h.rawScore}</div>
-                                    </div>
-                                    <div class="h-detail">
-                                        <b>${h.category}</b> - ${h.subCategory} ${h.detail ? '('+h.detail+')' : ''}<br>
-                                        <i class="fa-regular fa-calendar"></i> ${h.date}
-                                    </div>
+                                    <div class="h-header"><div class="h-title">${h.studentName}</div><div class="h-score">${h.rawScore}</div></div>
+                                    <div class="h-detail"><b>${h.category}</b> - ${h.subCategory} ${h.detail ? '('+h.detail+')' : ''}<br><i class="fa-regular fa-calendar"></i> ${h.date}</div>
                                     <div class="action-btns">
                                         <button class="btn-sm btn-revoke" onclick="revokeScore('${h.logId}')"><i class="fa-solid fa-rotate-left"></i> ดึงงานกลับ/ยกเลิก</button>
-                                        <button class="btn-sm btn-edit" onclick="editScore(${idx})"><i class="fa-solid fa-pen"></i> แก้คะแนนด่วน</button>
+                                        <button class="btn-sm btn-edit" onclick="editScore(${idx})"><i class="fa-solid fa-pen"></i> แก้คะแนนแยกข้อ</button>
                                     </div>
                                  </div>`;
                     });
                 }
                 document.getElementById("historyListArea").innerHTML = hHtml;
-
-                // โชว์หน้าหลัก
                 document.getElementById("mainDiv").classList.remove("hidden");
-            } else { 
-                Swal.fire('ผิดพลาด', data.message, 'error'); 
-            }
-        }).catch(err => {
-            document.getElementById("loadingDiv").classList.add("hidden");
-            Swal.fire('ผิดพลาด', 'ไม่สามารถดึงข้อมูลจาก Server ได้ (ลิงก์ API อาจไม่ถูกต้อง)', 'error');
+            } else { Swal.fire('ผิดพลาด', data.message, 'error'); }
         });
     }
 
-    // ✏️ ฟังก์ชันแก้คะแนน
+    // 🌟 ระบบแก้ไขคะแนนแยกข้อ (ดึงคะแนนเดิมมาโชว์ให้ด้วย)
     function editScore(idx) {
         let h = gHistoryData[idx];
+        let sub = h.subScores || []; // ข้อมูลคะแนนเดิม
+        
+        let html = `<div style="font-size:13px; color:#6b7280; margin-bottom:15px; text-align:left;">นักเรียน: <b>${h.studentName}</b><br>งาน: ${h.category} - ${h.subCategory}</div>`;
+        
+        if (h.category === "ประเมินรายวัน") {
+            html += `<div class="rubric-box">
+                <h4><i class="fa-solid fa-star"></i> พฤติกรรม (เต็ม 40)</h4>
+                <div class="rubric-row"><label>ซื่อสัตย์ ตรงต่อเวลา</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="10"></div>
+                <div class="rubric-row"><label>รับผิดชอบ กระตือรือร้น</label><input type="number" class="edit-sub-score" value="${sub[1]||''}" max="10"></div>
+                <div class="rubric-row"><label>ทำงานเป็นทีม เอื้อเฟื้อ</label><input type="number" class="edit-sub-score" value="${sub[2]||''}" max="10"></div>
+                <div class="rubric-row"><label>ปฏิภาณไหวพริบ คล่องแคล่ว</label><input type="number" class="edit-sub-score" value="${sub[3]||''}" max="5"></div>
+                <div class="rubric-row"><label>กิริยามารยาท แต่งกาย</label><input type="number" class="edit-sub-score" value="${sub[4]||''}" max="5"></div>
+            </div>
+            <div class="rubric-box" style="background:#f0fdf4; border-color:#bbf7d0;">
+                <h4 style="color:#15803d;"><i class="fa-solid fa-wrench"></i> ทักษะปฏิบัติงาน (เต็ม 20)</h4>
+                <div class="rubric-row"><label>เตรียมเครื่อง/ห้อง</label><input type="number" class="edit-sub-score" value="${sub[5]||''}" max="5"></div>
+                <div class="rubric-row"><label>เตรียมผู้ป่วย</label><input type="number" class="edit-sub-score" value="${sub[6]||''}" max="5"></div>
+                <div class="rubric-row"><label>ถ่ายและประเมินภาพ</label><input type="number" class="edit-sub-score" value="${sub[7]||''}" max="5"></div>
+                <div class="rubric-row"><label>ดูแลอุปกรณ์หลังใช้</label><input type="number" class="edit-sub-score" value="${sub[8]||''}" max="5"></div>
+            </div>`;
+        } 
+        else if (h.category === "ส่งใบงาน") {
+            let maxRaw = h.detail.includes("ที่ 1") ? 1 : 2; 
+            html += `<div class="rubric-box">
+                <h4><i class="fa-solid fa-file-pen"></i> ประเมินใบงาน</h4>
+                <div class="rubric-row"><label>คะแนนที่ได้</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="${maxRaw}"></div>
+            </div>`;
+        }
+        else if (h.category === "สอบปฏิบัติ") {
+            if (h.subCategory.includes("OPG")) {
+                html += `<div class="rubric-box"><h4><i class="fa-solid fa-stethoscope"></i> สอบ OPG</h4>
+                <div class="rubric-row"><label>เตรียมเครื่องมือ/ผู้ป่วย</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="2"></div>
+                <div class="rubric-row"><label>จัดท่าผู้ป่วย/ถ่ายภาพ</label><input type="number" class="edit-sub-score" value="${sub[1]||''}" max="5"></div>
+                <div class="rubric-row"><label>การดูภาพ/แก้ไขปัญหา</label><input type="number" class="edit-sub-score" value="${sub[2]||''}" max="3"></div></div>`;
+            } else if (h.subCategory.includes("เรียงภาพ FM")) {
+                html += `<div class="rubric-box"><h4><i class="fa-solid fa-images"></i> สอบเรียงภาพ FM</h4>
+                <div class="rubric-row"><label>คะแนนสอบเรียงภาพ</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="5"></div></div>`;
+            } else {
+                html += `<div class="rubric-box"><h4><i class="fa-solid fa-tooth"></i> สอบปฏิบัติทั่วไป</h4>
+                <div class="rubric-row"><label>เตรียมเครื่องมือ</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="5"></div>
+                <div class="rubric-row"><label>เตรียมผู้ป่วย</label><input type="number" class="edit-sub-score" value="${sub[1]||''}" max="5"></div>
+                <div class="rubric-row"><label>ถ่ายภาพรังสี</label><input type="number" class="edit-sub-score" value="${sub[2]||''}" max="10"></div>
+                <div class="rubric-row"><label>ดูแลเครื่องมือหลังใช้</label><input type="number" class="edit-sub-score" value="${sub[3]||''}" max="5"></div>
+                <div class="rubric-row"><label>ประเมิน/แก้ไขภาพ</label><input type="number" class="edit-sub-score" value="${sub[4]||''}" max="5"></div></div>`;
+            }
+        }
+        else if (h.category === "สอบประเมินภาพ") {
+            html += `<div class="rubric-box"><h4><i class="fa-solid fa-magnifying-glass"></i> สอบประเมินภาพ</h4>
+                <div class="rubric-row"><label>วิเคราะห์ในช่องปาก</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="5"></div>
+                <div class="rubric-row"><label>วิเคราะห์นอกช่องปาก</label><input type="number" class="edit-sub-score" value="${sub[1]||''}" max="5"></div></div>`;
+        }
+
+        html += `<div style="text-align:left; font-size:13px; font-weight:500; margin-top:10px;">หมายเหตุการแก้ไข</div>
+                 <input id="swal-remark" class="swal2-input" placeholder="พิมพ์เหตุผลการแก้คะแนน..." style="margin-top:5px; max-width:90%; height:40px; font-size:14px;">`;
+
         Swal.fire({
             title: 'แก้ไขคะแนน',
-            html: `
-                <div style="font-size:13px; color:#6b7280; margin-bottom:15px;">นักเรียน: <b>${h.studentName}</b><br>งาน: ${h.category} - ${h.subCategory}</div>
-                <div style="text-align:left; font-size:13px; font-weight:500;">คะแนนรวมใหม่ (Raw Score)</div>
-                <input id="swal-score" class="swal2-input" type="number" value="${h.rawScore}" style="margin-top:5px; max-width:90%;">
-                <div style="text-align:left; font-size:13px; font-weight:500; margin-top:10px;">หมายเหตุการแก้ไข</div>
-                <input id="swal-remark" class="swal2-input" placeholder="เช่น เด็กทำผลงานเพิ่ม..." style="margin-top:5px; max-width:90%;">
-            `,
+            html: html,
             showCancelButton: true,
             confirmButtonText: 'บันทึกคะแนนใหม่',
             cancelButtonText: 'ยกเลิก',
             confirmButtonColor: '#f97316',
+            customClass: { popup: 'swal-wide' }, // ขยายกล่องให้กว้างขึ้น
             preConfirm: () => {
+                let inputs = document.querySelectorAll('.edit-sub-score');
+                let subScoresList = [];
+                let isInvalid = false;
+                let invalidMsg = "";
+
+                // ดักจับคะแนนเกินที่ตั้งไว้
+                for (let i = 0; i < inputs.length; i++) {
+                    let inp = inputs[i];
+                    let label = inp.parentElement.querySelector('label').innerText;
+                    let val = parseFloat(inp.value);
+                    let maxVal = parseFloat(inp.getAttribute('max'));
+
+                    if (isNaN(val) || val < 0 || val > maxVal) {
+                        isInvalid = true;
+                        invalidMsg = `คะแนนหัวข้อ "${label}" ไม่ถูกต้อง! (ต้องอยู่ระหว่าง 0 ถึง ${maxVal})`;
+                        break;
+                    }
+                    subScoresList.push(val);
+                }
+
+                if (isInvalid) {
+                    Swal.showValidationMessage(invalidMsg);
+                    return false;
+                }
+
                 return {
-                    score: document.getElementById('swal-score').value,
+                    subScores: subScoresList,
                     remark: document.getElementById('swal-remark').value
                 }
             }
         }).then((res) => {
             if(res.isConfirmed) {
-                if(!res.value.score) return Swal.fire('ผิดพลาด', 'กรุณาใส่คะแนนใหม่', 'error');
-                
                 Swal.fire({title: 'กำลังอัปเดต...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
                 let payload = {
                     action: "editScore",
                     logId: h.logId, category: h.category, subCategory: h.subCategory, detail: h.detail,
-                    newScore: res.value.score, newRemark: res.value.remark
+                    subScoresList: res.value.subScores, newRemark: res.value.remark
                 };
                 fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
                 .then(r => r.json()).then(data => {
@@ -283,7 +302,6 @@
         });
     }
 
-    // แก้ไขชื่อคุณครู
     function openEditModal() {
         Swal.fire({
             title: 'แก้ไขชื่อ-นามสกุล',
