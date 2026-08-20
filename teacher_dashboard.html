@@ -112,20 +112,31 @@
 </div>
 
 <script>
+    // 🚨 1. ใส่ LIFF ID (ของหน้า Teacher Dashboard นี้)
     const LIFF_ID = "2011162626-V8r8boat";
+    // 🚨 2. ใส่ API URL
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec";
 
     let currentTeacherName = "";
-    let gHistoryData = []; // เก็บอาร์เรย์ประวัติไว้ใช้ตอนกดแก้ไข
+    let gHistoryData = []; 
 
     window.onload = () => { 
+        if (LIFF_ID === "" || LIFF_ID.includes("ใส่_LIFF_ID")) {
+            Swal.fire('ข้อผิดพลาด', 'คุณยังไม่ได้นำ LIFF ID มาใส่ในโค้ดครับ', 'error');
+            return;
+        }
+
         liff.init({ liffId: LIFF_ID }).then(() => { 
             if(liff.isLoggedIn()) {
                 liff.getProfile().then(p => {
                     document.getElementById("userImg").src = p.pictureUrl || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
                     fetchDashboard(p.userId); 
+                }).catch(() => {
+                    Swal.fire('ผิดพลาด', 'ดึงข้อมูลโปรไฟล์ LINE ไม่สำเร็จ', 'error');
                 });
             } else { liff.login(); }
+        }).catch(err => {
+            Swal.fire('ผิดพลาด', 'ตั้งค่า LIFF ID ไม่ถูกต้อง หรือเชื่อมต่อ LINE ไม่สำเร็จ', 'error');
         }); 
     };
 
@@ -146,6 +157,10 @@
     function fetchDashboard(uid) {
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getTeacherDashboard", teacherUid: uid }) })
         .then(res => res.json()).then(data => {
+            
+            // ปิดหน้าโหลด
+            document.getElementById("loadingDiv").classList.add("hidden");
+
             if(data.status === "success") {
                 currentTeacherName = data.teacherName;
                 gHistoryData = data.history;
@@ -170,7 +185,7 @@
                 }
                 document.getElementById("studentListArea").innerHTML = sHtml;
 
-                // วาดประวัติการให้คะแนน (พร้อมปุ่ม แก้ไข/ยกเลิก)
+                // วาดประวัติการให้คะแนน
                 let hHtml = "";
                 if (data.history.length === 0) hHtml = "<p style='text-align:center; color:#9ca3af; font-size:14px;'>ยังไม่มีประวัติการให้คะแนนครับ</p>";
                 else {
@@ -193,13 +208,18 @@
                 }
                 document.getElementById("historyListArea").innerHTML = hHtml;
 
-                document.getElementById("loadingDiv").style.display = "none"; 
-                document.getElementById("mainDiv").style.display = "block";
-            } else { Swal.fire('ผิดพลาด', data.message, 'error'); }
+                // โชว์หน้าหลัก
+                document.getElementById("mainDiv").classList.remove("hidden");
+            } else { 
+                Swal.fire('ผิดพลาด', data.message, 'error'); 
+            }
+        }).catch(err => {
+            document.getElementById("loadingDiv").classList.add("hidden");
+            Swal.fire('ผิดพลาด', 'ไม่สามารถดึงข้อมูลจาก Server ได้ (ลิงก์ API อาจไม่ถูกต้อง)', 'error');
         });
     }
 
-    // ✏️ ฟังก์ชันแก้คะแนน (Quick Edit)
+    // ✏️ ฟังก์ชันแก้คะแนน
     function editScore(idx) {
         let h = gHistoryData[idx];
         Swal.fire({
@@ -225,7 +245,7 @@
             if(res.isConfirmed) {
                 if(!res.value.score) return Swal.fire('ผิดพลาด', 'กรุณาใส่คะแนนใหม่', 'error');
                 
-                Swal.fire({title: 'กำลังอัปเดต...', didOpen: () => Swal.showLoading()});
+                Swal.fire({title: 'กำลังอัปเดต...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
                 let payload = {
                     action: "editScore",
                     logId: h.logId, category: h.category, subCategory: h.subCategory, detail: h.detail,
@@ -240,7 +260,7 @@
         });
     }
 
-    // 🗑️ ฟังก์ชันดึงงานกลับ (Revoke)
+    // 🗑️ ฟังก์ชันดึงงานกลับ
     function revokeScore(logId) {
         Swal.fire({
             title: 'ดึงงานกลับมารอประเมิน?',
@@ -253,7 +273,7 @@
             cancelButtonText: 'ยกเลิก'
         }).then((res) => {
             if(res.isConfirmed) {
-                Swal.fire({title: 'กำลังยกเลิก...', didOpen: () => Swal.showLoading()});
+                Swal.fire({title: 'กำลังยกเลิก...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
                 fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "revokeScore", logId: logId }) })
                 .then(r => r.json()).then(data => {
                     if(data.status === "success") Swal.fire('สำเร็จ', data.message, 'success').then(() => window.location.reload());
@@ -274,7 +294,7 @@
             confirmButtonColor: '#ea580c',
         }).then((result) => {
             if(result.isConfirmed && result.value) {
-                Swal.fire({title:'กำลังบันทึก...', didOpen:()=>Swal.showLoading()});
+                Swal.fire({title:'กำลังบันทึก...', allowOutsideClick: false, didOpen:()=>Swal.showLoading()});
                 liff.getProfile().then(profile => {
                     fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateProfile', role: 'teacher', userId: profile.userId, fullName: result.value }) })
                     .then(r=>r.json()).then(data=>{
