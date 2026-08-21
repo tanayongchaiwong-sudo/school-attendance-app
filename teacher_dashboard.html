@@ -10,148 +10,212 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
     <style>
-        :root { --primary: #f97316; --primary-hover: #ea580c; --bg: #f3f4f6; --text: #1f2937; }
+        :root { --primary: #f97316; --primary-hover: #ea580c; --bg: #f8fafc; --text: #1e293b; }
         body { font-family: 'Prompt', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--text); }
         .container { max-width: 500px; margin: 0 auto; padding-bottom: 30px;}
         
-        /* Profile Card & Stats */
-        .profile-card { background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 25px 20px; border-radius: 16px; text-align: center; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3); margin-bottom: 20px; position: relative; }
-        .profile-card img { width: 75px; height: 75px; border-radius: 50%; border: 3px solid white; margin-bottom: 10px; object-fit: cover; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .edit-btn { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 20px; font-family: 'Prompt'; font-size: 12px; cursor: pointer; transition: 0.3s; }
-        .eval-btn { background: white; color: var(--primary); padding: 10px 20px; border-radius: 30px; font-size: 14px; font-weight: 600; font-family: 'Prompt'; border: none; cursor: pointer; margin-top: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.2s;}
-        .eval-btn:hover { background: #ffedd5; transform: translateY(-2px); }
+        /* Profile Card */
+        .profile-card { background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 25px 20px; border-radius: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 10px 25px rgba(234, 88, 12, 0.25); margin-bottom: 20px; position: relative; }
+        .profile-card img { width: 65px; height: 65px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.8); object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .profile-info { flex: 1; }
+        .profile-info h2 { margin: 0 0 4px 0; font-size: 18px; font-weight: 600; line-height: 1.2;}
+        .profile-info p { margin: 0; font-size: 13px; opacity: 0.9;}
+        .edit-btn { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); color: white; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .edit-btn:hover { background: rgba(255,255,255,0.3); transform: rotate(15deg); }
 
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .stat-box { background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #ffedd5;}
-        .stat-box i { font-size: 26px; color: var(--primary); margin-bottom: 8px; display: block; }
-        .stat-num { font-size: 24px; font-weight: 600; color: #111827; }
-        .stat-label { font-size: 13px; color: #6b7280; font-weight: 500; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .stat-box { background: white; padding: 15px 10px; border-radius: 16px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; display: flex; flex-direction: column; align-items: center;}
+        
+        /* 🌟 เอฟเฟกต์สำหรับกล่องที่กดได้ */
+        .clickable-box { cursor: pointer; border: 2px solid transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .clickable-box:hover { transform: translateY(-4px); border-color: #f97316; box-shadow: 0 8px 25px rgba(249, 115, 22, 0.15); background-color: #fff7ed; }
+
+        .icon-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; background: #ffedd5; color: #ea580c; font-size: 20px;}
+        .stat-num { font-size: 24px; font-weight: 600; color: #1e293b; line-height: 1; margin-bottom: 4px; }
+        .stat-label { font-size: 12px; color: #64748b; font-weight: 600; }
+        .action-hint { font-size: 10px; color: #ea580c; margin-top: 5px; background: #ffedd5; padding: 2px 6px; border-radius: 10px; display: inline-block; font-weight: 600;}
         
         .tabs { display: flex; background: white; border-radius: 12px; padding: 5px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
-        .tab-btn { flex: 1; padding: 10px; text-align: center; font-family: 'Prompt'; font-size: 14px; font-weight: 600; color: #6b7280; background: none; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s;}
+        .tab-btn { flex: 1; padding: 10px; text-align: center; font-family: 'Prompt'; font-size: 13px; font-weight: 600; color: #64748b; background: none; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s;}
         .tab-btn.active { background: #ffedd5; color: var(--primary); }
         
         /* Lists */
-        .list-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #f3f4f6;}
-        .student-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #e5e7eb; }
+        .list-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid #f1f5f9;}
+        .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px dashed #e2e8f0; padding-bottom: 10px; }
+        .list-header h3 { margin: 0; font-size: 15px; display: flex; align-items: center; gap: 8px; color: #ea580c; font-weight: 600;}
+        
+        /* Dropdown กรองกลุ่ม */
+        .group-filter { padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-family: 'Prompt'; font-size: 12px; outline: none; background: #f8fafc; color: #334155; font-weight: 500;}
+        .group-filter:focus { border-color: #f97316; }
+
+        .student-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #e2e8f0; }
         .student-item:last-child { border: none; padding-bottom: 0; }
-        .s-name { font-size: 15px; font-weight: 600; color: #111827; }
-        .s-id { font-size: 12px; color: #6b7280; margin-top: 2px;}
+        .s-name { font-size: 14px; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 6px;}
+        .s-group-badge { font-size: 10px; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: #64748b; font-weight: 500;}
+        .s-id { font-size: 11px; color: #94a3b8; margin-top: 2px;}
         .s-stats { text-align: right; display: flex; flex-direction: column; gap: 4px; }
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-block; }
+        
+        .badge { padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 4px;}
         .badge-hours { background: #ffedd5; color: #c2410c; }
         .badge-exams { background: #dcfce3; color: #15803d; }
 
-        .history-item { padding: 15px 0; border-bottom: 1px solid #f3f4f6; }
+        .history-item { padding: 15px 0; border-bottom: 1px dashed #e2e8f0; }
         .history-item:last-child { border: none; padding-bottom: 0; }
         .h-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;}
-        .h-title { font-size: 14px; font-weight: 600; color: #1f2937; }
-        .h-score { font-size: 16px; font-weight: 600; color: var(--primary); background: #ffedd5; padding: 2px 10px; border-radius: 6px;}
-        .h-detail { font-size: 12px; color: #6b7280; margin-bottom: 10px;}
+        .h-title { font-size: 14px; font-weight: 600; color: #1e293b; }
+        .h-score { font-size: 16px; font-weight: 600; color: white; background: #ea580c; padding: 2px 10px; border-radius: 8px;}
+        .h-detail { font-size: 12px; color: #64748b; margin-bottom: 10px;}
         .action-btns { display: flex; gap: 8px; justify-content: flex-end;}
-        .btn-sm { font-family: 'Prompt'; font-size: 11px; padding: 5px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 500;}
-        .btn-edit { background: #e0e7ff; color: #4f46e5; }
-        .btn-revoke { background: #fee2e2; color: #e11d48; }
+        .btn-sm { font-family: 'Prompt'; font-size: 11px; padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;}
+        .btn-edit { background: #e0e7ff; color: #4338ca; }
+        .btn-revoke { background: #fee2e2; color: #b91c1c; }
 
-        /* 🌟 สไตล์กล่องให้คะแนนย่อย (ใช้ในหน้า Popup) */
         .rubric-box { background: #fff7ed; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #ffedd5; text-align: left; }
         .rubric-box h4 { margin: 0 0 10px 0; color: #c2410c; font-size: 14px; display: flex; align-items: center; gap: 8px; }
         .rubric-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px dashed #fed7aa; padding-bottom: 8px; }
         .rubric-row:last-child { border: none; margin-bottom: 0; padding-bottom: 0; }
-        .rubric-row label { margin: 0; font-weight: 400; flex: 1; font-size: 14px; text-align: left;}
-        .rubric-row input[type="number"] { width: 70px; text-align: center; padding: 6px; border: 1px solid #fed7aa; border-radius: 8px; font-family: 'Prompt'; outline: none; font-size:14px; background: white;}
+        .rubric-row label { margin: 0; font-weight: 500; flex: 1; font-size: 13px; text-align: left; color: #4b5563;}
+        .rubric-row input[type="number"] { width: 70px; text-align: center; padding: 6px; border: 1px solid #fed7aa; border-radius: 8px; font-family: 'Prompt'; outline: none; font-size:14px; background: white; font-weight: 600; color: #ea580c;}
         .rubric-row input[type="number"]:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2); }
-        .swal-wide { width: 95% !important; max-width: 500px !important; }
-
+        .swal-wide { width: 95% !important; max-width: 500px !important; border-radius: 20px;}
+        .swal-title-custom { font-family: 'Prompt'; font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 10px;}
+        
+        .pending-list-popup { max-height: 50vh; overflow-y: auto; text-align: left; padding-right: 5px; display: flex; flex-direction: column; gap: 8px;}
+        .pending-item-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 15px; border-left: 4px solid #f97316;}
+        
         .hidden { display: none !important; }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px;}
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body>
 
-<div class="container" id="loadingDiv" style="text-align: center; padding: 50px;">
-    <i class="fa-solid fa-spinner fa-spin" style="font-size: 45px; color: #f97316;"></i>
-    <p style="margin-top: 10px; color: #4b5563; font-size: 14px;">กำลังโหลดข้อมูล...</p>
+<div class="container" id="loadingDiv" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh;">
+    <i class="fa-solid fa-spinner fa-spin" style="font-size: 45px; color: #f97316; margin-bottom: 15px;"></i>
+    <div style="font-size: 14px; color: #64748b; font-weight: 500;">กำลังโหลดข้อมูลนักเรียน...</div>
 </div>
 
 <div class="container hidden" id="mainDiv">
     
     <div class="profile-card">
-        <button class="edit-btn" onclick="openEditModal()"><i class="fa-solid fa-pen"></i> แก้ไขชื่อ</button>
-        <img id="userImg" src="">
-        <h2 id="userName" style="margin: 0; font-size: 18px;">กำลังโหลด...</h2>
-        <p style="margin: 5px 0 0; font-size: 13px; opacity: 0.9;">คุณครูผู้ประเมิน</p>
-        
-        <button class="eval-btn" onclick="window.location.href='https://liff.line.me/2011162626-dON8ee2c'">
-            <i class="fa-solid fa-clipboard-check"></i> ไปหน้าประเมินให้คะแนน
-        </button>
+        <button class="edit-btn" onclick="openEditModal()"><i class="fa-solid fa-pen"></i></button>
+        <img id="userImg" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Teacher">
+        <div class="profile-info">
+            <h2 id="userName">กำลังโหลด...</h2>
+            <p>คุณครูผู้ประเมิน</p>
+        </div>
     </div>
 
     <div class="stat-grid">
-        <div class="stat-box"><i class="fa-solid fa-bell"></i><div class="stat-num" id="tPending">0</div><div class="stat-label">งานรอประเมิน</div></div>
-        <div class="stat-box"><i class="fa-solid fa-users"></i><div class="stat-num" id="tStudents">0</div><div class="stat-label">นักเรียนในการดูแล</div></div>
+        <!-- 🌟 การ์ดรอประเมิน กดได้! -->
+        <div class="stat-box clickable-box" onclick="showPendingTasks()">
+            <div class="icon-circle"><i class="fa-solid fa-clipboard-question"></i></div>
+            <div class="stat-num" id="tPending">0</div>
+            <div class="stat-label">งานรอประเมิน</div>
+            <div class="action-hint"><i class="fa-solid fa-hand-pointer"></i> กดดูรายการ</div>
+        </div>
+        <!-- 🌟 การ์ดจำนวนเด็ก เปลี่ยนตามกลุ่มที่เลือก -->
+        <div class="stat-box">
+            <div class="icon-circle" style="background: #e0e7ff; color: #4f46e5;"><i class="fa-solid fa-users"></i></div>
+            <div class="stat-num" id="tStudents">0</div>
+            <div class="stat-label">นักเรียนที่แสดงอยู่</div>
+        </div>
     </div>
 
     <div class="tabs">
-        <button class="tab-btn active" id="tabHist" onclick="switchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติการประเมิน</button>
-        <button class="tab-btn" id="tabStud" onclick="switchTab('students')"><i class="fa-solid fa-chart-pie"></i> ภาพรวมนักเรียน</button>
+        <button class="tab-btn active" id="tabStud" onclick="switchTab('students')"><i class="fa-solid fa-users-viewfinder"></i> ภาพรวมนักเรียน</button>
+        <button class="tab-btn" id="tabHist" onclick="switchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติประเมิน</button>
     </div>
 
-    <div class="list-card" id="viewHistory"><div id="historyListArea"></div></div>
-    <div class="list-card hidden" id="viewStudents"><div id="studentListArea"></div></div>
+    <!-- 🌟 ภาพรวมนักเรียน (มีตัวกรองกลุ่ม) -->
+    <div class="list-card" id="viewStudents">
+        <div class="list-header">
+            <h3><i class="fa-solid fa-users"></i> ข้อมูลนักเรียน</h3>
+            <select id="groupFilter" class="group-filter" onchange="renderStudentList()">
+                <option value="All">ดูทุกกลุ่ม</option>
+            </select>
+        </div>
+        <div id="studentListArea"></div>
+    </div>
+
+    <!-- 🌟 ประวัติการประเมิน -->
+    <div class="list-card hidden" id="viewHistory">
+        <div class="list-header">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> ประวัติให้คะแนนล่าสุด</h3>
+        </div>
+        <div id="historyListArea"></div>
+    </div>
 
 </div>
 
 <script>
     // 🚨 1. ใส่ LIFF ID (ของหน้า Teacher Dashboard นี้)
     const LIFF_ID = "2011162626-V8r8boat";
-    // 🚨 2. ใส่ API URL
+    // 🚨 2. ใส่ LIFF ID หน้าให้คะแนนครู (เพื่อเด้งไปตอนกดประเมิน)
+    const EVALUATION_LIFF_URL = "https://liff.line.me/2011162626-dON8ee2c";
+    
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec";
 
     let currentTeacherName = "";
     let gHistoryData = []; 
+    let gStudentData = []; 
+    let gPendingList = []; 
 
     window.onload = () => { 
-        if (LIFF_ID === "" || LIFF_ID.includes("ใส่_LIFF_ID")) { Swal.fire('ข้อผิดพลาด', 'คุณยังไม่ได้นำ LIFF ID มาใส่ในโค้ดครับ', 'error'); return; }
         liff.init({ liffId: LIFF_ID }).then(() => { 
-            if(liff.isLoggedIn()) { liff.getProfile().then(p => { document.getElementById("userImg").src = p.pictureUrl || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"; fetchDashboard(p.userId); }); } 
-            else { liff.login(); }
+            if(liff.isLoggedIn()) { 
+                liff.getProfile().then(p => { 
+                    document.getElementById("userImg").src = p.pictureUrl || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"; 
+                    fetchDashboard(p.userId); 
+                }); 
+            } else { liff.login(); }
         }); 
     };
 
     function switchTab(tab) {
-        if(tab === 'history') {
-            document.getElementById("tabHist").classList.add("active"); document.getElementById("tabStud").classList.remove("active");
-            document.getElementById("viewHistory").classList.remove("hidden"); document.getElementById("viewStudents").classList.add("hidden");
-        } else {
+        if(tab === 'students') {
             document.getElementById("tabStud").classList.add("active"); document.getElementById("tabHist").classList.remove("active");
             document.getElementById("viewStudents").classList.remove("hidden"); document.getElementById("viewHistory").classList.add("hidden");
+        } else {
+            document.getElementById("tabHist").classList.add("active"); document.getElementById("tabStud").classList.remove("active");
+            document.getElementById("viewHistory").classList.remove("hidden"); document.getElementById("viewStudents").classList.add("hidden");
         }
     }
 
     function fetchDashboard(uid) {
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getTeacherDashboard", teacherUid: uid }) })
         .then(res => res.json()).then(data => {
-            document.getElementById("loadingDiv").classList.add("hidden");
             if(data.status === "success") {
                 currentTeacherName = data.teacherName;
                 gHistoryData = data.history;
+                gStudentData = data.students;
+                gPendingList = data.pendingList || [];
 
                 document.getElementById("userName").innerText = "ครู" + data.teacherName;
                 document.getElementById("tPending").innerText = data.pendingCount;
-                document.getElementById("tStudents").innerText = data.students.length;
 
-                let sHtml = "";
-                if (data.students.length === 0) sHtml = "<p style='text-align:center; color:#9ca3af;'>ยังไม่มีข้อมูลนักเรียน</p>";
-                else { data.students.forEach(s => { sHtml += `<div class="student-item"><div><div class="s-name">${s.name}</div><div class="s-id">รหัส: ${s.id}</div></div><div class="s-stats"><div class="badge badge-hours"><i class="fa-regular fa-clock"></i> ${s.hours} ชม.</div><div class="badge badge-exams"><i class="fa-solid fa-check"></i> สอบ ${s.exams} เรื่อง</div></div></div>`; }); }
-                document.getElementById("studentListArea").innerHTML = sHtml;
+                // อัปเดต Dropdown กลุ่ม
+                let filterDropdown = document.getElementById("groupFilter");
+                filterDropdown.innerHTML = '<option value="All">ดูทุกกลุ่ม</option>';
+                if(data.groups) {
+                    data.groups.forEach(g => {
+                        filterDropdown.innerHTML += `<option value="${g}">${g}</option>`;
+                    });
+                }
 
+                renderStudentList(); // วาดรายชื่อเด็กตามกลุ่ม
+
+                // วาดประวัติ
                 let hHtml = "";
-                if (data.history.length === 0) hHtml = "<p style='text-align:center; color:#9ca3af; font-size:14px;'>ยังไม่มีประวัติการให้คะแนนครับ</p>";
+                if (data.history.length === 0) hHtml = "<p style='text-align:center; color:#9ca3af; font-size:13px;'>ยังไม่มีประวัติการให้คะแนนครับ</p>";
                 else {
                     data.history.forEach((h, idx) => {
                         hHtml += `<div class="history-item">
                                     <div class="h-header"><div class="h-title">${h.studentName}</div><div class="h-score">${h.rawScore}</div></div>
-                                    <div class="h-detail"><b>${h.category}</b> - ${h.subCategory} ${h.detail ? '('+h.detail+')' : ''}<br><i class="fa-regular fa-calendar"></i> ${h.date}</div>
+                                    <div class="h-detail"><b>${h.category}</b> - ${h.subCategory} ${h.detail ? '('+h.detail+')' : ''}<br><i class="fa-regular fa-clock"></i> ${h.date}</div>
                                     <div class="action-btns">
                                         <button class="btn-sm btn-revoke" onclick="revokeScore('${h.logId}')"><i class="fa-solid fa-rotate-left"></i> ดึงงานกลับ/ยกเลิก</button>
                                         <button class="btn-sm btn-edit" onclick="editScore(${idx})"><i class="fa-solid fa-pen"></i> แก้คะแนนแยกข้อ</button>
@@ -160,17 +224,78 @@
                     });
                 }
                 document.getElementById("historyListArea").innerHTML = hHtml;
+                
+                document.getElementById("loadingDiv").style.display = "none";
                 document.getElementById("mainDiv").classList.remove("hidden");
             } else { Swal.fire('ผิดพลาด', data.message, 'error'); }
         });
     }
 
-    // 🌟 ระบบแก้ไขคะแนนแยกข้อ (ดึงคะแนนเดิมมาโชว์ให้ด้วย)
+    // 🌟 ฟังก์ชันเรนเดอร์รายชื่อนักเรียนตามกลุ่มที่เลือก
+    function renderStudentList() {
+        let filter = document.getElementById("groupFilter").value;
+        let filteredStudents = (filter === "All") ? gStudentData : gStudentData.filter(s => s.group === filter);
+        
+        // อัปเดตตัวเลขการ์ดนักเรียนในการดูแล
+        document.getElementById("tStudents").innerText = filteredStudents.length;
+
+        let sHtml = "";
+        if (filteredStudents.length === 0) {
+            sHtml = "<p style='text-align:center; color:#9ca3af; font-size:13px; margin-top:20px;'>ไม่พบนักเรียนในกลุ่มนี้</p>";
+        } else {
+            filteredStudents.forEach(s => { 
+                sHtml += `<div class="student-item">
+                            <div>
+                                <div class="s-name">${s.name} <span class="s-group-badge">${s.group}</span></div>
+                                <div class="s-id">รหัส: ${s.id}</div>
+                            </div>
+                            <div class="s-stats">
+                                <div class="badge badge-hours"><i class="fa-solid fa-hourglass-half"></i> ${s.hours} ชม.</div>
+                                <div class="badge badge-exams"><i class="fa-solid fa-graduation-cap"></i> สอบ ${s.exams} เรื่อง</div>
+                            </div>
+                          </div>`; 
+            });
+        }
+        document.getElementById("studentListArea").innerHTML = sHtml;
+    }
+
+    // 🌟 ป๊อปอัปโชว์งานรอประเมินทั้งหมด
+    function showPendingTasks() {
+        if(gPendingList.length === 0) return Swal.fire('ไม่มีงานค้าง', 'พักผ่อนได้เลยครับคุณครู! ไม่มีงานรอประเมินครับ 🎉', 'success');
+        
+        let html = `<div class="pending-list-popup">`;
+        gPendingList.forEach(t => {
+            html += `<div class="pending-item-card">
+                        <div style="font-weight: 600; font-size: 14px; color: #1e293b;"><i class="fa-solid fa-user-graduate" style="color:#94a3b8; margin-right:5px;"></i> ${t.studentName}</div>
+                        <div style="font-size: 12px; color: #ea580c; margin-top:4px;"><i class="fa-solid fa-circle-right" style="font-size:8px;"></i> ${t.category} - ${t.subCategory}</div>
+                     </div>`;
+        });
+        html += `</div>`;
+        
+        Swal.fire({
+            title: 'งานที่รอประเมิน',
+            html: html,
+            showCancelButton: true,
+            confirmButtonText: 'ไปหน้าประเมินให้คะแนน',
+            cancelButtonText: 'ปิด',
+            confirmButtonColor: '#ea580c',
+            cancelButtonColor: '#94a3b8',
+            customClass: { popup: 'swal-wide', title: 'swal-title-custom' }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = EVALUATION_LIFF_URL;
+            }
+        });
+    }
+
+    // ระบบแก้ไขคะแนนแยกข้อ
     function editScore(idx) {
         let h = gHistoryData[idx];
-        let sub = h.subScores || []; // ข้อมูลคะแนนเดิม
+        let sub = h.subScores || []; 
         
-        let html = `<div style="font-size:13px; color:#6b7280; margin-bottom:15px; text-align:left;">นักเรียน: <b>${h.studentName}</b><br>งาน: ${h.category} - ${h.subCategory}</div>`;
+        let html = `<div style="font-size:13px; color:#64748b; margin-bottom:15px; text-align:left; background: #f8fafc; padding: 10px; border-radius: 8px;">
+            นักเรียน: <b>${h.studentName}</b><br>งาน: ${h.category} - ${h.subCategory}
+            </div>`;
         
         if (h.category === "ประเมินรายวัน") {
             html += `<div class="rubric-box">
@@ -189,10 +314,10 @@
                 <div class="rubric-row"><label>ดูแลอุปกรณ์หลังใช้</label><input type="number" class="edit-sub-score" value="${sub[8]||''}" max="5"></div>
             </div>`;
         } 
-        else if (h.category === "ส่งใบงาน") {
-            let maxRaw = h.detail.includes("ที่ 1") ? 1 : 2; 
+        else if (h.category === "ส่งใบงาน" || h.category === "สอบประเมินภาพ") {
+            let maxRaw = h.detail.includes("ที่ 1") ? 1 : (h.category === "สอบประเมินภาพ" ? 5 : 2); 
             html += `<div class="rubric-box">
-                <h4><i class="fa-solid fa-file-pen"></i> ประเมินใบงาน</h4>
+                <h4><i class="fa-solid fa-file-pen"></i> ประเมินผล</h4>
                 <div class="rubric-row"><label>คะแนนที่ได้</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="${maxRaw}"></div>
             </div>`;
         }
@@ -214,14 +339,9 @@
                 <div class="rubric-row"><label>ประเมิน/แก้ไขภาพ</label><input type="number" class="edit-sub-score" value="${sub[4]||''}" max="5"></div></div>`;
             }
         }
-        else if (h.category === "สอบประเมินภาพ") {
-            html += `<div class="rubric-box"><h4><i class="fa-solid fa-magnifying-glass"></i> สอบประเมินภาพ</h4>
-                <div class="rubric-row"><label>วิเคราะห์ในช่องปาก</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="5"></div>
-                <div class="rubric-row"><label>วิเคราะห์นอกช่องปาก</label><input type="number" class="edit-sub-score" value="${sub[1]||''}" max="5"></div></div>`;
-        }
 
-        html += `<div style="text-align:left; font-size:13px; font-weight:500; margin-top:10px;">หมายเหตุการแก้ไข</div>
-                 <input id="swal-remark" class="swal2-input" placeholder="พิมพ์เหตุผลการแก้คะแนน..." style="margin-top:5px; max-width:90%; height:40px; font-size:14px;">`;
+        html += `<div style="text-align:left; font-size:13px; font-weight:600; margin-top:10px; color:#475569;">เหตุผลการแก้ไข</div>
+                 <input id="swal-remark" class="swal2-input" placeholder="เช่น เด็กทำผลงานเพิ่ม..." style="margin-top:5px; max-width:100%; height:40px; font-size:14px; border-radius:8px;">`;
 
         Swal.fire({
             title: 'แก้ไขคะแนน',
@@ -229,15 +349,15 @@
             showCancelButton: true,
             confirmButtonText: 'บันทึกคะแนนใหม่',
             cancelButtonText: 'ยกเลิก',
-            confirmButtonColor: '#f97316',
-            customClass: { popup: 'swal-wide' }, // ขยายกล่องให้กว้างขึ้น
+            confirmButtonColor: '#ea580c',
+            cancelButtonColor: '#94a3b8',
+            customClass: { popup: 'swal-wide', title: 'swal-title-custom' }, 
             preConfirm: () => {
                 let inputs = document.querySelectorAll('.edit-sub-score');
                 let subScoresList = [];
                 let isInvalid = false;
                 let invalidMsg = "";
 
-                // ดักจับคะแนนเกินที่ตั้งไว้
                 for (let i = 0; i < inputs.length; i++) {
                     let inp = inputs[i];
                     let label = inp.parentElement.querySelector('label').innerText;
@@ -252,15 +372,8 @@
                     subScoresList.push(val);
                 }
 
-                if (isInvalid) {
-                    Swal.showValidationMessage(invalidMsg);
-                    return false;
-                }
-
-                return {
-                    subScores: subScoresList,
-                    remark: document.getElementById('swal-remark').value
-                }
+                if (isInvalid) { Swal.showValidationMessage(invalidMsg); return false; }
+                return { subScores: subScoresList, remark: document.getElementById('swal-remark').value }
             }
         }).then((res) => {
             if(res.isConfirmed) {
@@ -286,10 +399,11 @@
             text: "คะแนนเดิมจะถูกลบทิ้ง และสถานะงานของเด็กจะกลับไปเป็น 'รอประเมิน' อีกครั้ง",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#e11d48',
-            cancelButtonColor: '#9ca3af',
+            confirmButtonColor: '#b91c1c',
+            cancelButtonColor: '#94a3b8',
             confirmButtonText: 'ยืนยันดึงงานกลับ',
-            cancelButtonText: 'ยกเลิก'
+            cancelButtonText: 'ยกเลิก',
+            customClass: { popup: 'swal-wide', title: 'swal-title-custom' }
         }).then((res) => {
             if(res.isConfirmed) {
                 Swal.fire({title: 'กำลังยกเลิก...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
@@ -305,11 +419,16 @@
     function openEditModal() {
         Swal.fire({
             title: 'แก้ไขชื่อ-นามสกุล',
-            input: 'text',
-            inputValue: currentTeacherName,
+            html: `
+                <div style="text-align: left; font-size: 13px; margin-bottom: 5px; font-weight: 500; color: #4b5563;">ชื่อ-นามสกุลคุณครู</div>
+                <input id="swal-tname" class="swal2-input" value="${currentTeacherName}" style="margin-top:0; max-width:90%; border-radius:8px;">
+            `,
             showCancelButton: true,
             confirmButtonText: 'บันทึก',
+            cancelButtonText: 'ยกเลิก',
             confirmButtonColor: '#ea580c',
+            customClass: { popup: 'swal-wide', title: 'swal-title-custom' },
+            preConfirm: () => { return document.getElementById('swal-tname').value.trim(); }
         }).then((result) => {
             if(result.isConfirmed && result.value) {
                 Swal.fire({title:'กำลังบันทึก...', allowOutsideClick: false, didOpen:()=>Swal.showLoading()});
