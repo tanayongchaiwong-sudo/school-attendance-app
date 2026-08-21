@@ -116,6 +116,7 @@
                 <li class="nav-item"><a class="nav-link active" onclick="switchTab('export', this)"><i class="fa-solid fa-file-pdf"></i> ออกเอกสาร & พรีวิว</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchTab('student', this)"><i class="fa-solid fa-user-graduate"></i> ข้อมูลนักเรียนเจาะลึก</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchTab('database', this); loadMasterData();"><i class="fa-solid fa-database"></i> จัดการฐานข้อมูล (CMS)</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1U7x_0elVlm-FoGgY2un_u0p9k3gfPaVvQ4qyY0KfOVw', '_blank')"><i class="fa-solid fa-table-list"></i> ไปที่ชีตฐานข้อมูล <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px; margin-left: auto;"></i></a></li>
             </ul>
             <div style="margin-top: auto; padding: 20px; text-align: center;">
                 <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ</button>
@@ -128,7 +129,7 @@
             <div id="sec-export" class="section active">
                 <div class="page-header">
                     <h1 class="page-title">ระบบพรีวิวและออกเอกสาร</h1>
-                    <p class="page-desc">เรียกดูข้อมูลดิบและดาวน์โหลดเอกสาร PDF/Excel อัตโนมัติ</p>
+                    <p class="page-desc">เรียกดูข้อมูลดิบและสร้างหน้าพิมพ์เอกสาร PDF (รูปแบบ A4 แนวนอน)</p>
                 </div>
                 <div class="card">
                     <div class="flex-row" style="align-items: flex-end;">
@@ -151,8 +152,7 @@
                     <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
                         <h3 style="margin: 0; color: #0f766e;"><i class="fa-solid fa-eye"></i> พรีวิวข้อมูล</h3>
                         <div style="display: flex; gap: 10px;">
-                            <button class="btn btn-primary" style="background: #10b981;" onclick="exportToCSV()"><i class="fa-solid fa-file-csv"></i> โหลด CSV</button>
-                            <button class="btn btn-danger" onclick="generateFormDocument()"><i class="fa-solid fa-file-pdf"></i> สร้าง PDF/Excel</button>
+                            <button class="btn btn-danger" onclick="generateFormDocument()"><i class="fa-solid fa-file-pdf"></i> นำออกเอกสาร (PDF/Excel)</button>
                         </div>
                     </div>
                     <div class="table-responsive">
@@ -259,20 +259,18 @@
     let currentReportData = [], currentReportType = "", globalAdminStudents = [];
     let dbStudents = [], dbTeachers = [], dbSettings = {};
 
-    // 🌟 เช็กสถานะการล็อกอินเมื่อเปิดหน้าเว็บ
     document.addEventListener("DOMContentLoaded", function() { 
         let isLogged = sessionStorage.getItem("adminLoggedIn");
         if(isLogged === "true") {
             document.getElementById("loginScreen").style.display = "none";
             document.getElementById("adminApp").style.display = "flex";
-            loadGroups(); // โหลดข้อมูลเริ่มแรก
+            loadGroups(); 
         } else {
             document.getElementById("loginScreen").style.display = "flex";
             document.getElementById("adminApp").style.display = "none";
         }
     });
 
-    // 🌟 ฟังก์ชัน Login (แบบมีป๊อปอัปแจ้งเตือนสวยงาม)
     function checkLogin() {
         let pwd = document.getElementById("adminPassword").value;
         if(!pwd) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสผ่านก่อนครับ', 'warning');
@@ -438,7 +436,7 @@
     }
 
     // ==========================================
-    // 📑 โค้ดส่วน พรีวิวเอกสาร และ ดูรายบุคคล 
+    // 📑 โค้ดส่วน พรีวิวเอกสาร และ ออกเอกสาร (HTML Print)
     // ==========================================
     function loadGroups() {
         let selectExport = document.getElementById("groupFilter"), selectAdmin = document.getElementById("adminGroupFilter");
@@ -456,7 +454,7 @@
     function fetchReport() {
         let rType = document.getElementById("reportType").value, gFilter = document.getElementById("groupFilter").value;
         Swal.fire({title: 'กำลังดึงข้อมูลพรีวิว...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getAdminReport", reportType: rType, groupFilter: gFilter, exportForm: false }) })
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getAdminReport", reportType: rType, groupFilter: gFilter }) })
         .then(res => res.json()).then(data => { Swal.close(); if(data.status === "success") { currentReportData = data.data; currentReportType = rType; renderTable(); } });
     }
 
@@ -479,14 +477,8 @@
         hRow += "</tr>"; thead.innerHTML = hRow;
     }
 
-    function generateFormDocument() {
-        let rType = document.getElementById("reportType").value, gFilter = document.getElementById("groupFilter").value;
-        Swal.fire({ title: 'กำลังสร้างเอกสาร PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getAdminReport", reportType: rType, groupFilter: gFilter, exportForm: true }) })
-        .then(res => res.json()).then(data => { if(data.status === "success") { Swal.fire({ title: 'สร้างเอกสารสำเร็จ!', icon: 'success', showCancelButton: true, confirmButtonText: '<i class="fa-solid fa-file-pdf"></i> โหลด PDF', cancelButtonText: '<i class="fa-solid fa-file-excel"></i> โหลด Excel', confirmButtonColor: '#ef4444', cancelButtonColor: '#10b981' }).then((res) => { if (res.isConfirmed) window.open(data.pdfUrl, '_blank'); else if (res.dismiss === Swal.DismissReason.cancel) window.open(data.excelUrl, '_blank'); }); } });
-    }
-
     function exportToCSV() {
+        if (currentReportData.length === 0) return Swal.fire('แจ้งเตือน', 'ไม่มีข้อมูลสำหรับดาวน์โหลด', 'warning');
         let csv = '\uFEFF', headers = [];
         document.querySelectorAll("#tableHead th").forEach(th => headers.push(`"${th.innerText}"`)); csv += headers.join(",") + "\n";
         document.querySelectorAll("#tableBody tr").forEach(row => { let rowData = []; row.querySelectorAll("td").forEach(td => rowData.push(`"${td.innerText.replace(/"/g, '""')}"`)); csv += rowData.join(",") + "\n"; });
@@ -496,6 +488,83 @@
         let link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `${title}_${groupLabel}_${new Date().getTime()}.csv`; link.click();
     }
 
+    // 🌟 ระบบพิมพ์แบบฟอร์ม PDF
+    function generateFormDocument() {
+        let rType = document.getElementById("reportType").value;
+        if (currentReportData.length === 0) return Swal.fire('แจ้งเตือน', 'กรุณากดปุ่ม "ดูพรีวิว" เพื่อโหลดข้อมูลขึ้นมาก่อนสั่งพิมพ์ครับ', 'warning');
+
+        Swal.fire({
+            title: 'เลือกรูปแบบการนำออก', text: 'ต้องการพิมพ์เป็น PDF ตามฟอร์มโรงเรียน หรือโหลดเป็นไฟล์ Excel (CSV)?', icon: 'question', showCancelButton: true, showDenyButton: true,
+            confirmButtonText: '<i class="fa-solid fa-print"></i> พิมพ์ / เซฟเป็น PDF', denyButtonText: '<i class="fa-solid fa-file-csv"></i> โหลด Excel (CSV)', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#0f766e', denyButtonColor: '#10b981', cancelButtonColor: '#94a3b8'
+        }).then((result) => {
+            if (result.isConfirmed) printDocumentTemplate(rType); 
+            else if (result.isDenied) exportToCSV(); 
+        });
+    }
+
+    function printDocumentTemplate(type) {
+        let groupFilter = document.getElementById("groupFilter").value;
+        let groupText = (groupFilter === "All") ? "ทุกกลุ่ม" : ((!isNaN(groupFilter) && groupFilter !== "") ? "กลุ่ม " + groupFilter : groupFilter);
+        let periodText = dbSettings['REPORT_PERIOD'] || "8 - 29 พ.ค. 69"; 
+        
+        let now = new Date();
+        let currentDateThai = now.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+        let printTime = now.toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'medium' });
+
+        let html = `
+        <html><head><title>เอกสารสรุปผลการฝึกงาน</title>
+            <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+            <style>
+                body { font-family: 'Sarabun', sans-serif; font-size: 16px; color: #000; margin: 0; padding: 0; }
+                @page { size: A4 landscape; margin: 10mm; } 
+                .text-center { text-align: center; } .text-left { text-align: left; } .text-right { text-align: right; }
+                .header-title { font-size: 20px; font-weight: bold; line-height: 1.4; margin-bottom: 20px; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 15px; }
+                th, td { border: 1px solid #000; padding: 6px 4px; text-align: center; vertical-align: middle; }
+                th { font-weight: bold; background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; line-height: 1.2;}
+                .signature-section { display: flex; justify-content: space-between; margin-top: 30px; font-size: 16px; page-break-inside: avoid; }
+                .sign-box { width: 45%; text-align: center; }
+            </style>
+        </head><body>`;
+
+        if (type === "1") {
+            html += `<div class="header-title text-center">การฝึกปฏิบัติงานทางคลินิก หลักสูตรประกาศนียบัตรผู้ช่วยทันตแพทย์<br>ประจำปีการศึกษา 2568<br>คลินิกรังสีวิทยาช่องปากและแม็กซิลโลเฟเชียล<br>ระหว่างวันที่ ${periodText} (${groupText})</div>
+            <table><thead><tr><th width="12%">ประทับเวลา</th><th width="18%">ชื่อ-นามสกุล</th><th width="10%">เลขประจำตัว</th><th width="12%">ช่วงเวลาฝึกงาน</th><th width="9%">พฤติกรรม<br>(40 คะแนน)</th><th width="9%">ปฏิบัติ<br>(60 คะแนน)</th><th width="9%">คะแนนสุทธิ</th><th width="9%">ผลการประเมิน</th><th width="12%">หมายเหตุ</th></tr></thead><tbody>`;
+            currentReportData.forEach(r => {
+                html += `<tr><td>${printTime}</td><td class="text-left" style="padding-left:10px;">${r.name}</td><td>${r.id}</td><td>${periodText}</td><td>${r.bScore}</td><td>${r.pScore}</td><td><b>${r.total}</b></td><td>${r.status}</td><td class="text-left" style="font-size: 13px;">${r.remark}</td></tr>`;
+            });
+            html += `</tbody></table>
+            <div class="signature-section"><div class="sign-box"></div><div class="sign-box">ผู้กรอกข้อมูล ........(น.ส.รติกร กิจธาดา)........ครูผู้สอน<br><br><br>หัวหน้าคลินิก .....................................................</div></div>`;
+        } 
+        else if (type === "2") {
+            html += `<div class="header-title text-center" style="line-height: 1.5; margin-bottom: 20px;">ใบสรุปการฝึกปฏิบัติงานทางคลินิก<br>(วันปฏิบัติงาน)<br>คลินิกรังสีวิทยาช่องปากและแม็กซิลโลเฟเชียล<br>ระหว่างวันที่ ${periodText} (${groupText})</div>
+            <table style="font-size: 13px;"> <thead><tr><th width="9%">ประทับเวลา</th><th width="14%">ชื่อ-นามสกุล นร.</th><th width="8%">เลขประจำตัว</th><th width="10%">ช่วงฝึกปฏิบัติงาน</th><th width="6%">วันฝึกงาน<br>(วัน)</th><th width="6%">วันมาฝึกงาน<br>(วัน)</th><th width="6%">ลาป่วย<br>(วัน)</th><th width="6%">ลากิจ<br>(วัน)</th><th width="5%">ขาด<br>(วัน)</th><th width="6%">มาสาย<br>(ครั้ง)</th><th width="8%">หมายเหตุ</th><th width="8%">ผู้ตรวจสอบ</th><th width="8%">ผู้รับรอง</th></tr></thead><tbody>`;
+            currentReportData.forEach(r => {
+                html += `<tr><td>${printTime}</td><td class="text-left" style="padding-left: 5px;">${r.name}</td><td>${r.id}</td><td>${periodText}</td><td>15</td><td><b>${r.present}</b></td><td>${r.sick}</td><td>${r.personal}</td><td>${r.absent}</td><td>${r.late}</td><td class="text-left" style="font-size: 11px;">${r.remark}</td><td>ทัศนีย์ ปิ่นแก้ว</td><td>หัวหน้าคลินิกศูนย์</td></tr>`;
+            });
+            html += `</tbody></table>
+            <div class="signature-section" style="justify-content: flex-end; margin-top: 20px;"><div class="sign-box" style="text-align: right; width: 60%; line-height: 1.8;">ผู้กรอกข้อมูล ........(น.ส.รติกร กิจธาดา)........ครูผู้สอน<br>หัวหน้าคลินิกผู้ดูแล ................................................................<br>วันที่ ${currentDateThai}</div></div>`;
+        }
+        else if (type === "3") {
+            html += `<div class="header-title text-center" style="line-height: 1.5; margin-bottom: 20px;">การฝึกปฏิบัติงานทางคลินิก หลักสูตรประกาศนียบัตรผู้ช่วยทันตแพทย์ ประจำปีการศึกษา 2568<br>คลินิกรังสีวิทยาช่องปากและแม็กซิลโลเฟเชียล<br>ระหว่างวันที่ ${periodText} (${groupText})</div>
+            <table><thead><tr><th width="15%">ประทับเวลา</th><th width="25%">เลขประจําตัว<br>ชื่อ-นามสกุล</th><th width="15%">เข้า-ออกงาน</th><th width="20%">ผู้ดูแล</th><th width="10%">เวรประจำวัน</th><th width="15%">หมายเหตุ</th></tr></thead><tbody>`;
+            currentReportData.forEach(r => {
+                let typeColor = r.type === "เข้างาน" ? "color:#10b981;" : "color:#f59e0b;";
+                html += `<tr><td>${r.date}</td><td class="text-left" style="padding-left:10px;">${r.id}<br>${r.name}</td><td style="font-weight:bold; ${typeColor}">${r.type}</td><td>${r.teacher}</td><td>${r.detail}</td><td class="text-left" style="font-size: 13px;">${r.remark}</td></tr>`;
+            });
+            html += `</tbody></table>
+            <div class="signature-section" style="justify-content: flex-end; margin-top: 20px;"><div class="sign-box" style="text-align: right; width: 60%; line-height: 1.8;">ผู้กรอกข้อมูล ........(น.ส. ทัศนีย์ ปันแก้ว)........ครูผู้สอน<br>หัวหน้าคลินิก / ผู้ดูแล ................................................................<br></div></div>`;
+        }
+
+        html += `<script>window.onload = function() { setTimeout(() => { window.print(); }, 500); };<\/script></body></html>`;
+        let printWindow = window.open('', '_blank');
+        printWindow.document.write(html);
+        printWindow.document.close();
+    }
+
+    // ==========================================
+    // 🎓 ระบบค้นหานักเรียนแบบเจาะลึก
+    // ==========================================
     function renderAdminStudentList() {
         let filter = document.getElementById("adminGroupFilter").value, search = document.getElementById("adminSearchInput").value.toLowerCase();
         let filtered = globalAdminStudents.filter(s => (filter === "All" || s.group == filter) && (s.name.toLowerCase().includes(search) || s.id.toString().includes(search)));
