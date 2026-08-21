@@ -14,7 +14,7 @@
         body { font-family: 'Prompt', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--text); }
         .container { max-width: 500px; margin: 0 auto; padding-bottom: 30px;}
         
-        /* Profile Card */
+        /* 🌟 Profile Card */
         .profile-card { background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 25px 20px; border-radius: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 10px 25px rgba(234, 88, 12, 0.25); margin-bottom: 20px; position: relative; }
         .profile-card img { width: 65px; height: 65px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.8); object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .profile-info { flex: 1; }
@@ -26,7 +26,6 @@
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
         .stat-box { background: white; padding: 15px 10px; border-radius: 16px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; display: flex; flex-direction: column; align-items: center;}
         
-        /* 🌟 เอฟเฟกต์สำหรับกล่องที่กดได้ */
         .clickable-box { cursor: pointer; border: 2px solid transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         .clickable-box:hover { transform: translateY(-4px); border-color: #f97316; box-shadow: 0 8px 25px rgba(249, 115, 22, 0.15); background-color: #fff7ed; }
 
@@ -39,12 +38,11 @@
         .tab-btn { flex: 1; padding: 10px; text-align: center; font-family: 'Prompt'; font-size: 13px; font-weight: 600; color: #64748b; background: none; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s;}
         .tab-btn.active { background: #ffedd5; color: var(--primary); }
         
-        /* Lists */
+        /* 📋 Lists */
         .list-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid #f1f5f9;}
         .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px dashed #e2e8f0; padding-bottom: 10px; }
         .list-header h3 { margin: 0; font-size: 15px; display: flex; align-items: center; gap: 8px; color: #ea580c; font-weight: 600;}
         
-        /* Dropdown กรองกลุ่ม */
         .group-filter { padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-family: 'Prompt'; font-size: 12px; outline: none; background: #f8fafc; color: #334155; font-weight: 500;}
         .group-filter:focus { border-color: #f97316; }
 
@@ -70,6 +68,7 @@
         .btn-edit { background: #e0e7ff; color: #4338ca; }
         .btn-revoke { background: #fee2e2; color: #b91c1c; }
 
+        /* 🌟 สไตล์กล่องแก้ไขคะแนน */
         .rubric-box { background: #fff7ed; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #ffedd5; text-align: left; }
         .rubric-box h4 { margin: 0 0 10px 0; color: #c2410c; font-size: 14px; display: flex; align-items: center; gap: 8px; }
         .rubric-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px dashed #fed7aa; padding-bottom: 8px; }
@@ -110,14 +109,14 @@
     </div>
 
     <div class="stat-grid">
-        <!-- 🌟 การ์ดรอประเมิน กดได้! -->
+        <!-- 🌟 การ์ดรอประเมิน (คลิกได้) -->
         <div class="stat-box clickable-box" onclick="showPendingTasks()">
             <div class="icon-circle"><i class="fa-solid fa-clipboard-question"></i></div>
             <div class="stat-num" id="tPending">0</div>
             <div class="stat-label">งานรอประเมิน</div>
             <div class="action-hint"><i class="fa-solid fa-hand-pointer"></i> กดดูรายการ</div>
         </div>
-        <!-- 🌟 การ์ดจำนวนเด็ก เปลี่ยนตามกลุ่มที่เลือก -->
+        <!-- 🌟 การ์ดจำนวนเด็ก -->
         <div class="stat-box">
             <div class="icon-circle" style="background: #e0e7ff; color: #4f46e5;"><i class="fa-solid fa-users"></i></div>
             <div class="stat-num" id="tStudents">0</div>
@@ -130,7 +129,7 @@
         <button class="tab-btn" id="tabHist" onclick="switchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติประเมิน</button>
     </div>
 
-    <!-- 🌟 ภาพรวมนักเรียน (มีตัวกรองกลุ่ม) -->
+    <!-- 🌟 ภาพรวมนักเรียน -->
     <div class="list-card" id="viewStudents">
         <div class="list-header">
             <h3><i class="fa-solid fa-users"></i> ข้อมูลนักเรียน</h3>
@@ -154,9 +153,9 @@
 <script>
     // 🚨 1. ใส่ LIFF ID (ของหน้า Teacher Dashboard นี้)
     const LIFF_ID = "2011162626-V8r8boat";
-    // 🚨 2. ใส่ LIFF ID หน้าให้คะแนนครู (เพื่อเด้งไปตอนกดประเมิน)
+    // 🚨 2. ใส่ LIFF ID หน้าให้คะแนนครู (เพื่อกดกระโดดไปหน้าให้คะแนน)
     const EVALUATION_LIFF_URL = "https://liff.line.me/2011162626-dON8ee2c";
-    
+    // 🚨 3. ใส่ API URL
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec";
 
     let currentTeacherName = "";
@@ -197,7 +196,7 @@
                 document.getElementById("userName").innerText = "ครู" + data.teacherName;
                 document.getElementById("tPending").innerText = data.pendingCount;
 
-                // อัปเดต Dropdown กลุ่ม (เรียงตัวเลขและเติมคำว่า กลุ่ม)
+                // อัปเดต Dropdown เลือกกลุ่ม
                 let filterDropdown = document.getElementById("groupFilter");
                 filterDropdown.innerHTML = '<option value="All">ดูทุกกลุ่ม</option>';
                 if(data.groups) {
@@ -208,18 +207,18 @@
                     });
                 }
 
-                renderStudentList(); // วาดรายชื่อเด็กตามกลุ่ม
+                renderStudentList(); 
 
                 // วาดประวัติ
                 let hHtml = "";
-                if (data.history.length === 0) hHtml = "<p style='text-align:center; color:#9ca3af; font-size:13px;'>ยังไม่มีประวัติการให้คะแนนครับ</p>";
+                if (data.history.length === 0) hHtml = "<p style='text-align:center; color:#9ca3af; font-size:13px; margin-top:20px;'>ยังไม่มีประวัติการให้คะแนนครับ</p>";
                 else {
                     data.history.forEach((h, idx) => {
                         hHtml += `<div class="history-item">
                                     <div class="h-header"><div class="h-title">${h.studentName}</div><div class="h-score">${h.rawScore}</div></div>
                                     <div class="h-detail"><b>${h.category}</b> - ${h.subCategory} ${h.detail ? '('+h.detail+')' : ''}<br><i class="fa-regular fa-clock"></i> ${h.date}</div>
                                     <div class="action-btns">
-                                        <button class="btn-sm btn-revoke" onclick="revokeScore('${h.logId}')"><i class="fa-solid fa-rotate-left"></i> ดึงงานกลับ/ยกเลิก</button>
+                                        <button class="btn-sm btn-revoke" onclick="revokeScore('${h.logId}')"><i class="fa-solid fa-rotate-left"></i> ดึงงานกลับ</button>
                                         <button class="btn-sm btn-edit" onclick="editScore(${idx})"><i class="fa-solid fa-pen"></i> แก้คะแนนแยกข้อ</button>
                                     </div>
                                  </div>`;
@@ -230,21 +229,21 @@
                 document.getElementById("loadingDiv").style.display = "none";
                 document.getElementById("mainDiv").classList.remove("hidden");
             } else { Swal.fire('ผิดพลาด', data.message, 'error'); }
+        }).catch(err => {
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
         });
     }
 
-    // 🌟 ฟังก์ชันเรนเดอร์รายชื่อนักเรียนตามกลุ่มที่เลือก
     function renderStudentList() {
         let filter = document.getElementById("groupFilter").value;
-        let filteredStudents = (filter === "All") ? gStudentData : gStudentData.filter(s => s.group === filter);
+        let filteredStudents = (filter === "All") ? gStudentData : gStudentData.filter(s => s.group == filter);
         
-        // อัปเดตตัวเลขการ์ดนักเรียนในการดูแล
         document.getElementById("tStudents").innerText = filteredStudents.length;
 
         let sHtml = "";
         if (filteredStudents.length === 0) {
             sHtml = "<p style='text-align:center; color:#9ca3af; font-size:13px; margin-top:20px;'>ไม่พบนักเรียนในกลุ่มนี้</p>";
-       } else {
+        } else {
             filteredStudents.forEach(s => { 
                 let displayGroup = (!isNaN(s.group) && s.group !== "") ? "กลุ่ม " + s.group : s.group;
                 sHtml += `<div class="student-item">
@@ -262,7 +261,6 @@
         document.getElementById("studentListArea").innerHTML = sHtml;
     }
 
-    // 🌟 ป๊อปอัปโชว์งานรอประเมินทั้งหมด
     function showPendingTasks() {
         if(gPendingList.length === 0) return Swal.fire('ไม่มีงานค้าง', 'พักผ่อนได้เลยครับคุณครู! ไม่มีงานรอประเมินครับ 🎉', 'success');
         
@@ -279,7 +277,7 @@
             title: 'งานที่รอประเมิน',
             html: html,
             showCancelButton: true,
-            confirmButtonText: 'ไปหน้าประเมินให้คะแนน',
+            confirmButtonText: '<i class="fa-solid fa-clipboard-check"></i> ไปหน้าประเมินให้คะแนน',
             cancelButtonText: 'ปิด',
             confirmButtonColor: '#ea580c',
             cancelButtonColor: '#94a3b8',
@@ -291,7 +289,6 @@
         });
     }
 
-    // ระบบแก้ไขคะแนนแยกข้อ
     function editScore(idx) {
         let h = gHistoryData[idx];
         let sub = h.subScores || []; 
@@ -395,7 +392,6 @@
         });
     }
 
-    // 🗑️ ฟังก์ชันดึงงานกลับ
     function revokeScore(logId) {
         Swal.fire({
             title: 'ดึงงานกลับมารอประเมิน?',
