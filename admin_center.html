@@ -11,7 +11,7 @@
     <style>
         :root { --primary: #0f766e; --primary-hover: #0d9488; --bg: #f8fafc; --text: #1e293b; --border: #e2e8f0; --sidebar: #042f2e; }
         body { font-family: 'Prompt', sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: var(--text); height: 100vh; overflow: hidden; display: flex;}
-        
+
         /* 🔒 Login Screen */
         #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #042f2e, #0f766e); display: flex; align-items: center; justify-content: center; z-index: 9999; }
         .login-card { background: white; padding: 40px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); width: 100%; max-width: 350px; text-align: center; }
@@ -25,13 +25,13 @@
 
         /* 🌟 Layout */
         #adminApp { display: none; width: 100%; height: 100%; }
-        
+
         .sidebar { width: 260px; background: var(--sidebar); color: white; display: flex; flex-direction: column; transition: 0.3s; z-index: 100;}
         .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 15px;}
         .sidebar-header i { font-size: 28px; color: #5eead4; }
         .sidebar-header h2 { margin: 0; font-size: 18px; font-weight: 600; line-height: 1.2;}
         .sidebar-header p { margin: 0; font-size: 11px; color: #99f6e4;}
-        
+
         .nav-menu { list-style: none; padding: 15px 10px; margin: 0; flex: 1;}
         .nav-item { margin-bottom: 5px; }
         .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: #ccfbf1; text-decoration: none; border-radius: 10px; font-size: 14px; font-weight: 500; transition: 0.2s; cursor: pointer;}
@@ -53,7 +53,7 @@
         .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #475569; }
         .form-control { width: 100%; padding: 10px 15px; font-family: 'Prompt'; font-size: 14px; border: 2px solid var(--border); border-radius: 8px; background: #f8fafc; outline: none; transition: 0.3s; box-sizing: border-box;}
         .form-control:focus { border-color: var(--primary); background: white; }
-        
+
         .btn { padding: 10px 20px; font-family: 'Prompt'; font-weight: 600; font-size: 14px; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
@@ -81,7 +81,7 @@
         .db-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px;}
         .db-tab-btn { background: none; border: none; font-family: 'Prompt'; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; padding: 10px 15px; border-radius: 8px; transition: 0.2s;}
         .db-tab-btn.active { background: #ccfbf1; color: #0f766e; }
-        
+
         .swal-wide { width: 95% !important; max-width: 500px !important; border-radius: 20px; padding: 20px 10px; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -101,7 +101,7 @@
         </div>
     </div>
 
-    <!-- 🌟 Main Application (จะแสดงเมื่อ Login ผ่าน) -->
+    <!-- 🌟 Main Application -->
     <div id="adminApp">
         <div class="sidebar">
             <div class="sidebar-header">
@@ -115,8 +115,6 @@
                 <li class="nav-item"><a class="nav-link active" onclick="switchTab('export', this)"><i class="fa-solid fa-file-pdf"></i> ออกเอกสาร & พรีวิว</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchTab('student', this)"><i class="fa-solid fa-user-graduate"></i> ข้อมูลนักเรียนเจาะลึก</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchTab('database', this); loadMasterData();"><i class="fa-solid fa-database"></i> จัดการฐานข้อมูล (CMS)</a></li>
-                <!-- 🚨 นำ ID ชีตฐานข้อมูลมาใส่ที่ลิงก์นี้นะครับ -->
-                <li class="nav-item"><a class="nav-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1U7x_0elVlm-FoGgY2un_u0p9k3gfPaVvQ4qyY0KfOVw', '_blank')"><i class="fa-solid fa-table-list"></i> ไปที่ชีตฐานข้อมูล <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px; margin-left: auto;"></i></a></li>
             </ul>
             <div style="margin-top: auto; padding: 20px; text-align: center;">
                 <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ</button>
@@ -202,7 +200,7 @@
                     <h1 class="page-title">จัดการฐานข้อมูล (CMS)</h1>
                     <p class="page-desc">เพิ่ม ลบ แก้ไข ข้อมูลหลักและตั้งค่าระบบ</p>
                 </div>
-                
+
                 <div class="db-tabs">
                     <button class="db-tab-btn active" onclick="switchDbTab('db-student', this)"><i class="fa-solid fa-user-graduate"></i> นักเรียน</button>
                     <button class="db-tab-btn" onclick="switchDbTab('db-teacher', this)"><i class="fa-solid fa-chalkboard-user"></i> คุณครู</button>
@@ -231,7 +229,7 @@
 
                 <div id="db-settings" class="card" style="display:none;">
                     <h3 style="margin:0 0 15px 0; color:#0f766e;">ตั้งค่าพิกัด เอกสาร และความปลอดภัย</h3>
-                    
+
                     <div class="form-group" style="margin-bottom: 15px;">
                         <label><i class="fa-solid fa-key"></i> รหัสผ่านสำหรับแอดมิน (Admin Password)</label>
                         <input type="text" id="set-pwd" class="form-control" placeholder="รหัสผ่านเข้า Admin Center">
@@ -254,7 +252,7 @@
     </div>
 
 <script>
-    // 🚨 1. นำ API_URL มาวางตรงนี้
+    // 🚨 นำ API_URL มาวางตรงนี้
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec";
 
     let currentReportData = [], currentReportType = "", globalAdminStudents = [];
@@ -273,36 +271,28 @@
         }
     });
 
-    // 🌟 ฟังก์ชัน Login (อัปเกรดให้มีป๊อปอัปแจ้งเตือนชัดเจน)
+    // 🌟 ฟังก์ชัน Login (แบบมีป๊อปอัปแจ้งเตือนสวยงาม)
     function checkLogin() {
         let pwd = document.getElementById("adminPassword").value;
         if(!pwd) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสผ่านก่อนครับ', 'warning');
 
-        // แสดงหน้าต่างโหลดข้อมูล
         Swal.fire({title: 'กำลังตรวจสอบรหัสผ่าน...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-        
+
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminLogin", password: pwd }) })
         .then(res => res.json()).then(data => {
             if(data.status === "success") {
-                // 🟢 กรณีรหัสถูก: เด้งป๊อปอัปสำเร็จ โชว์ 1.5 วินาที แล้วค่อยเข้าหน้าหลัก
                 Swal.fire({
-                    icon: 'success',
-                    title: 'เข้าสู่ระบบสำเร็จ!',
-                    text: 'กำลังพาท่านเข้าสู่หน้าจัดการระบบ...',
-                    timer: 1500,
-                    showConfirmButton: false
+                    icon: 'success', title: 'เข้าสู่ระบบสำเร็จ!', text: 'กำลังพาท่านเข้าสู่หน้าจัดการระบบ...',
+                    timer: 1500, showConfirmButton: false
                 }).then(() => {
-                    sessionStorage.setItem("adminLoggedIn", "true"); // จำค่าการล็อกอิน
+                    sessionStorage.setItem("adminLoggedIn", "true"); 
                     document.getElementById("loginScreen").style.display = "none";
                     document.getElementById("adminApp").style.display = "flex";
                     loadGroups(); 
                 });
             } else {
-                // 🔴 กรณีรหัสผิด: เด้งแจ้งเตือนสีแดง และล้างช่องใส่รหัส
                 Swal.fire({
-                    icon: 'error',
-                    title: 'รหัสผ่านไม่ถูกต้อง!',
-                    text: 'กรุณาตรวจสอบรหัสผ่านแล้วลองใหม่อีกครั้งครับ',
+                    icon: 'error', title: 'รหัสผ่านไม่ถูกต้อง!', text: 'กรุณาตรวจสอบรหัสผ่านแล้วลองใหม่อีกครั้งครับ',
                     confirmButtonColor: '#0f766e'
                 });
                 document.getElementById("adminPassword").value = "";
@@ -312,7 +302,7 @@
             Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่ครับ', 'error');
         });
     }
-    // 🌟 ฟังก์ชัน Logout
+
     function logout() {
         sessionStorage.removeItem("adminLoggedIn");
         location.reload();
@@ -500,7 +490,9 @@
         document.querySelectorAll("#tableHead th").forEach(th => headers.push(`"${th.innerText}"`)); csv += headers.join(",") + "\n";
         document.querySelectorAll("#tableBody tr").forEach(row => { let rowData = []; row.querySelectorAll("td").forEach(td => rowData.push(`"${td.innerText.replace(/"/g, '""')}"`)); csv += rowData.join(",") + "\n"; });
         let title = ["ใบคะแนนการฝึกงาน", "สรุปเวลาฝึกงาน", "เวลาลงฝึกงาน"][parseInt(currentReportType)-1];
-        let link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `${title}_${new Date().getTime()}.csv`; link.click();
+        let groupLabel = document.getElementById("groupFilter").value;
+        if(!isNaN(groupLabel) && groupLabel !== "All") groupLabel = "กลุ่ม" + groupLabel;
+        let link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `${title}_${groupLabel}_${new Date().getTime()}.csv`; link.click();
     }
 
     function renderAdminStudentList() {
