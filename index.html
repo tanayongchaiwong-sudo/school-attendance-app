@@ -63,7 +63,8 @@
             <button class="menu-btn" style="--c: #8b5cf6;" onclick="selectCategory('สอบประเมินภาพ')">
                 <i class="fa-solid fa-x-ray"></i><span>สอบประเมินภาพ</span>
             </button>
-            <button class="menu-btn" style="--c: #ec4899; grid-column: span 2;" onclick="selectCategory('สอบเข้าห้อง (Pre-Clinic)')">
+            <!-- 🌟 เพิ่ม ID ให้ปุ่มนี้เพื่อซ่อนได้เมื่อสอบครบ -->
+            <button class="menu-btn" id="btnPreClinic" style="--c: #ec4899; grid-column: span 2;" onclick="selectCategory('สอบเข้าห้อง (Pre-Clinic)')">
                 <i class="fa-solid fa-laptop-file"></i><span>สอบเข้าห้อง (Pre-Clinic)</span>
             </button>
         </div>
@@ -143,14 +144,14 @@
 </div>
 
 <script>
-    // 🚨 1. ใส่ LIFF ID (ของศูนย์บริการนักเรียน)
+    // 🚨 1. ใส่ LIFF ID (ของหน้าศูนย์บริการนักเรียน)
     const LIFF_ID = "2011162626-lcdf4ybN"; 
     // 🚨 2. ใส่ API URL 
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec"; 
 
     // ตัวแปรเก็บประวัติ
     let studentCompletedExams = [];
-    let studentSubmittedTasks = []; // 🌟 เก็บประวัติว่าเด็กส่งอะไรไปแล้วบ้าง
+    let studentSubmittedTasks = []; 
 
     const formData = {
         "ลงเวลาเข้า-ออก": {
@@ -192,7 +193,23 @@
     };
 
     window.onload = function() {
-        liff.init({ liffId: LIFF_ID });
+        liff.init({ liffId: LIFF_ID }).then(() => {
+            if (liff.isLoggedIn()) {
+                liff.getProfile().then(p => {
+                    // 🌟 ดึงข้อมูลประวัตินักเรียนอัตโนมัติตั้งแต่โหลดหน้าเว็บ
+                    fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentDashboard", studentUid: p.userId }) })
+                    .then(res => res.json()).then(data => {
+                        if(data.status === "success") {
+                            // ใส่รหัสนักเรียนให้อัตโนมัติ เพื่อให้ checkName() ทำงานต่อ
+                            document.getElementById("studentId").value = data.data.studentId;
+                            checkName(); // สั่งรันฟังก์ชันเช็กชื่อและประวัติทันที
+                        }
+                    });
+                });
+            } else {
+                liff.login();
+            }
+        });
         fetchTeachersList();
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -235,12 +252,28 @@
                 if(data.status === "success") {
                     document.getElementById("fullName").value = data.fullName;
                     studentCompletedExams = data.completedExams || []; 
-                    studentSubmittedTasks = data.submittedTasks || []; // 🌟 เก็บค่าประวัติทั้งหมดที่ยังไม่โดนปฏิเสธ
+                    studentSubmittedTasks = data.submittedTasks || []; 
+
+                    // 🌟 ตรวจสอบว่าสอบผ่าน Part 1, 2, 3 ครบหรือยัง
+                    let hasP1 = studentCompletedExams.includes("Part 1") || studentCompletedExams.includes("Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก");
+                    let hasP2 = studentCompletedExams.includes("Part 2") || studentCompletedExams.includes("Part 2: ขั้นตอนการถ่ายภาพรังสีชนิดในช่องปาก");
+                    let hasP3 = studentCompletedExams.includes("Part 3") || studentCompletedExams.includes("Part 3: ขั้นตอนการถ่ายภาพรังสีชนิดนอกช่องปาก");
+                    
+                    let btnPreClinic = document.getElementById("btnPreClinic");
+                    // ถ้าสอบครบทั้ง 3 พาร์ทแล้ว ซ่อนปุ่มการ์ดหลักหายไปเลย!
+                    if (hasP1 && hasP2 && hasP3) {
+                        if (btnPreClinic) btnPreClinic.classList.add("hidden");
+                    } else {
+                        if (btnPreClinic) btnPreClinic.classList.remove("hidden");
+                    }
+
                     updateForm(); 
                 } else {
                     document.getElementById("fullName").value = "ไม่พบรหัสนี้";
                     studentCompletedExams = [];
                     studentSubmittedTasks = [];
+                    let btnPreClinic = document.getElementById("btnPreClinic");
+                    if (btnPreClinic) btnPreClinic.classList.remove("hidden");
                 }
             });
         }
@@ -261,7 +294,6 @@
             document.getElementById("divSubCategory").classList.add("hidden");
             document.getElementById("divDetail").classList.add("hidden");
             
-            // 🌟 เช็กว่าเคยส่ง "สอบประเมินภาพ" ไปหรือยัง
             let isSubmitted = studentSubmittedTasks.includes("สอบประเมินภาพ|สอบประเมินภาพ|");
             if (isSubmitted) {
                 subSelect.innerHTML = '<option value="" disabled selected>✅ ส่งคำขอไปแล้ว (รอตรวจ/มีคะแนนแล้ว)</option>';
@@ -306,20 +338,18 @@
             btnSubmit.style.background = "#ec4899"; 
 
         } else {
-            // หมวดอื่นๆ (ส่งใบงาน, สอบปฏิบัติ, ลงเวลาเข้า-ออก)
+            // หมวดอื่นๆ ทั่วไป (เช่น สอบปฏิบัติ, ส่งใบงาน)
             document.getElementById("lblSubCategory").innerText = formData[cat].subLabel;
             subSelect.innerHTML = '<option value="" disabled selected>-- เลือก --</option>';
             
             let hasAvailableOption = false;
 
             Object.keys(formData[cat].options).forEach(opt => {
-                
-                // 🌟 หัวใจสำคัญ: ถ้าเป็น "สอบปฏิบัติ" แล้วเคยส่งหัวข้อนี้ไปแล้ว ให้ "หัวข้อการสอบ" หายไปเลย
+                // 🌟 ถ้าเป็น "สอบปฏิบัติ" แล้วเคยส่งหัวข้อนี้ไปแล้ว ให้ "หัวข้อการสอบ" หายไปเลย
                 if (cat === "สอบปฏิบัติ" && studentCompletedExams.includes(opt)) {
-                    return; // ข้ามการสร้างตัวเลือกนี้ (ซ่อนหายไปเลย)
+                    return; 
                 }
 
-                // นำตัวเลือกมาแสดงตามปกติ
                 subSelect.innerHTML += `<option value="${opt}">${opt}</option>`;
                 hasAvailableOption = true;
             });
