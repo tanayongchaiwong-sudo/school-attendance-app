@@ -180,7 +180,6 @@
                     </div>
                 </div>
                 <div id="studentDetailSection" style="display: none;">
-                    <!-- 🌟 ปุ่มบันทึกวันลา -->
                     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                         <button class="btn btn-outline" onclick="backToStudentList()"><i class="fa-solid fa-arrow-left"></i> กลับหน้ารายชื่อ</button>
                         <button class="btn btn-danger" onclick="openLeaveModal()"><i class="fa-solid fa-bed"></i> บันทึกวันลา</button>
@@ -192,14 +191,12 @@
                             <div style="text-align: right;"><div style="font-size: 13px; color: #64748b;">ชั่วโมงสะสม</div><div style="font-size: 24px; font-weight: bold; color: #0f766e;" id="d-hours">0.00</div></div>
                         </div>
                         
-                        <!-- 🌟 หัวตารางคะแนน + ปุ่มเรียงลำดับ -->
                         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                             <h3 style="margin: 0; font-size: 15px; color: #0f766e;"><i class="fa-solid fa-star"></i> ประวัติคะแนนที่ได้รับ</h3>
                             <button id="btnSortScore" class="btn btn-outline btn-sm" onclick="toggleSortScore()"><i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า</button>
                         </div>
                         <div class="table-responsive" style="margin-bottom: 20px;"><table id="adminScoreTable"><thead><tr><th>วันเวลา</th><th>หมวดหมู่</th><th>หัวข้อ</th><th>คะแนนดิบ</th><th>% น้ำหนัก</th></tr></thead><tbody id="adminScoreBody"></tbody></table></div>
                         
-                        <!-- 🌟 หัวตารางเวลาเข้าออก + ปุ่มเรียงลำดับ -->
                         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                             <h3 style="margin: 0; font-size: 15px; color: #0f766e;"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติเข้า-ออกงาน</h3>
                             <button id="btnSortAtt" class="btn btn-outline btn-sm" onclick="toggleSortAtt()"><i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า</button>
@@ -285,11 +282,17 @@
     let dbStudents = [], dbTeachers = [], dbSettings = {};
     let currentViewStudentId = ""; 
 
-    // 🌟 ตัวแปรเก็บข้อมูลสำหรับกดปุ่มสลับการจัดเรียง (เก่า-ใหม่)
     let currentDeepDiveScores = [];
     let currentDeepDiveAtt = [];
     let sortOrderScore = -1; // -1 = ใหม่ไปเก่า, 1 = เก่าไปใหม่
     let sortOrderAtt = -1;
+
+    // 🌟 วุ้นแปลภาษาของหน้าเว็บ
+    function normalizeId(id) {
+        if (id === null || id === undefined) return "";
+        let str = String(id).trim();
+        return (!isNaN(str) && str !== "") ? Number(str).toString() : str;
+    }
 
     document.addEventListener("DOMContentLoaded", function() { 
         let isLogged = sessionStorage.getItem("adminLoggedIn");
@@ -367,18 +370,6 @@
         });
     }
 
-    function loadMasterData() {
-        Swal.fire({title: 'กำลังอัปเดตข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminGetMasterData" }) })
-        .then(res => res.json()).then(data => {
-            Swal.close();
-            if(data.status === "success") {
-                dbStudents = data.data.students; dbTeachers = data.data.teachers; dbSettings = data.data.settings;
-                renderDbStudents(); renderDbTeachers(); fillSettingsForm();
-            }
-        });
-    }
-
     function renderDbStudents() {
         let tbody = document.getElementById("dbStudentBody"), html = "";
         dbStudents.forEach(s => {
@@ -438,7 +429,7 @@
     function openStudentModal(isEdit, id='', name='', group='') {
         Swal.fire({
             title: isEdit ? 'แก้ไขข้อมูลนักเรียน' : 'เพิ่มนักเรียนใหม่',
-            html: ` <div style="text-align:left; font-size:13px; font-weight:600;">รหัสนักเรียน</div><input id="swal-sid" class="swal2-input" value="${id}" type="number">
+            html: ` <div style="text-align:left; font-size:13px; font-weight:600;">รหัสนักเรียน</div><input id="swal-sid" class="swal2-input" value="${id}">
                     <div style="text-align:left; font-size:13px; font-weight:600; margin-top:10px;">ชื่อ-นามสกุล</div><input id="swal-sname" class="swal2-input" value="${name}">
                     <div style="text-align:left; font-size:13px; font-weight:600; margin-top:10px;">กลุ่ม (ใส่เฉพาะเลข)</div><input id="swal-sgroup" class="swal2-input" value="${group}" type="number">`,
             showCancelButton: true, confirmButtonText: 'บันทึก', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#0f766e', customClass: { popup: 'swal-wide' },
@@ -626,8 +617,15 @@
     // 🎓 ระบบค้นหานักเรียนแบบเจาะลึก
     // ==========================================
     function renderAdminStudentList() {
-        let filter = document.getElementById("adminGroupFilter").value, search = document.getElementById("adminSearchInput").value.toLowerCase();
-        let filtered = globalAdminStudents.filter(s => (filter === "All" || s.group == filter) && (s.name.toLowerCase().includes(search) || s.id.toString().includes(search)));
+        let filter = document.getElementById("adminGroupFilter").value, search = document.getElementById("adminSearchInput").value.trim().toLowerCase();
+        let filtered = globalAdminStudents.filter(s => {
+            let matchGroup = (filter === "All" || s.group == filter);
+            let sIdStr = String(s.id).toLowerCase();
+            let normSearch = (!isNaN(search) && search !== "") ? Number(search).toString() : search;
+            let normIdStr = (!isNaN(sIdStr) && sIdStr !== "") ? Number(sIdStr).toString() : sIdStr;
+            let matchSearch = s.name.toLowerCase().includes(search) || sIdStr.includes(search) || (normSearch !== "" && normIdStr.includes(normSearch));
+            return matchGroup && matchSearch;
+        });
         let html = "";
         filtered.forEach(s => { let displayGroup = (!isNaN(s.group) && s.group !== "") ? "กลุ่ม " + s.group : s.group; html += `<div class="student-list-item" onclick="viewStudentDetail('${s.id}')"><div><div class="s-name">${s.name} <span class="s-group-badge">${displayGroup}</span></div><div class="s-id">รหัสประจำตัว: ${s.id}</div></div><i class="fa-solid fa-chevron-right" style="color:#cbd5e1;"></i></div>`; });
         document.getElementById("adminStudentListArea").innerHTML = html;
