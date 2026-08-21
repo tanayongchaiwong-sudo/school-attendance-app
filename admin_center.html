@@ -161,7 +161,7 @@
                 </div>
             </div>
 
-            <!-- 🎓 Section 2: ข้อมูลเจาะลึก (เพิ่มปุ่ม บันทึกวันลา) -->
+            <!-- 🎓 Section 2: ข้อมูลเจาะลึก (เพิ่มปุ่มเรียงลำดับ) -->
             <div id="sec-student" class="section">
                 <div class="page-header">
                     <h1 class="page-title">ระบบจัดการนักเรียนรายบุคคล</h1>
@@ -191,9 +191,19 @@
                             <div style="flex: 1;"><h2 style="margin: 0; color: #1e293b;" id="d-name">-</h2><p style="margin: 5px 0 0 0; color: #64748b; font-size: 14px;" id="d-info">รหัส: - | กลุ่ม: -</p></div>
                             <div style="text-align: right;"><div style="font-size: 13px; color: #64748b;">ชั่วโมงสะสม</div><div style="font-size: 24px; font-weight: bold; color: #0f766e;" id="d-hours">0.00</div></div>
                         </div>
-                        <h3 style="font-size: 15px; color: #0f766e;"><i class="fa-solid fa-star"></i> ประวัติคะแนนที่ได้รับ</h3>
+                        
+                        <!-- 🌟 หัวตารางคะแนน + ปุ่มเรียงลำดับ -->
+                        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h3 style="margin: 0; font-size: 15px; color: #0f766e;"><i class="fa-solid fa-star"></i> ประวัติคะแนนที่ได้รับ</h3>
+                            <button id="btnSortScore" class="btn btn-outline btn-sm" onclick="toggleSortScore()"><i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า</button>
+                        </div>
                         <div class="table-responsive" style="margin-bottom: 20px;"><table id="adminScoreTable"><thead><tr><th>วันเวลา</th><th>หมวดหมู่</th><th>หัวข้อ</th><th>คะแนนดิบ</th><th>% น้ำหนัก</th></tr></thead><tbody id="adminScoreBody"></tbody></table></div>
-                        <h3 style="font-size: 15px; color: #0f766e;"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติเข้า-ออกงาน</h3>
+                        
+                        <!-- 🌟 หัวตารางเวลาเข้าออก + ปุ่มเรียงลำดับ -->
+                        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h3 style="margin: 0; font-size: 15px; color: #0f766e;"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติเข้า-ออกงาน</h3>
+                            <button id="btnSortAtt" class="btn btn-outline btn-sm" onclick="toggleSortAtt()"><i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า</button>
+                        </div>
                         <div class="table-responsive"><table id="adminAttTable"><thead><tr><th>วันเวลา</th><th>ประเภท</th><th>รายละเอียด</th><th>หมายเหตุ</th></tr></thead><tbody id="adminAttBody"></tbody></table></div>
                     </div>
                 </div>
@@ -268,12 +278,18 @@
     </div>
 
 <script>
-    // 🚨 นำ API_URL มาวางตรงนี้
+    // 🚨 1. นำ API_URL มาวางตรงนี้
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec";
 
     let currentReportData = [], currentReportType = "", globalAdminStudents = [];
     let dbStudents = [], dbTeachers = [], dbSettings = {};
-    let currentViewStudentId = ""; // ตัวแปรเก็บรหัสเด็กที่กำลังเปิดดูอยู่
+    let currentViewStudentId = ""; 
+
+    // 🌟 ตัวแปรเก็บข้อมูลสำหรับกดปุ่มสลับการจัดเรียง (เก่า-ใหม่)
+    let currentDeepDiveScores = [];
+    let currentDeepDiveAtt = [];
+    let sortOrderScore = -1; // -1 = ใหม่ไปเก่า, 1 = เก่าไปใหม่
+    let sortOrderAtt = -1;
 
     document.addEventListener("DOMContentLoaded", function() { 
         let isLogged = sessionStorage.getItem("adminLoggedIn");
@@ -290,9 +306,7 @@
     function checkLogin() {
         let pwd = document.getElementById("adminPassword").value;
         if(!pwd) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสผ่านก่อนครับ', 'warning');
-
         Swal.fire({title: 'กำลังตรวจสอบรหัสผ่าน...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminLogin", password: pwd }) })
         .then(res => res.json()).then(data => {
             if(data.status === "success") {
@@ -496,9 +510,9 @@
         } else if (currentReportType === "3") {
             hRow += "<th>วันเวลา</th><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>สถานะ</th><th>รายละเอียด</th><th>ครูผู้ดูแล</th>";
             currentReportData.forEach(r => { 
-                let isLeave = r.remark.includes("ลา") && !r.type;
+                let isLeave = r.remark.includes("ลา") && (!r.type || r.type === "-");
                 if(isLeave) {
-                    tbody.innerHTML += `<tr style="background:#fef2f2;"><td style="white-space:nowrap;">${r.date}</td><td>${r.id}</td><td>${r.name}</td><td colspan="3" style="color:#ef4444; font-weight:bold; text-align:center;">${r.remark}</td></tr>`;
+                    tbody.innerHTML += `<tr style="background:#fef2f2;"><td style="white-space:nowrap;">${r.date.split(' ')[0]}</td><td>${r.id}</td><td>${r.name}</td><td colspan="3" style="color:#ef4444; font-weight:bold; text-align:center;"><i class="fa-solid fa-bed"></i> ${r.remark}</td></tr>`;
                 } else {
                     let typeClass = r.type === "เข้างาน" ? "color:#10b981; font-weight:bold;" : "color:#f59e0b; font-weight:bold;"; 
                     tbody.innerHTML += `<tr><td style="white-space:nowrap;">${r.date}</td><td>${r.id}</td><td>${r.name}</td><td style="${typeClass}">${r.type}</td><td>${r.detail}</td><td>${r.teacher}</td></tr>`; 
@@ -590,9 +604,8 @@
             html += `<div class="header-title text-center" style="line-height: 1.5; margin-bottom: 20px;">การฝึกปฏิบัติงานทางคลินิก หลักสูตรประกาศนียบัตรผู้ช่วยทันตแพทย์ ประจำปีการศึกษา ${academicYear}<br>คลินิกรังสีวิทยาช่องปากและแม็กซิลโลเฟเชียล<br>ระหว่างวันที่ ${periodText} (${groupText})</div>
             <table><thead><tr><th width="15%">ประทับเวลา</th><th width="25%">เลขประจําตัว<br>ชื่อ-นามสกุล</th><th width="15%">เข้า-ออกงาน</th><th width="20%">ผู้ดูแล</th><th width="10%">เวรประจำวัน</th><th width="15%">หมายเหตุ</th></tr></thead><tbody>`;
             currentReportData.forEach(r => {
-                let isLeave = r.remark.includes("ลา") && !r.type;
+                let isLeave = r.remark.includes("ลา") && (!r.type || r.type === "-");
                 if(isLeave) {
-                    // ไฮไลต์แถวการลาในเอกสาร PDF ด้วยสีแดงอ่อน
                     html += `<tr style="background-color: #fef2f2;"><td>${r.date.split(' ')[0]}</td><td class="text-left" style="padding-left:10px;">${r.id}<br>${r.name}</td><td colspan="3" style="color:#ef4444; font-weight:bold;">${r.remark}</td><td class="text-left" style="font-size: 13px;">-</td></tr>`;
                 } else {
                     let typeColor = r.type === "เข้างาน" ? "color:#10b981;" : "color:#f59e0b;";
@@ -624,26 +637,69 @@
         currentViewStudentId = sid; 
         Swal.fire({title: 'กำลังดึงข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminGetStudentDetails", studentId: sid }) }).then(res => res.json()).then(data => {
-            Swal.close(); if(data.status === "success") {
-                document.getElementById("studentListView").style.display = "none"; document.getElementById("studentDetailSection").style.display = "block";
+            Swal.close(); 
+            if(data.status === "success") {
+                document.getElementById("studentListView").style.display = "none"; 
+                document.getElementById("studentDetailSection").style.display = "block";
+                
                 let p = data.data.profile, displayGroup = (!isNaN(p.group) && p.group !== "") ? "กลุ่ม " + p.group : p.group;
-                document.getElementById("d-name").innerText = p.name; document.getElementById("d-info").innerText = `รหัส: ${p.id} | ${displayGroup}`; document.getElementById("d-hours").innerText = p.totalHours;
-                let scoreHtml = ""; data.data.scores.forEach(sc => scoreHtml += `<tr><td>${sc.date}</td><td>${sc.category}</td><td>${sc.subCategory}</td><td style="color:#ea580c; font-weight:bold;">${sc.rawScore}</td><td>${sc.weight}</td></tr>`); document.getElementById("adminScoreBody").innerHTML = scoreHtml;
-                let attHtml = ""; data.data.attendance.forEach(a => {
-                    let isLeave = a.remark.includes("ลา") && !a.type;
-                    if(isLeave) {
-                        attHtml += `<tr style="background-color: #fef2f2;"><td style="white-space:nowrap;">${a.date.split(' ')[0]}</td><td colspan="2" style="color:#ef4444; font-weight:bold; text-align:center;"><i class="fa-solid fa-bed"></i> ${a.remark}</td><td class="text-left" style="font-size: 13px;">บันทึกโดย Admin</td></tr>`;
-                    } else {
-                        let typeClass = a.type === "เข้างาน" ? "color:#10b981; font-weight:bold;" : "color:#f59e0b; font-weight:bold;";
-                        attHtml += `<tr><td>${a.date}</td><td style="${typeClass}">${a.type}</td><td>${a.detail}</td><td>${a.remark}</td></tr>`;
-                    }
-                }); 
-                document.getElementById("adminAttBody").innerHTML = attHtml;
+                document.getElementById("d-name").innerText = p.name; 
+                document.getElementById("d-info").innerText = `รหัส: ${p.id} | ${displayGroup}`; 
+                document.getElementById("d-hours").innerText = p.totalHours;
+                
+                currentDeepDiveScores = data.data.scores;
+                currentDeepDiveAtt = data.data.attendance;
+                sortOrderScore = -1; sortOrderAtt = -1; 
+                
+                document.getElementById("btnSortScore").innerHTML = `<i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า`;
+                document.getElementById("btnSortAtt").innerHTML = `<i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า`;
+                
+                renderDeepDiveScores();
+                renderDeepDiveAtt();
             }
         });
     }
 
-    // 🌟 ป๊อปอัปบันทึกวันลา
+    function renderDeepDiveScores() {
+        let scoreHtml = ""; 
+        if(currentDeepDiveScores.length === 0) scoreHtml = "<tr><td colspan='5' style='text-align:center;'>ไม่มีประวัติคะแนน</td></tr>";
+        else {
+            currentDeepDiveScores.forEach(sc => { scoreHtml += `<tr><td>${sc.date}</td><td>${sc.category}</td><td>${sc.subCategory}</td><td style="color:#ea580c; font-weight:bold;">${sc.rawScore}</td><td>${sc.weight}</td></tr>`; });
+        }
+        document.getElementById("adminScoreBody").innerHTML = scoreHtml;
+    }
+
+    function toggleSortScore() {
+        sortOrderScore *= -1; 
+        currentDeepDiveScores.reverse(); 
+        renderDeepDiveScores();
+        document.getElementById("btnSortScore").innerHTML = sortOrderScore === -1 ? `<i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า` : `<i class="fa-solid fa-arrow-up-wide-short"></i> เรียง: เก่าไปใหม่`;
+    }
+
+    function renderDeepDiveAtt() {
+        let attHtml = ""; 
+        if(currentDeepDiveAtt.length === 0) attHtml = "<tr><td colspan='4' style='text-align:center;'>ไม่มีประวัติการลงเวลา</td></tr>";
+        else {
+            currentDeepDiveAtt.forEach(a => {
+                let isLeave = a.remark.includes("ลา") && (!a.type || a.type === "-");
+                if(isLeave) {
+                    attHtml += `<tr style="background-color: #fef2f2;"><td style="white-space:nowrap;">${a.date.split(' ')[0]}</td><td colspan="2" style="color:#ef4444; font-weight:bold; text-align:center;"><i class="fa-solid fa-bed"></i> ${a.remark}</td><td class="text-left" style="font-size: 13px;">บันทึกโดย Admin</td></tr>`;
+                } else {
+                    let typeClass = a.type === "เข้างาน" ? "color:#10b981; font-weight:bold;" : "color:#f59e0b; font-weight:bold;";
+                    attHtml += `<tr><td>${a.date}</td><td style="${typeClass}">${a.type}</td><td>${a.detail}</td><td>${a.remark}</td></tr>`;
+                }
+            }); 
+        }
+        document.getElementById("adminAttBody").innerHTML = attHtml;
+    }
+
+    function toggleSortAtt() {
+        sortOrderAtt *= -1; 
+        currentDeepDiveAtt.reverse(); 
+        renderDeepDiveAtt();
+        document.getElementById("btnSortAtt").innerHTML = sortOrderAtt === -1 ? `<i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า` : `<i class="fa-solid fa-arrow-up-wide-short"></i> เรียง: เก่าไปใหม่`;
+    }
+
     function openLeaveModal() {
         Swal.fire({
             title: 'บันทึกวันลา',
