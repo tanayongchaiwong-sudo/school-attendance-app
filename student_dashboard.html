@@ -13,19 +13,16 @@
         body { font-family: 'Prompt', sans-serif; background: #f3f4f6; margin: 0; padding: 15px; color: #1f2937; }
         .container { max-width: 450px; margin: 0 auto; }
         
-        /* Section 1: Profile */
         .profile-card { background: linear-gradient(135deg, #4f46e5, #3b82f6); color: white; padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); margin-bottom: 20px; position: relative;}
         .profile-card img { width: 70px; height: 70px; border-radius: 50%; border: 3px solid white; margin-bottom: 10px; object-fit: cover;}
         .edit-btn { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 20px; font-family: 'Prompt'; font-size: 12px; cursor: pointer; transition: 0.3s; }
         
-        /* Section 2: Core Stats */
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .stat-box { background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
         .stat-box i { font-size: 24px; color: #4f46e5; margin-bottom: 8px; display: block; }
         .stat-num { font-size: 22px; font-weight: 600; color: #111827; }
         .stat-label { font-size: 12px; color: #6b7280; }
         
-        /* Section 3: Exam Progress Tracker */
         .card-box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 20px;}
         .card-box h3 { margin: 0 0 15px 0; font-size: 16px; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         
@@ -38,7 +35,6 @@
         .exam-checklist .passed { color: #059669; font-weight: 500; }
         .exam-checklist .remaining { color: #ef4444; }
 
-        /* Section 4: History */
         .history-item { padding: 12px 0; border-bottom: 1px dashed #e5e7eb; display: flex; justify-content: space-between; align-items: flex-start; }
         .history-item:last-child { border: none; padding-bottom: 0; }
         .h-title { font-size: 14px; font-weight: 500; color: #1f2937; margin-bottom: 2px;}
@@ -46,8 +42,9 @@
         .h-reason { font-size: 11px; color: #be123c; margin-top: 6px; background: #ffe4e6; padding: 6px 10px; border-radius: 6px; display: inline-block;}
         
         .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-top: 2px;}
-        .status-Pending { background: #fef08a; color: #b45309; }
-        .status-Completed { background: #dcfce3; color: #15803d; }
+        
+        /* 🌟 สร้างป้ายสถานะใหม่ เป็นสีฟ้าสำหรับ "ส่งคำขอสำเร็จ" เสมอ */
+        .status-Submitted { background: #dbeafe; color: #1d4ed8; } 
         .status-Rejected { background: #fecaca; color: #be123c; }
     </style>
 </head>
@@ -99,12 +96,12 @@
 </div>
 
 <script>
-    const LIFF_ID = "2011162626-3ElMqLDI";
+    // 🚨 อย่าลืมใส่ LIFF ID ของนักเรียนตรงนี้นะครับ
+    const LIFF_ID = "ใส่_LIFF_ID_หน้า_Dashboard_นักเรียน";
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec";
 
     let currentProfile = { id: "", name: "", group: "" };
 
-    // 🌟 รายการข้อสอบบังคับทั้งหมด (Master List)
     const MASTER_EXAMS = [
         { name: "Pre-Clinic Part 1", key: "Part 1" },
         { name: "Pre-Clinic Part 2", key: "Part 2" },
@@ -139,7 +136,6 @@
                 currentProfile.name = d.studentName;
                 currentProfile.group = d.studentGroup;
 
-                // 📌 อัปเดตข้อมูล Profile & Stats
                 document.getElementById("userName").innerText = d.studentName + " (" + d.studentId + ")";
                 document.getElementById("userGroup").innerText = "กลุ่มเรียน: " + d.studentGroup;
                 document.getElementById("sHours").innerText = d.totalHours;
@@ -147,12 +143,10 @@
                 document.getElementById("sLate").innerText = d.lateCount;
                 document.getElementById("sExam").innerText = d.completedExamsList.length;
 
-                // 📌 อัปเดต Section 3: Exam Tracker
                 let passedHtml = "", remainingHtml = "";
                 let passedCount = 0;
                 
                 MASTER_EXAMS.forEach(ex => {
-                    // ตรวจสอบว่าหัวข้อใน Master List ถูกสอบผ่านไปแล้วหรือยัง
                     if(d.completedExamsList.includes(ex.key)) {
                         passedHtml += `<div class="passed"><i class="fa-solid fa-check"></i> ${ex.name}</div>`;
                         passedCount++;
@@ -164,24 +158,20 @@
                 document.getElementById("passedList").innerHTML = passedHtml || "<span style='color:#9ca3af;'>ยังไม่มีหัวข้อที่ผ่าน</span>";
                 document.getElementById("remainingList").innerHTML = remainingHtml || "<span style='color:#10b981;'>🎉 ยินดีด้วย! คุณผ่านครบทุกหัวข้อแล้ว</span>";
                 
-                // คำนวณเปอร์เซ็นต์
                 let pct = Math.round((passedCount / MASTER_EXAMS.length) * 100);
-                setTimeout(() => { document.getElementById("progressBar").style.width = pct + "%"; }, 500); // ดีเลย์ให้แถบวิ่งสวยๆ
+                setTimeout(() => { document.getElementById("progressBar").style.width = pct + "%"; }, 500); 
                 document.getElementById("progressText").innerText = `${pct}% (${passedCount}/${MASTER_EXAMS.length})`;
 
-                // 📌 อัปเดต Section 4: History
                 let hList = document.getElementById("historyList");
                 if(d.recentHistory.length === 0) hList.innerHTML = "<p style='text-align:center; color:#9ca3af; font-size:13px;'>ยังไม่มีประวัติการส่งงานครับ</p>";
                 else {
                     d.recentHistory.forEach(h => {
-                        let stText = "รอประเมิน", stClass = "status-Pending", reasonHtml = "";
+                        // 🌟 ปรับใหม่! บังคับให้สถานะทุกงาน (ทั้ง Pending และ Completed) โชว์เป็น "ส่งคำขอสำเร็จ" เสมอ
+                        let stText = "ส่งคำขอสำเร็จ", stClass = "status-Submitted", reasonHtml = "";
                         
-                        if(h.status === "Completed") { 
-                            stText = "ประเมินแล้ว"; stClass = "status-Completed"; 
-                        }
-                        else if(h.status.includes("Rejected")) { 
+                        // ถ้าระบบครูมีการ "ปฏิเสธ" (Rejected) ถึงจะขึ้นสีแดงพร้อมบอกเหตุผล (เพื่อให้เด็กกลับไปแก้ตัว)
+                        if(h.status.includes("Rejected")) { 
                             stText = "ถูกปฏิเสธ"; stClass = "status-Rejected"; 
-                            // 🌟 แกะเอาเหตุผลที่ครูพิมพ์ออกมาโชว์
                             let reason = h.status.replace("Rejected:", "").trim();
                             reasonHtml = `<div class="h-reason"><i class="fa-solid fa-triangle-exclamation"></i> เหตุผล: ${reason}</div>`;
                         }
@@ -202,7 +192,6 @@
         });
     }
 
-    // 📌 ฟังก์ชันแก้ไขข้อมูล
     function openEditModal() {
         Swal.fire({
             title: 'แก้ไขข้อมูลส่วนตัว',
