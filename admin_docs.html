@@ -218,15 +218,21 @@
     function loadGroups() {
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getGroups" }) })
         .then(res => res.json()).then(data => {
+            let select = document.getElementById("groupFilter");
             if(data.status === "success") {
-                let select = document.getElementById("groupFilter");
                 select.innerHTML = '<option value="All">ดูทั้งหมดทุกกลุ่ม</option>';
                 let sortedGroups = data.data.sort((a, b) => a - b);
                 sortedGroups.forEach(g => { 
                     let label = (!isNaN(g) && g !== "") ? "กลุ่ม " + g : g;
                     select.innerHTML += `<option value="${g}">${label}</option>`; 
                 });
+            } else {
+                select.innerHTML = '<option value="" disabled selected>เกิดข้อผิดพลาดในการโหลดกลุ่ม</option>';
+                Swal.fire('ระบบหลังบ้านมีปัญหา', data.message, 'error');
             }
+        }).catch(err => {
+            document.getElementById("groupFilter").innerHTML = '<option value="" disabled selected>เชื่อมต่อไม่สำเร็จ</option>';
+            Swal.fire('ไม่สามารถเชื่อมต่อได้', 'กรุณาตรวจสอบว่านำ API URL ของจริงมาใส่แล้วหรือยัง และกด Deploy เป็นเวอร์ชันใหม่แล้วหรือไม่', 'error');
         });
     }
 
