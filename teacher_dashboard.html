@@ -197,12 +197,14 @@
                 document.getElementById("userName").innerText = "ครู" + data.teacherName;
                 document.getElementById("tPending").innerText = data.pendingCount;
 
-                // อัปเดต Dropdown กลุ่ม
+                // อัปเดต Dropdown กลุ่ม (เรียงตัวเลขและเติมคำว่า กลุ่ม)
                 let filterDropdown = document.getElementById("groupFilter");
                 filterDropdown.innerHTML = '<option value="All">ดูทุกกลุ่ม</option>';
                 if(data.groups) {
-                    data.groups.forEach(g => {
-                        filterDropdown.innerHTML += `<option value="${g}">${g}</option>`;
+                    let sortedGroups = data.groups.sort((a, b) => a - b);
+                    sortedGroups.forEach(g => {
+                        let label = (!isNaN(g) && g !== "") ? "กลุ่ม " + g : g;
+                        filterDropdown.innerHTML += `<option value="${g}">${label}</option>`;
                     });
                 }
 
@@ -242,11 +244,12 @@
         let sHtml = "";
         if (filteredStudents.length === 0) {
             sHtml = "<p style='text-align:center; color:#9ca3af; font-size:13px; margin-top:20px;'>ไม่พบนักเรียนในกลุ่มนี้</p>";
-        } else {
+       } else {
             filteredStudents.forEach(s => { 
+                let displayGroup = (!isNaN(s.group) && s.group !== "") ? "กลุ่ม " + s.group : s.group;
                 sHtml += `<div class="student-item">
                             <div>
-                                <div class="s-name">${s.name} <span class="s-group-badge">${s.group}</span></div>
+                                <div class="s-name">${s.name} <span class="s-group-badge">${displayGroup}</span></div>
                                 <div class="s-id">รหัส: ${s.id}</div>
                             </div>
                             <div class="s-stats">
