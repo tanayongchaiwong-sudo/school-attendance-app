@@ -12,7 +12,6 @@
         :root { --primary: #0f766e; --primary-hover: #0d9488; --bg: #f8fafc; --text: #1e293b; --border: #e2e8f0; --sidebar: #042f2e; }
         body { font-family: 'Prompt', sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: var(--text); height: 100vh; overflow: hidden; display: flex;}
 
-        /* 🔒 Login Screen */
         #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #042f2e, #0f766e); display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .swal2-container { z-index: 20000 !important; }
         .login-card { background: white; padding: 40px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); width: 100%; max-width: 350px; text-align: center; }
@@ -24,7 +23,6 @@
         .btn-login { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; font-family: 'Prompt'; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; }
         .btn-login:hover { background: var(--primary-hover); transform: translateY(-2px); }
 
-        /* 🌟 Layout */
         #adminApp { display: none; width: 100%; height: 100%; }
 
         .sidebar { width: 260px; background: var(--sidebar); color: white; display: flex; flex-direction: column; transition: 0.3s; z-index: 100;}
@@ -116,6 +114,7 @@
                 <li class="nav-item"><a class="nav-link active" onclick="switchTab('export', this)"><i class="fa-solid fa-file-pdf"></i> ออกเอกสาร & พรีวิว</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchTab('student', this)"><i class="fa-solid fa-user-graduate"></i> ข้อมูลนักเรียนเจาะลึก</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchTab('database', this); loadMasterData();"><i class="fa-solid fa-database"></i> จัดการฐานข้อมูล (CMS)</a></li>
+                <!-- 🚨 นำ ID ชีตฐานข้อมูลมาใส่ที่ลิงก์นี้นะครับ -->
                 <li class="nav-item"><a class="nav-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1U7x_0elVlm-FoGgY2un_u0p9k3gfPaVvQ4qyY0KfOVw', '_blank')"><i class="fa-solid fa-table-list"></i> ไปที่ชีตฐานข้อมูล <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px; margin-left: auto;"></i></a></li>
             </ul>
             <div style="margin-top: auto; padding: 20px; text-align: center;">
@@ -282,7 +281,7 @@
     </div>
 
 <script>
-    // 🚨 นำ API_URL มาวางตรงนี้
+    // 🚨 1. นำ API_URL มาวางตรงนี้
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec";
 
     let currentReportData = [], currentReportType = "", globalAdminStudents = [];
@@ -356,14 +355,12 @@
     // 🗄️ ระบบโหลดและจัดการฐานข้อมูล (CMS)
     // ==========================================
     function loadGroupsAndSettings() {
-        // โหลดข้อมูลทุกอย่างมารอไว้เลย ป้องกันค่าใน PDF แหว่ง
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminGetMasterData" }) })
         .then(res => res.json()).then(data => {
             if(data.status === "success") {
                 dbStudents = data.data.students; dbTeachers = data.data.teachers; dbSettings = data.data.settings;
                 fillSettingsForm(); renderDbStudents(); renderDbTeachers();
                 
-                // สกัดชื่อกลุ่มเพื่อนำไปใส่ Dropdown
                 let groups = new Set();
                 dbStudents.forEach(s => { if(s.group) groups.add(s.group); });
                 
@@ -446,7 +443,7 @@
         .then(res=>res.json()).then(data => { 
             if(data.status==="success") { 
                 Swal.fire('สำเร็จ', data.message, 'success'); 
-                loadGroupsAndSettings(); // โหลดการตั้งค่าเข้าหน่วยความจำใหม่ทันที
+                loadGroupsAndSettings(); 
             } 
         });
     }
@@ -525,7 +522,15 @@
             currentReportData.forEach(r => { let lateText = r.late > 0 ? `<span style="color:#ef4444; font-weight:bold;">${r.late}</span>` : r.late; tbody.innerHTML += `<tr><td>${r.id}</td><td>${r.name}</td><td style="color:#10b981; font-weight:bold;">${r.present}</td><td>${r.sick}</td><td>${r.personal}</td><td>${r.absent}</td><td>${lateText}</td></tr>`; });
         } else if (currentReportType === "3") {
             hRow += "<th>วันเวลา</th><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>สถานะ</th><th>รายละเอียด</th><th>ครูผู้ดูแล</th>";
-            currentReportData.forEach(r => { let typeClass = r.type === "เข้างาน" ? "color:#10b981; font-weight:bold;" : "color:#f59e0b; font-weight:bold;"; tbody.innerHTML += `<tr><td>${r.date}</td><td>${r.id}</td><td>${r.name}</td><td style="${typeClass}">${r.type}</td><td>${r.detail}</td><td>${r.teacher}</td></tr>`; });
+            currentReportData.forEach(r => { 
+                let isLeave = r.remark.includes("ลา") && !r.type;
+                if(isLeave) {
+                    tbody.innerHTML += `<tr style="background:#fef2f2;"><td style="white-space:nowrap;">${r.date}</td><td>${r.id}</td><td>${r.name}</td><td colspan="3" style="color:#ef4444; font-weight:bold; text-align:center;">${r.remark}</td></tr>`;
+                } else {
+                    let typeClass = r.type === "เข้างาน" ? "color:#10b981; font-weight:bold;" : "color:#f59e0b; font-weight:bold;"; 
+                    tbody.innerHTML += `<tr><td style="white-space:nowrap;">${r.date}</td><td>${r.id}</td><td>${r.name}</td><td style="${typeClass}">${r.type}</td><td>${r.detail}</td><td>${r.teacher}</td></tr>`; 
+                }
+            });
         }
         hRow += "</tr>"; thead.innerHTML = hRow;
     }
@@ -533,15 +538,22 @@
     function exportToCSV() {
         if (currentReportData.length === 0) return Swal.fire('แจ้งเตือน', 'ไม่มีข้อมูลสำหรับดาวน์โหลด', 'warning');
         let csv = '\uFEFF', headers = [];
-        document.querySelectorAll("#tableHead th").forEach(th => headers.push(`"${th.innerText}"`)); csv += headers.join(",") + "\n";
-        document.querySelectorAll("#tableBody tr").forEach(row => { let rowData = []; row.querySelectorAll("td").forEach(td => rowData.push(`"${td.innerText.replace(/"/g, '""')}"`)); csv += rowData.join(",") + "\n"; });
+        document.querySelectorAll("#tableHead th").forEach(th => headers.push(`"${th.innerText.replace(/\n/g, ' ')}"`)); csv += headers.join(",") + "\n";
+        document.querySelectorAll("#tableBody tr").forEach(row => { 
+            let rowData = []; 
+            row.querySelectorAll("td").forEach(td => { 
+                rowData.push(`"${td.innerText.replace(/"/g, '""').replace(/\n/g, ' ')}"`); 
+                if(td.hasAttribute('colspan')) { let c = parseInt(td.getAttribute('colspan')) - 1; for(let i=0; i<c; i++) rowData.push('""'); }
+            }); 
+            csv += rowData.join(",") + "\n"; 
+        });
         let title = ["ใบคะแนนการฝึกงาน", "สรุปเวลาฝึกงาน", "เวลาลงฝึกงาน"][parseInt(currentReportType)-1];
         let groupLabel = document.getElementById("groupFilter").value;
         if(!isNaN(groupLabel) && groupLabel !== "All") groupLabel = "กลุ่ม" + groupLabel;
         let link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `${title}_${groupLabel}_${new Date().getTime()}.csv`; link.click();
     }
 
-    // 🌟 ระบบพิมพ์เอกสารแบบสวมทับตัวแปรจากการตั้งค่า
+    // 🌟 ระบบพิมพ์เอกสาร PDF และไฮไลต์ข้อมูลการลา
     function generateFormDocument() {
         let rType = document.getElementById("reportType").value;
         if (currentReportData.length === 0) return Swal.fire('แจ้งเตือน', 'กรุณากดดูพรีวิวข้อมูลก่อนสั่งพิมพ์ครับ', 'warning');
@@ -561,7 +573,6 @@
         let groupFilter = document.getElementById("groupFilter").value;
         let groupText = (groupFilter === "All") ? "ทุกกลุ่ม" : ((!isNaN(groupFilter) && groupFilter !== "") ? "กลุ่ม " + groupFilter : groupFilter);
         
-        // 🌟 สกัดตัวแปรจากการตั้งค่าระบบ
         let academicYear = dbSettings['ACADEMIC_YEAR'] || "2568";
         let periodText = dbSettings['REPORT_PERIOD'] || "8 - 29 พ.ค. 69"; 
         let teacherName = dbSettings['TEACHER_NAME'] || "น.ส.รติกร กิจธาดา";
@@ -607,8 +618,13 @@
             html += `<div class="header-title text-center" style="line-height: 1.5; margin-bottom: 20px;">การฝึกปฏิบัติงานทางคลินิก หลักสูตรประกาศนียบัตรผู้ช่วยทันตแพทย์ ประจำปีการศึกษา ${academicYear}<br>คลินิกรังสีวิทยาช่องปากและแม็กซิลโลเฟเชียล<br>ระหว่างวันที่ ${periodText} (${groupText})</div>
             <table><thead><tr><th width="15%">ประทับเวลา</th><th width="25%">เลขประจําตัว<br>ชื่อ-นามสกุล</th><th width="15%">เข้า-ออกงาน</th><th width="20%">ผู้ดูแล</th><th width="10%">เวรประจำวัน</th><th width="15%">หมายเหตุ</th></tr></thead><tbody>`;
             currentReportData.forEach(r => {
-                let typeColor = r.type === "เข้างาน" ? "color:#10b981;" : "color:#f59e0b;";
-                html += `<tr><td>${r.date}</td><td class="text-left" style="padding-left:10px;">${r.id}<br>${r.name}</td><td style="font-weight:bold; ${typeColor}">${r.type}</td><td>${r.teacher}</td><td>${r.detail}</td><td class="text-left" style="font-size: 13px;">${r.remark}</td></tr>`;
+                let isLeave = r.remark.includes("ลา") && !r.type;
+                if(isLeave) {
+                    html += `<tr style="background-color: #fef2f2;"><td>${r.date.split(' ')[0]}</td><td class="text-left" style="padding-left:10px;">${r.id}<br>${r.name}</td><td colspan="3" style="color:#ef4444; font-weight:bold;">${r.remark}</td><td class="text-left" style="font-size: 13px;">-</td></tr>`;
+                } else {
+                    let typeColor = r.type === "เข้างาน" ? "color:#10b981;" : "color:#f59e0b;";
+                    html += `<tr><td>${r.date}</td><td class="text-left" style="padding-left:10px;">${r.id}<br>${r.name}</td><td style="font-weight:bold; ${typeColor}">${r.type}</td><td>${r.teacher}</td><td>${r.detail}</td><td class="text-left" style="font-size: 13px;">${r.remark}</td></tr>`;
+                }
             });
             html += `</tbody></table>
             <div class="signature-section" style="justify-content: flex-end; margin-top: 20px;"><div class="sign-box" style="text-align: right; width: 60%; line-height: 1.8;">ผู้กรอกข้อมูล ........(${teacherName})........ครูผู้สอน<br>หัวหน้าคลินิก / ผู้ดูแล ................................................................<br></div></div>`;
