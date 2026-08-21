@@ -3,106 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบจัดการเอกสาร (Admin Document Manager)</title>
+    <title>Super Admin Center - ระบบจัดการฝึกปฏิบัติงาน</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        :root { --primary: #0f766e; --primary-hover: #0d9488; --bg: #f3f4f6; --text: #1f2937; --border: #e5e7eb; }
-        body { font-family: 'Prompt', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: var(--text); }
-        .container { max-width: 1200px; margin: 0 auto; }
+        :root { --primary: #0f766e; --primary-hover: #0d9488; --bg: #f8fafc; --text: #1e293b; --border: #e2e8f0; --sidebar: #042f2e; }
+        body { font-family: 'Prompt', sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: var(--text); display: flex; height: 100vh; overflow: hidden;}
         
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 20px 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .header h1 { margin: 0; font-size: 24px; color: var(--primary); display: flex; align-items: center; gap: 10px;}
+        /* 🌟 Sidebar Navigation */
+        .sidebar { width: 260px; background: var(--sidebar); color: white; display: flex; flex-direction: column; transition: 0.3s; z-index: 100;}
+        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 15px;}
+        .sidebar-header i { font-size: 28px; color: #5eead4; }
+        .sidebar-header h2 { margin: 0; font-size: 18px; font-weight: 600; line-height: 1.2;}
+        .sidebar-header p { margin: 0; font-size: 11px; color: #99f6e4;}
         
-        .control-panel { background: white; padding: 20px 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;}
-        .form-group { flex: 1; min-width: 250px;}
-        .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #4b5563; }
-        select { width: 100%; padding: 12px; font-family: 'Prompt'; font-size: 15px; border: 1px solid var(--border); border-radius: 8px; background: #f9fafb; outline: none;}
-        select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.2); }
-        
-        .btn { padding: 12px 24px; font-family: 'Prompt'; font-weight: 600; font-size: 15px; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;}
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-hover); }
-        .btn-danger { background: #ef4444; color: white; }
-        .btn-danger:hover { background: #dc2626; }
-        .btn-outline { background: white; border: 2px solid #cbd5e1; color: #475569; }
-        .btn-outline:hover { background: #f8fafc; border-color: #94a3b8; }
+        .nav-menu { list-style: none; padding: 15px 10px; margin: 0; flex: 1;}
+        .nav-item { margin-bottom: 5px; }
+        .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: #ccfbf1; text-decoration: none; border-radius: 10px; font-size: 14px; font-weight: 500; transition: 0.2s; cursor: pointer;}
+        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
+        .nav-link.active { border-left: 4px solid #5eead4; background: rgba(94, 234, 212, 0.15);}
+        .nav-link i { width: 20px; text-align: center; font-size: 16px;}
 
-        .table-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow-x: auto; min-height: 400px;}
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background: #f8fafc; padding: 12px 15px; font-size: 14px; font-weight: 600; color: #475569; border-bottom: 2px solid var(--border); white-space: nowrap;}
-        td { padding: 12px 15px; font-size: 14px; border-bottom: 1px solid var(--border); color: #334155; }
-        tr:hover { background: #f8fafc; }
+        /* 🌟 Main Content Area */
+        .main-content { flex: 1; overflow-y: auto; padding: 30px 40px; background: #f1f5f9;}
         
-        .empty-state { text-align: center; padding: 50px; color: #9ca3af; }
-        .empty-state i { font-size: 50px; margin-bottom: 15px; color: #d1d5db;}
-        .hidden { display: none !important; }
+        .page-header { margin-bottom: 25px; }
+        .page-title { font-size: 24px; font-weight: 600; color: #0f766e; margin: 0 0 5px 0;}
+        .page-desc { font-size: 14px; color: #64748b; margin: 0;}
+
+        /* 🌟 Cards & Forms */
+        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border); margin-bottom: 20px;}
+        .flex-row { display: flex; gap: 15px; flex-wrap: wrap;}
+        .form-group { flex: 1; min-width: 200px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #475569; }
+        .form-control { width: 100%; padding: 10px 15px; font-family: 'Prompt'; font-size: 14px; border: 2px solid var(--border); border-radius: 8px; background: #f8fafc; outline: none; transition: 0.3s; box-sizing: border-box;}
+        .form-control:focus { border-color: var(--primary); background: white; }
+        
+        /* 🌟 Buttons */
+        .btn { padding: 10px 20px; font-family: 'Prompt'; font-weight: 600; font-size: 14px; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; transform: translateY(-2px); }
+
+        /* 🌟 Tables */
+        .table-responsive { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); max-height: 500px; background: white;}
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th { background: #f8fafc; padding: 15px; font-weight: 600; color: #475569; border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 10; white-space: nowrap;}
+        td { padding: 12px 15px; border-bottom: 1px dashed #f1f5f9; color: #334155; }
+        tr:hover td { background: #f8fafc; }
+
+        .section { display: none; animation: fadeIn 0.3s ease-in-out;}
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 🌟 Student Detail Card */
+        .stu-header { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px dashed #cbd5e1;}
+        .stu-avatar { width: 60px; height: 60px; background: #0f766e; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px;}
+        
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <h1><i class="fa-solid fa-folder-open"></i> ระบบจัดการเอกสารส่งโรงเรียน</h1>
-        <div style="display: flex; gap: 10px;">
-            <button class="btn btn-outline hidden" id="btnCsv" onclick="exportToCSV()"><i class="fa-solid fa-table-cells"></i> ดาวน์โหลดข้อมูลดิบ (CSV)</button>
-            <button class="btn btn-danger hidden" id="btnExport" onclick="generateFormDocument()"><i class="fa-solid fa-file-invoice"></i> สร้างเอกสารตามฟอร์มโรงเรียน</button>
+    <!-- 🌟 Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-shield-halved"></i>
+            <div>
+                <h2>Admin Center</h2>
+                <p>ระบบจัดการฝึกปฏิบัติงาน</p>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a class="nav-link active" onclick="switchTab('export')"><i class="fa-solid fa-file-pdf"></i> ออกเอกสาร & พรีวิว</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="switchTab('student')"><i class="fa-solid fa-user-graduate"></i> ข้อมูลนักเรียนเจาะลึก</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1U7x_0elVlm-FoGgY2un_u0p9k3gfPaVvQ4qyY0KfOVw', '_blank')"><i class="fa-solid fa-database"></i> ไปที่ฐานข้อมูล (Sheets) <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px; margin-left: auto;"></i></a></li>
+        </ul>
+        <div style="padding: 20px; text-align: center; color: #5eead4; font-size: 12px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <i class="fa-solid fa-lock"></i> Super Admin Area
         </div>
     </div>
 
-    <!-- ส่วนควบคุม -->
-    <div class="control-panel">
-        <div class="form-group">
-            <label>1. เลือกรูปแบบเอกสาร</label>
-            <select id="reportType">
-                <option value="1">1. ใบคะแนนการฝึกงาน</option>
-                <option value="2">2. สรุปเวลาฝึกงาน</option>
-                <option value="3">3. เวลาลงฝึกงาน (รายละเอียดรายวัน)</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>2. เลือกกลุ่มนักเรียน</label>
-            <select id="groupFilter">
-                <option value="" disabled selected>กำลังโหลดกลุ่ม...</option>
-            </select>
-        </div>
-        <button class="btn btn-primary" onclick="fetchReport()" style="width: 150px;">
-            <i class="fa-solid fa-magnifying-glass"></i> ดูข้อมูล
-        </button>
-    </div>
-
-    <!-- ตารางแสดงผล -->
-    <div class="table-container">
-        <div id="emptyState" class="empty-state">
-            <i class="fa-solid fa-table-list"></i>
-            <h3>กรุณาเลือกรูปแบบเอกสารและกด "ดูข้อมูล"</h3>
-        </div>
+    <!-- 🌟 Main Content -->
+    <div class="main-content">
         
-        <table id="dataTable" class="hidden">
-            <thead id="tableHead"></thead>
-            <tbody id="tableBody"></tbody>
-        </table>
+        <!-- ============================================== -->
+        <!-- 📑 Section 1: ออกเอกสารและพรีวิว -->
+        <!-- ============================================== -->
+        <div id="sec-export" class="section active">
+            <div class="page-header">
+                <h1 class="page-title">ระบบพรีวิวและออกเอกสาร</h1>
+                <p class="page-desc">เรียกดูข้อมูลดิบและดาวน์โหลดเอกสาร PDF/Excel อัตโนมัติ</p>
+            </div>
+
+            <div class="card">
+                <div class="flex-row" style="align-items: flex-end;">
+                    <div class="form-group">
+                        <label>เลือกรูปแบบเอกสาร</label>
+                        <select id="reportType" class="form-control">
+                            <option value="1">1. ใบคะแนนการฝึกงาน (Scores Report)</option>
+                            <option value="2">2. สรุปเวลาฝึกงาน (Attendance Summary)</option>
+                            <option value="3">3. เวลาลงฝึกงาน (Detailed Logs)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>เลือกกลุ่มนักเรียน</label>
+                        <select id="groupFilter" class="form-control">
+                            <option value="" disabled selected>กำลังโหลดรายชื่อกลุ่ม...</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="fetchReport()"><i class="fa-solid fa-magnifying-glass"></i> ดูพรีวิว</button>
+                </div>
+            </div>
+
+            <div id="tableSection" class="card" style="display: none;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: #0f766e;"><i class="fa-solid fa-eye"></i> พรีวิวข้อมูล</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" style="background: #10b981;" onclick="exportToCSV()"><i class="fa-solid fa-file-csv"></i> โหลด CSV</button>
+                        <button class="btn btn-danger" onclick="generateFormDocument()"><i class="fa-solid fa-file-pdf"></i> สร้าง PDF/Excel</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table id="dataTable">
+                        <thead id="tableHead"></thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 🎓 Section 2: ข้อมูลนักเรียนเจาะลึก -->
+        <!-- ============================================== -->
+        <div id="sec-student" class="section">
+            <div class="page-header">
+                <h1 class="page-title">ระบบจัดการนักเรียนรายบุคคล</h1>
+                <p class="page-desc">ค้นหา ดูประวัติ และแก้ไขข้อมูลเบื้องต้นของนักเรียน</p>
+            </div>
+
+            <div class="card">
+                <div class="flex-row" style="align-items: flex-end;">
+                    <div class="form-group">
+                        <label>ค้นหานักเรียน (กรอกรหัสประจำตัว)</label>
+                        <input type="number" id="searchStudentId" class="form-control" placeholder="เช่น 6701234">
+                    </div>
+                    <button class="btn btn-primary" onclick="searchStudentAdmin()"><i class="fa-solid fa-magnifying-glass"></i> ค้นหา</button>
+                </div>
+            </div>
+
+            <div id="studentDetailSection" style="display: none;">
+                <div class="card">
+                    <div class="stu-header">
+                        <div class="stu-avatar"><i class="fa-solid fa-user"></i></div>
+                        <div style="flex: 1;">
+                            <h2 style="margin: 0; color: #1e293b;" id="d-name">-</h2>
+                            <p style="margin: 5px 0 0 0; color: #64748b; font-size: 14px;" id="d-info">รหัส: - | กลุ่ม: -</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 13px; color: #64748b;">ชั่วโมงสะสม</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #0f766e;" id="d-hours">0.00</div>
+                        </div>
+                    </div>
+                    
+                    <h3 style="font-size: 15px; color: #0f766e;"><i class="fa-solid fa-star"></i> ประวัติคะแนนที่ได้รับ</h3>
+                    <div class="table-responsive" style="max-height: 250px; margin-bottom: 20px;">
+                        <table id="adminScoreTable">
+                            <thead><tr><th>วันเวลา</th><th>หมวดหมู่</th><th>หัวข้อ</th><th>คะแนนดิบ</th><th>% น้ำหนัก</th></tr></thead>
+                            <tbody id="adminScoreBody"></tbody>
+                        </table>
+                    </div>
+
+                    <h3 style="font-size: 15px; color: #0f766e;"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติเข้า-ออกงาน</h3>
+                    <div class="table-responsive" style="max-height: 250px;">
+                        <table id="adminAttTable">
+                            <thead><tr><th>วันเวลา</th><th>ประเภท</th><th>รายละเอียด</th><th>หมายเหตุ</th></tr></thead>
+                            <tbody id="adminAttBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
     </div>
-</div>
 
 <script>
-    // 🚨 1. นำ API_URL มาวางตรงนี้นะครับ
+    // 🚨 1. นำ API_URL มาวางตรงนี้
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec";
 
     let currentReportData = [];
     let currentReportType = "";
 
-    window.onload = function() { loadGroups(); };
+    window.onload = function() { 
+        loadGroups(); 
+    };
 
+    function switchTab(tabId) {
+        document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById('sec-' + tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    // ==========================================
+    // 📑 ระบบพรีวิวเอกสาร
+    // ==========================================
     function loadGroups() {
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getGroups" }) })
         .then(res => res.json()).then(data => {
             if(data.status === "success") {
                 let select = document.getElementById("groupFilter");
                 select.innerHTML = '<option value="All">ดูทั้งหมดทุกกลุ่ม</option>';
-                // เรียงลำดับตัวเลข 1, 2, 3 และเติมคำว่า "กลุ่ม "
                 let sortedGroups = data.data.sort((a, b) => a - b);
                 sortedGroups.forEach(g => { 
                     let label = (!isNaN(g) && g !== "") ? "กลุ่ม " + g : g;
@@ -112,13 +230,12 @@
         });
     }
 
-    // ฟังก์ชันดูข้อมูลบนหน้าเว็บปกติ
     function fetchReport() {
         let rType = document.getElementById("reportType").value;
         let gFilter = document.getElementById("groupFilter").value;
-        if(!gFilter) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกรอโหลดกลุ่มให้เสร็จสิ้นก่อนครับ', 'warning');
+        if(!gFilter) return Swal.fire('แจ้งเตือน', 'กรุณารอโหลดข้อมูลกลุ่มก่อนครับ', 'warning');
 
-        Swal.fire({title: 'กำลังดึงข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+        Swal.fire({title: 'กำลังดึงข้อมูลพรีวิว...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
 
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getAdminReport", reportType: rType, groupFilter: gFilter, exportForm: false }) })
         .then(res => res.json()).then(data => {
@@ -130,107 +247,103 @@
         }).catch(err => Swal.fire('ผิดพลาด', 'ไม่สามารถเชื่อมต่อระบบได้', 'error'));
     }
 
-    // สร้างโครงตาราง
     function renderTable() {
-        document.getElementById("emptyState").classList.add("hidden");
-        document.getElementById("dataTable").classList.remove("hidden");
-        document.getElementById("btnExport").classList.remove("hidden");
-        document.getElementById("btnCsv").classList.remove("hidden");
-
+        document.getElementById("tableSection").style.display = "block";
         let thead = document.getElementById("tableHead"), tbody = document.getElementById("tableBody");
         thead.innerHTML = ""; tbody.innerHTML = "";
 
         if (currentReportData.length === 0) {
-            tbody.innerHTML = "<tr><td colspan='10' style='text-align:center;'>ไม่มีข้อมูลในกลุ่มที่เลือก</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='10' style='text-align:center; color:#94a3b8; padding: 30px;'>ไม่พบข้อมูลในกลุ่มที่เลือก</td></tr>";
             return;
         }
 
         let hRow = "<tr>";
         if (currentReportType === "1") {
-            // โชว์ 9 คอลัมน์สำหรับแบบที่ 1
-            hRow += "<th>ประทับเวลา</th><th>ชื่อ-นามสกุล</th><th>เลขประจำตัว</th><th>ช่วงเวลาฝึกงาน</th><th>พฤติกรรม (40)</th><th>ปฏิบัติ (60)</th><th>คะแนนสุทธิ</th><th>ผลการประเมิน</th><th>หมายเหตุ</th>";
+            hRow += "<th>ชื่อ-นามสกุล</th><th>รหัส</th><th>พฤติกรรม</th><th>ปฏิบัติ</th><th>สุทธิ</th><th>สถานะ</th>";
             currentReportData.forEach(r => {
-                let statusColor = r.status === "ผ่าน" ? "color: #10b981; font-weight:bold;" : "color: #ef4444; font-weight:bold;";
-                tbody.innerHTML += `<tr>
-                    <td>${r.timestamp}</td>
-                    <td>${r.name}</td>
-                    <td>${r.id}</td>
-                    <td>${r.period}</td>
-                    <td>${r.bScore}</td>
-                    <td>${r.pScore}</td>
-                    <td><b>${r.total}</b></td>
-                    <td style="${statusColor}">${r.status}</td>
-                    <td>${r.remark}</td>
-                </tr>`;
+                let badge = r.status === "ผ่าน" ? "status-pass" : "status-fail";
+                tbody.innerHTML += `<tr><td>${r.name}</td><td>${r.id}</td><td>${r.bScore}</td><td>${r.pScore}</td><td style="color:#0f766e; font-weight:bold;">${r.total}</td><td><span class="${badge}">${r.status}</span></td></tr>`;
             });
         } else if (currentReportType === "2") {
-            hRow += "<th>เลขประจำตัว</th><th>ชื่อ-นามสกุล</th><th>วันมาฝึกงาน (วัน)</th><th>ลาป่วย (วัน)</th><th>ลากิจ (วัน)</th><th>ขาด (วัน)</th><th>มาสาย (ครั้ง)</th><th>หมายเหตุ</th>";
-            currentReportData.forEach(r => { tbody.innerHTML += `<tr><td>${r.id}</td><td>${r.name}</td><td>${r.present}</td><td>${r.sick}</td><td>${r.personal}</td><td>${r.absent}</td><td>${r.late}</td><td>${r.remark}</td></tr>`; });
+            hRow += "<th>รหัส</th><th>ชื่อ-นามสกุล</th><th>มา (วัน)</th><th>ลาป่วย</th><th>ลากิจ</th><th>ขาด</th><th>สาย</th>";
+            currentReportData.forEach(r => { 
+                let lateText = r.late > 0 ? `<span style="color:#ef4444; font-weight:bold;">${r.late}</span>` : r.late;
+                tbody.innerHTML += `<tr><td>${r.id}</td><td>${r.name}</td><td style="color:#10b981; font-weight:bold;">${r.present}</td><td>${r.sick}</td><td>${r.personal}</td><td>${r.absent}</td><td>${lateText}</td></tr>`; 
+            });
         } else if (currentReportType === "3") {
-            hRow += "<th>ประทับเวลา</th><th>เลขประจำตัว</th><th>ชื่อ-นามสกุล</th><th>เข้า-ออกงาน</th><th>เวรปฏิบัติงาน</th><th>ผู้ดูแล</th><th>หมายเหตุ</th>";
+            hRow += "<th>วันเวลา</th><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>สถานะ</th><th>รายละเอียด</th><th>ครูผู้ดูแล</th>";
             currentReportData.forEach(r => {
-                let typeColor = r.type === "เข้างาน" ? "color:#10b981;" : "color:#f59e0b;";
-                tbody.innerHTML += `<tr><td>${r.date}</td><td>${r.id}</td><td>${r.name}</td><td style="${typeColor}">${r.type}</td><td>${r.detail}</td><td>${r.teacher}</td><td>${r.remark}</td></tr>`;
+                let typeClass = r.type === "เข้างาน" ? "color:#10b981; font-weight:bold;" : "color:#f59e0b; font-weight:bold;";
+                tbody.innerHTML += `<tr><td>${r.date}</td><td>${r.id}</td><td>${r.name}</td><td style="${typeClass}">${r.type}</td><td>${r.detail}</td><td>${r.teacher}</td></tr>`;
             });
         }
         hRow += "</tr>"; thead.innerHTML = hRow;
     }
 
-    // 🌟 ฟังก์ชันดาวน์โหลด PDF/Excel ตามฟอร์ม
     function generateFormDocument() {
         let rType = document.getElementById("reportType").value;
         let gFilter = document.getElementById("groupFilter").value;
         
-        Swal.fire({
-            title: 'กำลังสร้างเอกสาร...', 
-            html: 'ระบบกำลังนำข้อมูลไปใส่ในแบบฟอร์ม...', 
-            allowOutsideClick: false, 
-            didOpen: () => Swal.showLoading()
-        });
+        Swal.fire({ title: 'กำลังสร้างเอกสาร PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getAdminReport", reportType: rType, groupFilter: gFilter, exportForm: true }) })
         .then(res => res.json()).then(data => {
             if(data.status === "success") {
                 Swal.fire({
-                    title: 'สร้างเอกสารสำเร็จ! 🎉',
-                    text: 'กรุณาเลือกรูปแบบไฟล์ที่ต้องการนำไปใช้งาน',
+                    title: 'สร้างเอกสารสำเร็จ!',
                     icon: 'success',
                     showCancelButton: true,
-                    showDenyButton: true,
-                    confirmButtonText: '<i class="fa-solid fa-file-pdf"></i> ไฟล์ PDF',
-                    cancelButtonText: '<i class="fa-solid fa-file-excel"></i> ไฟล์ Excel',
-                    denyButtonText: 'ปิดหน้าต่าง',
-                    confirmButtonColor: '#ef4444',
-                    cancelButtonColor: '#10b981',
-                    denyButtonColor: '#9ca3af'
+                    confirmButtonText: '<i class="fa-solid fa-file-pdf"></i> โหลด PDF',
+                    cancelButtonText: '<i class="fa-solid fa-file-excel"></i> โหลด Excel',
+                    confirmButtonColor: '#ef4444', cancelButtonColor: '#10b981'
                 }).then((result) => {
                     if (result.isConfirmed) window.open(data.pdfUrl, '_blank');
                     else if (result.dismiss === Swal.DismissReason.cancel) window.open(data.excelUrl, '_blank');
                 });
             } else { Swal.fire('ผิดพลาด', data.message, 'error'); }
-        }).catch(err => Swal.fire('ผิดพลาด', 'ไม่สามารถเชื่อมต่อระบบได้', 'error'));
+        });
     }
 
-    // โหลด CSV เฉพาะข้อมูลตารางดิบ
-    function exportToCSV() {
-        if (currentReportData.length === 0) return;
-        let csv = '\uFEFF'; 
-        let headers = [];
-        document.querySelectorAll("#tableHead th").forEach(th => headers.push(`"${th.innerText}"`));
-        csv += headers.join(",") + "\n";
-        let rows = document.querySelectorAll("#tableBody tr");
-        rows.forEach(row => {
-            let rowData = [];
-            row.querySelectorAll("td").forEach(td => { rowData.push(`"${td.innerText.replace(/"/g, '""')}"`); });
-            csv += rowData.join(",") + "\n";
+    // ==========================================
+    // 🎓 ระบบค้นหานักเรียนแบบเจาะลึก
+    // ==========================================
+    function searchStudentAdmin() {
+        let sid = document.getElementById("searchStudentId").value;
+        if(!sid) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสนักเรียน', 'warning');
+
+        Swal.fire({title: 'กำลังค้นหา...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminGetStudentDetails", studentId: sid }) })
+        .then(res => res.json()).then(data => {
+            Swal.close();
+            if(data.status === "success") {
+                document.getElementById("studentDetailSection").style.display = "block";
+                let p = data.data.profile;
+                let displayGroup = (!isNaN(p.group) && p.group !== "") ? "กลุ่ม " + p.group : p.group;
+                
+                document.getElementById("d-name").innerText = p.name;
+                document.getElementById("d-info").innerText = `รหัส: ${p.id} | ${displayGroup}`;
+                document.getElementById("d-hours").innerText = p.totalHours;
+
+                // วาดตารางคะแนน
+                let scoreHtml = "";
+                if(data.data.scores.length === 0) scoreHtml = "<tr><td colspan='5' style='text-align:center;'>ไม่มีประวัติคะแนน</td></tr>";
+                data.data.scores.forEach(sc => {
+                    scoreHtml += `<tr><td>${sc.date}</td><td>${sc.category}</td><td>${sc.subCategory}</td><td style="color:#ea580c; font-weight:bold;">${sc.rawScore}</td><td>${sc.weight}</td></tr>`;
+                });
+                document.getElementById("adminScoreBody").innerHTML = scoreHtml;
+
+                // วาดตารางเวลา
+                let attHtml = "";
+                if(data.data.attendance.length === 0) attHtml = "<tr><td colspan='4' style='text-align:center;'>ไม่มีประวัติการลงเวลา</td></tr>";
+                data.data.attendance.forEach(a => {
+                    let tc = a.type === "เข้างาน" ? "color:#10b981; font-weight:bold;" : "color:#f59e0b; font-weight:bold;";
+                    attHtml += `<tr><td>${a.date}</td><td style="${tc}">${a.type}</td><td>${a.detail}</td><td>${a.remark}</td></tr>`;
+                });
+                document.getElementById("adminAttBody").innerHTML = attHtml;
+
+            } else { Swal.fire('ไม่พบข้อมูล', data.message, 'error'); }
         });
-        let titles = ["ใบคะแนนการฝึกงาน", "สรุปเวลาฝึกงาน", "เวลาลงฝึกงาน"];
-        let title = titles[parseInt(currentReportType)-1];
-        let filename = `${title}_${document.getElementById("groupFilter").value}_${new Date().getTime()}.csv`;
-        let link = document.createElement("a");
-        link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-        link.download = filename;
-        link.click();
     }
 </script>
 </body>
