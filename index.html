@@ -26,7 +26,7 @@
         .menu-btn span { font-family: 'Prompt'; font-size: 13px; font-weight: 500; color: #334155; text-align: center;}
 
         .form-group { margin-bottom: 15px; }
-        label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; }
+        label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; color: #4b5563;}
         .input-wrapper { position: relative; }
         .input-wrapper i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
         input, select { width: 100%; padding: 12px 14px 12px 40px; font-family: 'Prompt', sans-serif; font-size: 14px; border: 1px solid var(--border); border-radius: 10px; background-color: #f9fafb; transition: 0.3s; box-sizing: border-box;}
@@ -35,6 +35,14 @@
         .btn-primary { width: 100%; padding: 14px; font-family: 'Prompt'; font-weight: 600; font-size: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; margin-top: 15px; display: flex; justify-content: center; gap: 8px; transition: 0.3s;}
         .btn-back { position: absolute; left: 0; top: 0; background: none; border: none; color: #64748b; font-size: 18px; cursor: pointer; padding: 5px; }
         
+        /* 🌟 สไตล์ปุ่มสอบเข้าห้องโดยเฉพาะ */
+        .exam-btn { background: white; border: 2px solid #fce7f3; padding: 15px; border-radius: 16px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); width: 100%; text-align: left; }
+        .exam-btn:hover { border-color: #f472b6; background: #fdf2f8; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(236, 72, 153, 0.1); }
+        .exam-btn-icon { width: 45px; height: 45px; background: #fce7f3; color: #ec4899; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .exam-btn-content { flex: 1; }
+        .exam-btn-title { font-family: 'Prompt'; font-size: 14px; font-weight: 600; color: #be185d; margin-bottom: 2px; }
+        .exam-btn-desc { font-family: 'Prompt'; font-size: 11px; color: #64748b; line-height: 1.3; }
+
         .hidden { display: none !important; }
         .gps-box { background: #eff6ff; padding: 10px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #bfdbfe; font-size: 12px; }
         .gps-btn { width: 100%; padding: 8px; font-family: 'Prompt'; background: white; border: 1px solid var(--primary); color: var(--primary); border-radius: 8px; cursor: pointer; margin-top: 5px; }
@@ -63,7 +71,6 @@
             <button class="menu-btn" style="--c: #8b5cf6;" onclick="selectCategory('สอบประเมินภาพ')">
                 <i class="fa-solid fa-x-ray"></i><span>สอบประเมินภาพ</span>
             </button>
-            <!-- 🌟 เพิ่ม ID ให้ปุ่มนี้เพื่อซ่อนได้เมื่อสอบครบ -->
             <button class="menu-btn" id="btnPreClinic" style="--c: #ec4899; grid-column: span 2;" onclick="selectCategory('สอบเข้าห้อง (Pre-Clinic)')">
                 <i class="fa-solid fa-laptop-file"></i><span>สอบเข้าห้อง (Pre-Clinic)</span>
             </button>
@@ -94,6 +101,11 @@
         </div>
 
         <hr style="border: 0; border-top: 1px dashed #e5e7eb; margin: 20px 0;">
+
+        <!-- 🌟 กลุ่มปุ่มสำหรับข้อสอบเข้าห้อง (ซ่อนไว้เป็นค่าเริ่มต้น) -->
+        <div id="divPreClinicButtons" class="hidden" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+            <!-- โค้ดปุ่มจะถูกสร้างอัตโนมัติตรงนี้ -->
+        </div>
 
         <div class="form-group" id="divSubCategory">
             <label id="lblSubCategory">เลือกหัวข้อ</label>
@@ -149,7 +161,6 @@
     // 🚨 2. ใส่ API URL 
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec"; 
 
-    // ตัวแปรเก็บประวัติ
     let studentCompletedExams = [];
     let studentSubmittedTasks = []; 
 
@@ -184,7 +195,7 @@
             },
             subLabel: "เลือกหัวข้อที่ต้องการสอบ", detailLabel: "",
             links: {
-                // 🚨 3. อย่าลืมตรวจสอบลิงก์หน้าข้อสอบตรงนี้นะครับ
+                // 🚨 3. อย่าลืมนำลิงก์หน้าข้อสอบ (exam.html) มาใส่ตรงนี้นะครับ
                 "Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก": "https://liff.line.me/ใส่_LIFF_ข้อสอบ_ที่นี่?part=Part 1",
                 "Part 2: ขั้นตอนการถ่ายภาพรังสีชนิดในช่องปาก": "https://liff.line.me/ใส่_LIFF_ข้อสอบ_ที่นี่?part=Part 2",
                 "Part 3: ขั้นตอนการถ่ายภาพรังสีชนิดนอกช่องปาก": "https://liff.line.me/ใส่_LIFF_ข้อสอบ_ที่นี่?part=Part 3"
@@ -196,13 +207,11 @@
         liff.init({ liffId: LIFF_ID }).then(() => {
             if (liff.isLoggedIn()) {
                 liff.getProfile().then(p => {
-                    // 🌟 ดึงข้อมูลประวัตินักเรียนอัตโนมัติตั้งแต่โหลดหน้าเว็บ
                     fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentDashboard", studentUid: p.userId }) })
                     .then(res => res.json()).then(data => {
                         if(data.status === "success") {
-                            // ใส่รหัสนักเรียนให้อัตโนมัติ เพื่อให้ checkName() ทำงานต่อ
                             document.getElementById("studentId").value = data.data.studentId;
-                            checkName(); // สั่งรันฟังก์ชันเช็กชื่อและประวัติทันที
+                            checkName(); 
                         }
                     });
                 });
@@ -233,6 +242,7 @@
         document.getElementById("subCategory").innerHTML = "";
         document.getElementById("detail").innerHTML = "";
         document.getElementById("divDetail").classList.add("hidden");
+        document.getElementById("divPreClinicButtons").classList.add("hidden");
     }
 
     function fetchTeachersList() {
@@ -254,19 +264,17 @@
                     studentCompletedExams = data.completedExams || []; 
                     studentSubmittedTasks = data.submittedTasks || []; 
 
-                    // 🌟 ตรวจสอบว่าสอบผ่าน Part 1, 2, 3 ครบหรือยัง
                     let hasP1 = studentCompletedExams.includes("Part 1") || studentCompletedExams.includes("Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก");
                     let hasP2 = studentCompletedExams.includes("Part 2") || studentCompletedExams.includes("Part 2: ขั้นตอนการถ่ายภาพรังสีชนิดในช่องปาก");
                     let hasP3 = studentCompletedExams.includes("Part 3") || studentCompletedExams.includes("Part 3: ขั้นตอนการถ่ายภาพรังสีชนิดนอกช่องปาก");
                     
                     let btnPreClinic = document.getElementById("btnPreClinic");
-                    // ถ้าสอบครบทั้ง 3 พาร์ทแล้ว ซ่อนปุ่มการ์ดหลักหายไปเลย!
+                    // ซ่อนการ์ดหลักหน้าแรกถ้าผ่านครบ 3 พาร์ทแล้ว
                     if (hasP1 && hasP2 && hasP3) {
                         if (btnPreClinic) btnPreClinic.classList.add("hidden");
                     } else {
                         if (btnPreClinic) btnPreClinic.classList.remove("hidden");
                     }
-
                     updateForm(); 
                 } else {
                     document.getElementById("fullName").value = "ไม่พบรหัสนี้";
@@ -282,12 +290,13 @@
     function updateForm() {
         let cat = document.getElementById("category").value;
         let subSelect = document.getElementById("subCategory");
-        
         let btnSubmit = document.getElementById("btnSubmit");
-        let btnText = document.getElementById("btnSubmitText");
-        let btnIcon = document.getElementById("btnSubmitIcon");
-        btnText.innerText = "ยืนยันการส่งข้อมูล";
-        btnIcon.className = "fa-solid fa-paper-plane";
+        
+        // รีเซ็ตการแสดงผลพื้นฐาน
+        btnSubmit.classList.remove("hidden");
+        document.getElementById("divPreClinicButtons").classList.add("hidden");
+        document.getElementById("btnSubmitText").innerText = "ยืนยันการส่งข้อมูล";
+        document.getElementById("btnSubmitIcon").className = "fa-solid fa-paper-plane";
         btnSubmit.style.background = "var(--primary)";
 
         if (cat === "สอบประเมินภาพ") {
@@ -311,31 +320,44 @@
             document.getElementById("divGps").classList.add("hidden");
             
         } else if (cat === "สอบเข้าห้อง (Pre-Clinic)") {
-            document.getElementById("lblSubCategory").innerText = formData[cat].subLabel;
-            subSelect.innerHTML = '<option value="" disabled selected>-- เลือก --</option>';
-            
+            // 🌟 ซ่อนองค์ประกอบฟอร์มทั้งหมด แล้วโชว์ปุ่มการ์ดแทน!
+            document.getElementById("divSubCategory").classList.add("hidden");
+            document.getElementById("divDetail").classList.add("hidden"); 
+            document.getElementById("divGps").classList.add("hidden");
+            document.getElementById("divTeacher").classList.add("hidden"); 
+            document.getElementById("divRemark").classList.add("hidden"); 
+            btnSubmit.classList.add("hidden"); // ซ่อนปุ่มยืนยันด้านล่างสุดด้วย
+
+            let btnContainer = document.getElementById("divPreClinicButtons");
+            btnContainer.classList.remove("hidden");
+            btnContainer.innerHTML = '<label style="margin-bottom: 5px;">เลือกหัวข้อที่ต้องการสอบ</label>';
+
             let availableOptions = Object.keys(formData[cat].options).filter(opt => {
                 let shortOpt = opt.split(":")[0].trim();
                 return !studentCompletedExams.includes(shortOpt) && !studentCompletedExams.includes(opt);
             });
             
             if (availableOptions.length === 0) {
-                subSelect.innerHTML = '<option value="" disabled selected>✅ คุณสอบครบทุก Part แล้ว</option>';
-                btnSubmit.classList.add("hidden"); 
+                btnContainer.innerHTML += '<div style="text-align:center; padding:15px; background:#ecfdf5; color:#059669; border-radius:10px; font-weight:600;"><i class="fa-solid fa-circle-check"></i> ✅ คุณสอบครบทุก Part แล้วครับ!</div>';
             } else {
-                availableOptions.forEach(opt => subSelect.innerHTML += `<option value="${opt}">${opt}</option>`);
-                btnSubmit.classList.remove("hidden");
+                availableOptions.forEach(opt => {
+                    let link = formData[cat].links[opt];
+                    let shortName = opt.split(":")[0].trim(); // เช่น "Part 1"
+                    let descName = opt.split(":")[1] ? opt.split(":")[1].trim() : ""; // เช่น "การใช้เครื่องมือ..."
+                    
+                    // 🌟 สร้างปุ่มลิงก์ข้อสอบ
+                    btnContainer.innerHTML += `
+                        <button class="exam-btn" onclick="window.location.href='${link}'">
+                            <div class="exam-btn-icon"><i class="fa-solid fa-laptop-code"></i></div>
+                            <div class="exam-btn-content">
+                                <div class="exam-btn-title">สอบเข้าห้อง ${shortName}</div>
+                                <div class="exam-btn-desc">${descName}</div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right" style="color: #cbd5e1; font-size: 16px;"></i>
+                        </button>
+                    `;
+                });
             }
-
-            document.getElementById("divSubCategory").classList.remove("hidden");
-            document.getElementById("divDetail").classList.add("hidden"); 
-            document.getElementById("divGps").classList.add("hidden");
-            document.getElementById("divTeacher").classList.add("hidden"); 
-            document.getElementById("divRemark").classList.add("hidden"); 
-
-            btnText.innerText = "เข้าสู่ห้องสอบ";
-            btnIcon.className = "fa-solid fa-arrow-up-right-from-square";
-            btnSubmit.style.background = "#ec4899"; 
 
         } else {
             // หมวดอื่นๆ ทั่วไป (เช่น สอบปฏิบัติ, ส่งใบงาน)
@@ -343,13 +365,10 @@
             subSelect.innerHTML = '<option value="" disabled selected>-- เลือก --</option>';
             
             let hasAvailableOption = false;
-
             Object.keys(formData[cat].options).forEach(opt => {
-                // 🌟 ถ้าเป็น "สอบปฏิบัติ" แล้วเคยส่งหัวข้อนี้ไปแล้ว ให้ "หัวข้อการสอบ" หายไปเลย
                 if (cat === "สอบปฏิบัติ" && studentCompletedExams.includes(opt)) {
                     return; 
                 }
-
                 subSelect.innerHTML += `<option value="${opt}">${opt}</option>`;
                 hasAvailableOption = true;
             });
@@ -390,7 +409,6 @@
             document.getElementById("lblDetail").innerText = formData[cat].detailLabel;
             detailSelect.innerHTML = '<option value="" disabled selected>-- เลือก --</option>';
             
-            // 🌟 ยกเลิกการซ่อน ครั้งที่ 1, 2, 3 (มีตัวเลือกครบเหมือนเดิมทุกประการ)
             detailArr.forEach(d => detailSelect.innerHTML += `<option value="${d}">${d}</option>`);
             
             btnSubmit.classList.remove("hidden");
@@ -413,30 +431,11 @@
     }
 
     function submitForm() {
-        let cat = document.getElementById("category").value;
-        let sub = document.getElementById("subCategory").value;
-        let studentId = document.getElementById("studentId").value;
-        let fullName = document.getElementById("fullName").value;
-
-        if(!studentId || !fullName || fullName === "ไม่พบรหัสนี้" || fullName === "กำลังค้นหา...") return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสนักเรียนให้ถูกต้องก่อนครับ', 'warning');
-
-        if (cat === "สอบเข้าห้อง (Pre-Clinic)") {
-            if (!sub || sub.includes("สอบครบทุก Part")) return Swal.fire('แจ้งเตือน', 'คุณสอบผ่านครบทุกพาร์ทแล้วครับ เยี่ยมมาก!', 'info');
-            
-            let link = formData[cat].links[sub];
-            if (link && link.startsWith("http")) {
-                window.location.href = link;
-            } else {
-                Swal.fire('แจ้งเตือน', 'ยังไม่ได้ตั้งค่าลิงก์ข้อสอบในระบบครับ', 'info');
-            }
-            return; 
-        }
-
         let payload = {
             action: "submitStudentRequest",
-            studentId: studentId,
-            category: cat,
-            subCategory: sub,
+            studentId: document.getElementById("studentId").value,
+            category: document.getElementById("category").value,
+            subCategory: document.getElementById("subCategory").value,
             detail: document.getElementById("detail").value,
             teacherId: document.getElementById("teacherId").value,
             location: document.getElementById("location").value,
@@ -444,6 +443,7 @@
             submitterUid: ""
         };
 
+        if(!payload.studentId || !document.getElementById("fullName").value) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสนักเรียนให้ถูกต้องก่อนครับ', 'warning');
         if(!payload.category || !payload.subCategory) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกหมวดหมู่ให้ครบถ้วนครับ', 'warning');
         if(!document.getElementById("divDetail").classList.contains("hidden") && !payload.detail) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกรายละเอียดเพิ่มเติมครับ', 'warning');
         if(!document.getElementById("divTeacher").classList.contains("hidden") && !payload.teacherId) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกคุณครูผู้ประเมินครับ', 'warning');
