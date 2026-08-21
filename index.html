@@ -184,9 +184,9 @@
             subLabel: "เลือกหัวข้อที่ต้องการสอบ", detailLabel: "",
             links: {
                 // 🚨 3. อย่าลืมตรวจสอบลิงก์หน้าข้อสอบตรงนี้นะครับ
-                "Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก": "https://liff.line.me/2011162626-TL70LvNp?part=Part 1",
-                "Part 2: ขั้นตอนการถ่ายภาพรังสีชนิดในช่องปาก": "https://liff.line.me/2011162626-TL70LvNp?part=Part 2",
-                "Part 3: ขั้นตอนการถ่ายภาพรังสีชนิดนอกช่องปาก": "https://liff.line.me/2011162626-TL70LvNp?part=Part 3"
+                "Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก": "https://liff.line.me/ใส่_LIFF_ข้อสอบ_ที่นี่?part=Part 1",
+                "Part 2: ขั้นตอนการถ่ายภาพรังสีชนิดในช่องปาก": "https://liff.line.me/ใส่_LIFF_ข้อสอบ_ที่นี่?part=Part 2",
+                "Part 3: ขั้นตอนการถ่ายภาพรังสีชนิดนอกช่องปาก": "https://liff.line.me/ใส่_LIFF_ข้อสอบ_ที่นี่?part=Part 3"
             }
         }
     };
@@ -313,19 +313,15 @@
             let hasAvailableOption = false;
 
             Object.keys(formData[cat].options).forEach(opt => {
-                let details = formData[cat].options[opt];
-                if (cat !== "ลงเวลาเข้า-ออก" && details && details.length > 0) {
-                    // กรองให้เหลือแค่ตัวเลือก (เช่น "ครั้งที่ 1") ที่ยังไม่เคยส่ง
-                    let availableDetails = details.filter(d => !studentSubmittedTasks.includes(`${cat}|${opt}|${d}`));
-                    if (availableDetails.length > 0) {
-                        subSelect.innerHTML += `<option value="${opt}">${opt}</option>`;
-                        hasAvailableOption = true;
-                    }
-                } else {
-                    // ลงเวลายังเปิดให้ลงได้ตลอด
-                    subSelect.innerHTML += `<option value="${opt}">${opt}</option>`;
-                    hasAvailableOption = true;
+                
+                // 🌟 หัวใจสำคัญ: ถ้าเป็น "สอบปฏิบัติ" แล้วเคยส่งหัวข้อนี้ไปแล้ว ให้ "หัวข้อการสอบ" หายไปเลย
+                if (cat === "สอบปฏิบัติ" && studentCompletedExams.includes(opt)) {
+                    return; // ข้ามการสร้างตัวเลือกนี้ (ซ่อนหายไปเลย)
                 }
+
+                // นำตัวเลือกมาแสดงตามปกติ
+                subSelect.innerHTML += `<option value="${opt}">${opt}</option>`;
+                hasAvailableOption = true;
             });
             
             if (!hasAvailableOption && cat !== "ลงเวลาเข้า-ออก") {
@@ -364,20 +360,10 @@
             document.getElementById("lblDetail").innerText = formData[cat].detailLabel;
             detailSelect.innerHTML = '<option value="" disabled selected>-- เลือก --</option>';
             
-            let availableDetails = detailArr;
-            if (cat !== "ลงเวลาเข้า-ออก") {
-                 // 🌟 กรองซ่อนครั้งที่สอบ/ส่งงาน ถ้ามีประวัติแล้ว
-                 availableDetails = detailArr.filter(d => !studentSubmittedTasks.includes(`${cat}|${sub}|${d}`));
-            }
-
-            if (availableDetails.length > 0) {
-                availableDetails.forEach(d => detailSelect.innerHTML += `<option value="${d}">${d}</option>`);
-                btnSubmit.classList.remove("hidden");
-            } else {
-                detailSelect.innerHTML = '<option value="" disabled selected>✅ ส่งครบแล้ว</option>';
-                btnSubmit.classList.add("hidden");
-            }
+            // 🌟 ยกเลิกการซ่อน ครั้งที่ 1, 2, 3 (มีตัวเลือกครบเหมือนเดิมทุกประการ)
+            detailArr.forEach(d => detailSelect.innerHTML += `<option value="${d}">${d}</option>`);
             
+            btnSubmit.classList.remove("hidden");
             document.getElementById("divDetail").classList.remove("hidden");
         } else {
             detailSelect.innerHTML = "";
