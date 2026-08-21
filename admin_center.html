@@ -10,9 +10,22 @@
 
     <style>
         :root { --primary: #0f766e; --primary-hover: #0d9488; --bg: #f8fafc; --text: #1e293b; --border: #e2e8f0; --sidebar: #042f2e; }
-        body { font-family: 'Prompt', sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: var(--text); display: flex; height: 100vh; overflow: hidden;}
+        body { font-family: 'Prompt', sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: var(--text); height: 100vh; overflow: hidden; display: flex;}
         
-        /* 🌟 Sidebar Navigation */
+        /* 🔒 Login Screen */
+        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #042f2e, #0f766e); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-card { background: white; padding: 40px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); width: 100%; max-width: 350px; text-align: center; }
+        .login-card i { font-size: 50px; color: #0f766e; margin-bottom: 15px; }
+        .login-card h2 { margin: 0 0 5px 0; color: #1e293b; font-size: 22px; }
+        .login-card p { margin: 0 0 25px 0; color: #64748b; font-size: 14px; }
+        .login-input { width: 100%; padding: 14px; font-family: 'Prompt'; font-size: 16px; border: 2px solid var(--border); border-radius: 12px; margin-bottom: 20px; box-sizing: border-box; text-align: center; letter-spacing: 2px; transition: 0.3s;}
+        .login-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1); }
+        .btn-login { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; font-family: 'Prompt'; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .btn-login:hover { background: var(--primary-hover); transform: translateY(-2px); }
+
+        /* 🌟 Layout */
+        #adminApp { display: none; width: 100%; height: 100%; }
+        
         .sidebar { width: 260px; background: var(--sidebar); color: white; display: flex; flex-direction: column; transition: 0.3s; z-index: 100;}
         .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 15px;}
         .sidebar-header i { font-size: 28px; color: #5eead4; }
@@ -26,14 +39,14 @@
         .nav-link.active { border-left: 4px solid #5eead4; background: rgba(94, 234, 212, 0.15);}
         .nav-link i { width: 20px; text-align: center; font-size: 16px;}
 
-        /* 🌟 Main Content Area */
+        .btn-logout { background: rgba(239, 68, 68, 0.1); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.2); width: 90%; margin: 15px auto; padding: 10px; border-radius: 8px; font-family: 'Prompt'; cursor: pointer; transition: 0.2s; font-weight: 500; }
+        .btn-logout:hover { background: #ef4444; color: white; }
+
         .main-content { flex: 1; overflow-y: auto; padding: 30px 40px; background: #f1f5f9;}
-        
         .page-header { margin-bottom: 25px; }
         .page-title { font-size: 24px; font-weight: 600; color: #0f766e; margin: 0 0 5px 0;}
         .page-desc { font-size: 14px; color: #64748b; margin: 0;}
 
-        /* 🌟 Cards & Forms */
         .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border); margin-bottom: 20px;}
         .flex-row { display: flex; gap: 15px; flex-wrap: wrap;}
         .form-group { flex: 1; min-width: 200px; }
@@ -41,7 +54,6 @@
         .form-control { width: 100%; padding: 10px 15px; font-family: 'Prompt'; font-size: 14px; border: 2px solid var(--border); border-radius: 8px; background: #f8fafc; outline: none; transition: 0.3s; box-sizing: border-box;}
         .form-control:focus { border-color: var(--primary); background: white; }
         
-        /* 🌟 Buttons */
         .btn { padding: 10px 20px; font-family: 'Prompt'; font-weight: 600; font-size: 14px; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
@@ -49,9 +61,9 @@
         .btn-danger:hover { background: #dc2626; transform: translateY(-2px); }
         .btn-outline { background: white; border: 2px solid #cbd5e1; color: #475569; }
         .btn-outline:hover { background: #f1f5f9; border-color: #94a3b8; transform: translateY(-2px); }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
 
-        /* 🌟 Tables */
-        .table-responsive { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); max-height: 400px; background: white;}
+        .table-responsive { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); max-height: 500px; background: white;}
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
         th { background: #f8fafc; padding: 15px; font-weight: 600; color: #475569; border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 10; white-space: nowrap;}
         td { padding: 12px 15px; border-bottom: 1px dashed #f1f5f9; color: #334155; }
@@ -61,18 +73,16 @@
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 🌟 Student List Items (คลิกได้) */
         .student-list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px dashed #e2e8f0; cursor: pointer; transition: 0.2s; border-radius: 8px;}
         .student-list-item:hover { background: #f8fafc; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-color: transparent;}
-        .student-list-item:last-child { border-bottom: none; }
         .s-name { font-size: 15px; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 8px;}
         .s-group-badge { font-size: 11px; background: #e2e8f0; padding: 3px 8px; border-radius: 6px; color: #475569; font-weight: 500;}
-        .s-id { font-size: 12px; color: #64748b; margin-top: 4px;}
 
-        /* 🌟 Student Detail Card */
-        .stu-header { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px dashed #cbd5e1;}
-        .stu-avatar { width: 60px; height: 60px; background: #0f766e; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px;}
+        .db-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px;}
+        .db-tab-btn { background: none; border: none; font-family: 'Prompt'; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; padding: 10px 15px; border-radius: 8px; transition: 0.2s;}
+        .db-tab-btn.active { background: #ccfbf1; color: #0f766e; }
         
+        .swal-wide { width: 95% !important; max-width: 500px !important; border-radius: 20px; padding: 20px 10px; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -80,388 +90,426 @@
 </head>
 <body>
 
-    <!-- 🌟 Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
+    <!-- 🔒 Login Screen -->
+    <div id="loginScreen">
+        <div class="login-card">
             <i class="fa-solid fa-shield-halved"></i>
-            <div>
-                <h2>Admin Center</h2>
-                <p>ระบบจัดการฝึกปฏิบัติงาน</p>
-            </div>
-        </div>
-        <ul class="nav-menu">
-            <li class="nav-item"><a class="nav-link active" onclick="switchTab('export', this)"><i class="fa-solid fa-file-pdf"></i> ออกเอกสาร & พรีวิว</a></li>
-            <li class="nav-item"><a class="nav-link" onclick="switchTab('student', this)"><i class="fa-solid fa-user-graduate"></i> ข้อมูลนักเรียนเจาะลึก</a></li>
-            <!-- 🚨 นำ ID ชีตฐานข้อมูลมาใส่ที่ลิงก์นี้นะครับ -->
-            <li class="nav-item"><a class="nav-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1U7x_0elVlm-FoGgY2un_u0p9k3gfPaVvQ4qyY0KfOVw', '_blank')"><i class="fa-solid fa-database"></i> ไปที่ฐานข้อมูล (Sheets) <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px; margin-left: auto;"></i></a></li>
-        </ul>
-        <div style="padding: 20px; text-align: center; color: #5eead4; font-size: 12px; border-top: 1px solid rgba(255,255,255,0.1);">
-            <i class="fa-solid fa-lock"></i> Super Admin Area
+            <h2>Admin Login</h2>
+            <p>กรุณาใส่รหัสผ่านเพื่อเข้าสู่ระบบจัดการ</p>
+            <input type="password" id="adminPassword" class="login-input" placeholder="••••••••" onkeypress="if(event.key === 'Enter') checkLogin()">
+            <button class="btn-login" onclick="checkLogin()">เข้าสู่ระบบ</button>
         </div>
     </div>
 
-    <!-- 🌟 Main Content -->
-    <div class="main-content">
-        
-        <!-- ============================================== -->
-        <!-- 📑 Section 1: ออกเอกสารและพรีวิว -->
-        <!-- ============================================== -->
-        <div id="sec-export" class="section active">
-            <div class="page-header">
-                <h1 class="page-title">ระบบพรีวิวและออกเอกสาร</h1>
-                <p class="page-desc">เรียกดูข้อมูลดิบและดาวน์โหลดเอกสาร PDF/Excel อัตโนมัติ</p>
-            </div>
-
-            <div class="card">
-                <div class="flex-row" style="align-items: flex-end;">
-                    <div class="form-group">
-                        <label>เลือกรูปแบบเอกสาร</label>
-                        <select id="reportType" class="form-control">
-                            <option value="1">1. ใบคะแนนการฝึกงาน (Scores Report)</option>
-                            <option value="2">2. สรุปเวลาฝึกงาน (Attendance Summary)</option>
-                            <option value="3">3. เวลาลงฝึกงาน (Detailed Logs)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>เลือกกลุ่มนักเรียน</label>
-                        <select id="groupFilter" class="form-control">
-                            <option value="" disabled selected>กำลังโหลดรายชื่อกลุ่ม...</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-primary" onclick="fetchReport()"><i class="fa-solid fa-magnifying-glass"></i> ดูพรีวิว</button>
+    <!-- 🌟 Main Application (จะแสดงเมื่อ Login ผ่าน) -->
+    <div id="adminApp">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <i class="fa-solid fa-shield-halved"></i>
+                <div>
+                    <h2>Admin Center</h2>
+                    <p>ระบบจัดการฝึกปฏิบัติงาน</p>
                 </div>
             </div>
-
-            <div id="tableSection" class="card" style="display: none;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: #0f766e;"><i class="fa-solid fa-eye"></i> พรีวิวข้อมูล</h3>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn btn-primary" style="background: #10b981;" onclick="exportToCSV()"><i class="fa-solid fa-file-csv"></i> โหลด CSV</button>
-                        <button class="btn btn-danger" onclick="generateFormDocument()"><i class="fa-solid fa-file-pdf"></i> สร้าง PDF/Excel</button>
-                    </div>
-                </div>
-                <div class="table-responsive">
-                    <table id="dataTable">
-                        <thead id="tableHead"></thead>
-                        <tbody id="tableBody"></tbody>
-                    </table>
-                </div>
+            <ul class="nav-menu">
+                <li class="nav-item"><a class="nav-link active" onclick="switchTab('export', this)"><i class="fa-solid fa-file-pdf"></i> ออกเอกสาร & พรีวิว</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="switchTab('student', this)"><i class="fa-solid fa-user-graduate"></i> ข้อมูลนักเรียนเจาะลึก</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="switchTab('database', this); loadMasterData();"><i class="fa-solid fa-database"></i> จัดการฐานข้อมูล (CMS)</a></li>
+                <!-- 🚨 นำ ID ชีตฐานข้อมูลมาใส่ที่ลิงก์นี้นะครับ -->
+                <li class="nav-item"><a class="nav-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1U7x_0elVlm-FoGgY2un_u0p9k3gfPaVvQ4qyY0KfOVw', '_blank')"><i class="fa-solid fa-table-list"></i> ไปที่ชีตฐานข้อมูล <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px; margin-left: auto;"></i></a></li>
+            </ul>
+            <div style="margin-top: auto; padding: 20px; text-align: center;">
+                <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ</button>
+                <div style="color: #5eead4; font-size: 11px; margin-top: 10px;"><i class="fa-solid fa-lock"></i> Super Admin Area</div>
             </div>
         </div>
 
-        <!-- ============================================== -->
-        <!-- 🎓 Section 2: ข้อมูลนักเรียนเจาะลึก (แบบใหม่กดรายชื่อได้!) -->
-        <!-- ============================================== -->
-        <div id="sec-student" class="section">
-            <div class="page-header">
-                <h1 class="page-title">ระบบจัดการนักเรียนรายบุคคล</h1>
-                <p class="page-desc">กรองกลุ่ม ค้นหารายชื่อ และกดที่การ์ดนักเรียนเพื่อดูข้อมูลเจาะลึก</p>
-            </div>
-
-            <!-- 🌟 หน้ารายชื่อนักเรียน (ListView) -->
-            <div id="studentListView">
+        <div class="main-content">
+            <!-- 📑 Section 1: ออกเอกสาร -->
+            <div id="sec-export" class="section active">
+                <div class="page-header">
+                    <h1 class="page-title">ระบบพรีวิวและออกเอกสาร</h1>
+                    <p class="page-desc">เรียกดูข้อมูลดิบและดาวน์โหลดเอกสาร PDF/Excel อัตโนมัติ</p>
+                </div>
                 <div class="card">
                     <div class="flex-row" style="align-items: flex-end;">
                         <div class="form-group">
-                            <label>กรองตามกลุ่มเรียน</label>
-                            <select id="adminGroupFilter" class="form-control" onchange="renderAdminStudentList()">
-                                <option value="All">ดูทั้งหมดทุกกลุ่ม</option>
+                            <label>เลือกรูปแบบเอกสาร</label>
+                            <select id="reportType" class="form-control">
+                                <option value="1">1. ใบคะแนนการฝึกงาน</option>
+                                <option value="2">2. สรุปเวลาฝึกงาน</option>
+                                <option value="3">3. เวลาลงฝึกงาน</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>ค้นหาด่วน (ชื่อ / รหัส)</label>
-                            <input type="text" id="adminSearchInput" class="form-control" placeholder="พิมพ์ชื่อหรือรหัสประจำตัว..." onkeyup="renderAdminStudentList()">
+                            <label>เลือกกลุ่มนักเรียน</label>
+                            <select id="groupFilter" class="form-control"><option value="" disabled selected>กำลังโหลด...</option></select>
                         </div>
+                        <button class="btn btn-primary" onclick="fetchReport()"><i class="fa-solid fa-magnifying-glass"></i> ดูพรีวิว</button>
                     </div>
                 </div>
-
-                <div class="card">
-                    <h3 style="margin: 0 0 15px 0; color: #0f766e;"><i class="fa-solid fa-users"></i> รายชื่อนักเรียน</h3>
-                    <div id="adminStudentListArea">
-                        <div style="text-align:center; padding:30px; color:#94a3b8;">กำลังโหลดรายชื่อนักเรียน...</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 🌟 หน้าข้อมูลเจาะลึกนักเรียน 1 คน (Detail View) -->
-            <div id="studentDetailSection" style="display: none;">
-                <button class="btn btn-outline" style="margin-bottom: 15px;" onclick="backToStudentList()"><i class="fa-solid fa-arrow-left"></i> กลับหน้ารายชื่อ</button>
-                
-                <div class="card">
-                    <div class="stu-header">
-                        <div class="stu-avatar"><i class="fa-solid fa-user"></i></div>
-                        <div style="flex: 1;">
-                            <h2 style="margin: 0; color: #1e293b;" id="d-name">-</h2>
-                            <p style="margin: 5px 0 0 0; color: #64748b; font-size: 14px;" id="d-info">รหัส: - | กลุ่ม: -</p>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-size: 13px; color: #64748b;">ชั่วโมงสะสม</div>
-                            <div style="font-size: 24px; font-weight: bold; color: #0f766e;" id="d-hours">0.00</div>
+                <div id="tableSection" class="card" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <h3 style="margin: 0; color: #0f766e;"><i class="fa-solid fa-eye"></i> พรีวิวข้อมูล</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-primary" style="background: #10b981;" onclick="exportToCSV()"><i class="fa-solid fa-file-csv"></i> โหลด CSV</button>
+                            <button class="btn btn-danger" onclick="generateFormDocument()"><i class="fa-solid fa-file-pdf"></i> สร้าง PDF/Excel</button>
                         </div>
                     </div>
-                    
-                    <h3 style="font-size: 15px; color: #0f766e;"><i class="fa-solid fa-star"></i> ประวัติคะแนนที่ได้รับ</h3>
-                    <div class="table-responsive" style="margin-bottom: 20px;">
-                        <table id="adminScoreTable">
-                            <thead><tr><th>วันเวลา</th><th>หมวดหมู่</th><th>หัวข้อ</th><th>คะแนนดิบ</th><th>% น้ำหนัก</th></tr></thead>
-                            <tbody id="adminScoreBody"></tbody>
-                        </table>
-                    </div>
-
-                    <h3 style="font-size: 15px; color: #0f766e;"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติเข้า-ออกงาน</h3>
                     <div class="table-responsive">
-                        <table id="adminAttTable">
-                            <thead><tr><th>วันเวลา</th><th>ประเภท</th><th>รายละเอียด</th><th>หมายเหตุ</th></tr></thead>
-                            <tbody id="adminAttBody"></tbody>
-                        </table>
+                        <table id="dataTable"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table>
                     </div>
                 </div>
             </div>
 
-        </div>
+            <!-- 🎓 Section 2: ข้อมูลเจาะลึก -->
+            <div id="sec-student" class="section">
+                <div class="page-header">
+                    <h1 class="page-title">ระบบจัดการนักเรียนรายบุคคล</h1>
+                    <p class="page-desc">กรองกลุ่ม ค้นหารายชื่อ และกดที่การ์ดเพื่อดูข้อมูลเจาะลึก</p>
+                </div>
+                <div id="studentListView">
+                    <div class="card">
+                        <div class="flex-row" style="align-items: flex-end;">
+                            <div class="form-group"><label>กรองตามกลุ่มเรียน</label><select id="adminGroupFilter" class="form-control" onchange="renderAdminStudentList()"><option value="All">ดูทั้งหมดทุกกลุ่ม</option></select></div>
+                            <div class="form-group"><label>ค้นหาด่วน (ชื่อ / รหัส)</label><input type="text" id="adminSearchInput" class="form-control" placeholder="พิมพ์ชื่อหรือรหัสประจำตัว..." onkeyup="renderAdminStudentList()"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 style="margin: 0 0 15px 0; color: #0f766e;"><i class="fa-solid fa-users"></i> รายชื่อนักเรียน</h3>
+                        <div id="adminStudentListArea"><div style="text-align:center; padding:30px; color:#94a3b8;">กำลังโหลดรายชื่อนักเรียน...</div></div>
+                    </div>
+                </div>
+                <div id="studentDetailSection" style="display: none;">
+                    <button class="btn btn-outline" style="margin-bottom: 15px;" onclick="backToStudentList()"><i class="fa-solid fa-arrow-left"></i> กลับหน้ารายชื่อ</button>
+                    <div class="card">
+                        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px dashed #cbd5e1;">
+                            <div style="width: 60px; height: 60px; background: #0f766e; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px;"><i class="fa-solid fa-user"></i></div>
+                            <div style="flex: 1;"><h2 style="margin: 0; color: #1e293b;" id="d-name">-</h2><p style="margin: 5px 0 0 0; color: #64748b; font-size: 14px;" id="d-info">รหัส: - | กลุ่ม: -</p></div>
+                            <div style="text-align: right;"><div style="font-size: 13px; color: #64748b;">ชั่วโมงสะสม</div><div style="font-size: 24px; font-weight: bold; color: #0f766e;" id="d-hours">0.00</div></div>
+                        </div>
+                        <h3 style="font-size: 15px; color: #0f766e;"><i class="fa-solid fa-star"></i> ประวัติคะแนนที่ได้รับ</h3>
+                        <div class="table-responsive" style="margin-bottom: 20px;"><table id="adminScoreTable"><thead><tr><th>วันเวลา</th><th>หมวดหมู่</th><th>หัวข้อ</th><th>คะแนนดิบ</th><th>% น้ำหนัก</th></tr></thead><tbody id="adminScoreBody"></tbody></table></div>
+                        <h3 style="font-size: 15px; color: #0f766e;"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติเข้า-ออกงาน</h3>
+                        <div class="table-responsive"><table id="adminAttTable"><thead><tr><th>วันเวลา</th><th>ประเภท</th><th>รายละเอียด</th><th>หมายเหตุ</th></tr></thead><tbody id="adminAttBody"></tbody></table></div>
+                    </div>
+                </div>
+            </div>
 
+            <!-- 🗄️ Section 3: จัดการฐานข้อมูล (CMS) -->
+            <div id="sec-database" class="section">
+                <div class="page-header">
+                    <h1 class="page-title">จัดการฐานข้อมูล (CMS)</h1>
+                    <p class="page-desc">เพิ่ม ลบ แก้ไข ข้อมูลหลักและตั้งค่าระบบ</p>
+                </div>
+                
+                <div class="db-tabs">
+                    <button class="db-tab-btn active" onclick="switchDbTab('db-student', this)"><i class="fa-solid fa-user-graduate"></i> นักเรียน</button>
+                    <button class="db-tab-btn" onclick="switchDbTab('db-teacher', this)"><i class="fa-solid fa-chalkboard-user"></i> คุณครู</button>
+                    <button class="db-tab-btn" onclick="switchDbTab('db-settings', this)"><i class="fa-solid fa-gear"></i> ตั้งค่าระบบ</button>
+                </div>
+
+                <div id="db-student" class="card">
+                    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin:0; color:#0f766e;">รายชื่อนักเรียนในระบบ</h3>
+                        <button class="btn btn-primary" onclick="openStudentModal(false)"><i class="fa-solid fa-plus"></i> เพิ่มนักเรียน</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table><thead><tr><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>กลุ่มเรียน</th><th>สถานะ LINE</th><th>จัดการ</th></tr></thead><tbody id="dbStudentBody"></tbody></table>
+                    </div>
+                </div>
+
+                <div id="db-teacher" class="card" style="display:none;">
+                    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin:0; color:#0f766e;">รายชื่อคุณครูในระบบ</h3>
+                        <button class="btn btn-primary" onclick="openTeacherModal(false)"><i class="fa-solid fa-plus"></i> เพิ่มคุณครู</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table><thead><tr><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>สถานะ LINE</th><th>จัดการ</th></tr></thead><tbody id="dbTeacherBody"></tbody></table>
+                    </div>
+                </div>
+
+                <div id="db-settings" class="card" style="display:none;">
+                    <h3 style="margin:0 0 15px 0; color:#0f766e;">ตั้งค่าพิกัด เอกสาร และความปลอดภัย</h3>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label><i class="fa-solid fa-key"></i> รหัสผ่านสำหรับแอดมิน (Admin Password)</label>
+                        <input type="text" id="set-pwd" class="form-control" placeholder="รหัสผ่านเข้า Admin Center">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 15px; border-top: 1px dashed #cbd5e1; padding-top: 15px;">
+                        <label><i class="fa-solid fa-calendar-days"></i> วันที่ระบุในหัวเอกสาร PDF (เช่น 8 - 29 พ.ค. 69)</label>
+                        <input type="text" id="set-period" class="form-control" placeholder="ระบุช่วงเวลา">
+                    </div>
+
+                    <div class="flex-row">
+                        <div class="form-group"><label>พิกัดละติจูด (Latitude)</label><input type="text" id="set-lat" class="form-control" placeholder="18.xxxx"></div>
+                        <div class="form-group"><label>พิกัดลองจิจูด (Longitude)</label><input type="text" id="set-lng" class="form-control" placeholder="98.xxxx"></div>
+                        <div class="form-group"><label>ระยะอนุญาต (เมตร)</label><input type="number" id="set-dist" class="form-control" placeholder="50"></div>
+                    </div>
+                    <button class="btn btn-primary" style="margin-top:20px; width:100%;" onclick="saveSystemSettings()"><i class="fa-solid fa-floppy-disk"></i> บันทึกการตั้งค่า</button>
+                </div>
+            </div>
+        </div>
     </div>
 
 <script>
-    // 🚨 1. นำ API_URL มาวางตรงนี้ 🚨
+    // 🚨 1. นำ API_URL มาวางตรงนี้
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec";
 
-    let currentReportData = [];
-    let currentReportType = "";
-    let globalAdminStudents = []; // 🌟 เก็บรายชื่อเด็กทั้งหมด
+    let currentReportData = [], currentReportType = "", globalAdminStudents = [];
+    let dbStudents = [], dbTeachers = [], dbSettings = {};
 
-    document.addEventListener("DOMContentLoaded", function() {
-        loadGroups(); 
+    // 🌟 เช็กสถานะการล็อกอินเมื่อเปิดหน้าเว็บ
+    document.addEventListener("DOMContentLoaded", function() { 
+        let isLogged = sessionStorage.getItem("adminLoggedIn");
+        if(isLogged === "true") {
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("adminApp").style.display = "flex";
+            loadGroups(); // โหลดข้อมูลเริ่มแรก
+        } else {
+            document.getElementById("loginScreen").style.display = "flex";
+            document.getElementById("adminApp").style.display = "none";
+        }
     });
 
+    // 🌟 ฟังก์ชัน Login
+    function checkLogin() {
+        let pwd = document.getElementById("adminPassword").value;
+        if(!pwd) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสผ่าน', 'warning');
+
+        Swal.fire({title: 'กำลังตรวจสอบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+        
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminLogin", password: pwd }) })
+        .then(res => res.json()).then(data => {
+            if(data.status === "success") {
+                Swal.close();
+                sessionStorage.setItem("adminLoggedIn", "true"); // จำค่าไว้ใน Session
+                document.getElementById("loginScreen").style.display = "none";
+                document.getElementById("adminApp").style.display = "flex";
+                loadGroups(); 
+            } else {
+                Swal.fire('ปฏิเสธการเข้าถึง', data.message, 'error');
+                document.getElementById("adminPassword").value = "";
+            }
+        }).catch(err => {
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+        });
+    }
+
+    // 🌟 ฟังก์ชัน Logout
+    function logout() {
+        sessionStorage.removeItem("adminLoggedIn");
+        location.reload();
+    }
+
+    // ==========================================
+    // UI Navigation
+    // ==========================================
     function switchTab(tabId, element) {
         document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-        
         document.getElementById('sec-' + tabId).classList.add('active');
         if(element) element.classList.add('active');
     }
 
+    function switchDbTab(tabId, element) {
+        document.getElementById('db-student').style.display = 'none';
+        document.getElementById('db-teacher').style.display = 'none';
+        document.getElementById('db-settings').style.display = 'none';
+        document.querySelectorAll('.db-tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).style.display = 'block';
+        element.classList.add('active');
+    }
+
     // ==========================================
-    // 📑 ระบบพรีวิวเอกสาร & โหลดรายชื่อ
+    // 🗄️ ระบบจัดการฐานข้อมูล (CMS)
+    // ==========================================
+    function loadMasterData() {
+        Swal.fire({title: 'กำลังดึงฐานข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminGetMasterData" }) })
+        .then(res => res.json()).then(data => {
+            Swal.close();
+            if(data.status === "success") {
+                dbStudents = data.data.students; dbTeachers = data.data.teachers; dbSettings = data.data.settings;
+                renderDbStudents(); renderDbTeachers(); fillSettingsForm();
+            }
+        });
+    }
+
+    function renderDbStudents() {
+        let tbody = document.getElementById("dbStudentBody"), html = "";
+        dbStudents.forEach(s => {
+            let lineStatus = s.line ? '<span style="color:#10b981; font-weight:600;"><i class="fa-brands fa-line"></i> ผูกแล้ว</span>' : '<span style="color:#94a3b8;">ยังไม่ผูก</span>';
+            html += `<tr><td>${s.id}</td><td style="font-weight:500;">${s.name}</td><td>${s.group}</td><td>${lineStatus}</td>
+                     <td>
+                        <button class="btn btn-outline btn-sm" onclick="openStudentModal(true, '${s.id}', '${s.name}', '${s.group}')"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteMasterData('student', '${s.id}')"><i class="fa-solid fa-trash"></i></button>
+                     </td></tr>`;
+        });
+        tbody.innerHTML = html;
+    }
+
+    function renderDbTeachers() {
+        let tbody = document.getElementById("dbTeacherBody"), html = "";
+        dbTeachers.forEach(t => {
+            let lineStatus = t.line ? '<span style="color:#10b981; font-weight:600;"><i class="fa-brands fa-line"></i> ผูกแล้ว</span>' : '<span style="color:#94a3b8;">ยังไม่ผูก</span>';
+            html += `<tr><td>${t.id}</td><td style="font-weight:500;">${t.name}</td><td>${lineStatus}</td>
+                     <td>
+                        <button class="btn btn-outline btn-sm" onclick="openTeacherModal(true, '${t.id}', '${t.name}')"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteMasterData('teacher', '${t.id}')"><i class="fa-solid fa-trash"></i></button>
+                     </td></tr>`;
+        });
+        tbody.innerHTML = html;
+    }
+
+    function fillSettingsForm() {
+        document.getElementById('set-pwd').value = dbSettings['ADMIN_PASSWORD'] || "admin";
+        document.getElementById('set-period').value = dbSettings['REPORT_PERIOD'] || "8 - 29 พ.ค. 69";
+        document.getElementById('set-lat').value = dbSettings['ADMIN_LAT'] || "";
+        document.getElementById('set-lng').value = dbSettings['ADMIN_LNG'] || "";
+        document.getElementById('set-dist').value = dbSettings['MAX_DISTANCE'] || "50";
+    }
+
+    function saveSystemSettings() {
+        let payload = {
+            action: "adminSaveSettings",
+            settings: {
+                "ADMIN_PASSWORD": document.getElementById('set-pwd').value,
+                "REPORT_PERIOD": document.getElementById('set-period').value,
+                "ADMIN_LAT": document.getElementById('set-lat').value,
+                "ADMIN_LNG": document.getElementById('set-lng').value,
+                "MAX_DISTANCE": document.getElementById('set-dist').value
+            }
+        };
+        Swal.fire({title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+        fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+        .then(res=>res.json()).then(data => { if(data.status==="success") Swal.fire('สำเร็จ', data.message, 'success'); });
+    }
+
+    function openStudentModal(isEdit, id='', name='', group='') {
+        Swal.fire({
+            title: isEdit ? 'แก้ไขข้อมูลนักเรียน' : 'เพิ่มนักเรียนใหม่',
+            html: ` <div style="text-align:left; font-size:13px; font-weight:600;">รหัสนักเรียน</div><input id="swal-sid" class="swal2-input" value="${id}" type="number">
+                    <div style="text-align:left; font-size:13px; font-weight:600; margin-top:10px;">ชื่อ-นามสกุล</div><input id="swal-sname" class="swal2-input" value="${name}">
+                    <div style="text-align:left; font-size:13px; font-weight:600; margin-top:10px;">กลุ่ม (ใส่เฉพาะเลข)</div><input id="swal-sgroup" class="swal2-input" value="${group}" type="number">`,
+            showCancelButton: true, confirmButtonText: 'บันทึก', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#0f766e', customClass: { popup: 'swal-wide' },
+            preConfirm: () => { return { isEdit: isEdit, oldId: id, newId: document.getElementById('swal-sid').value, newName: document.getElementById('swal-sname').value, newGroup: document.getElementById('swal-sgroup').value } }
+        }).then(res => {
+            if(res.isConfirmed) {
+                Swal.fire({title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+                fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminSaveStudent", ...res.value }) })
+                .then(r=>r.json()).then(data => { if(data.status==="success") { Swal.fire('สำเร็จ', data.message, 'success'); loadMasterData(); loadGroups(); } else Swal.fire('ผิดพลาด', data.message, 'error'); });
+            }
+        });
+    }
+
+    function openTeacherModal(isEdit, id='', name='') {
+        Swal.fire({
+            title: isEdit ? 'แก้ไขข้อมูลครู' : 'เพิ่มคุณครูใหม่',
+            html: `<div style="text-align:left; font-size:13px; font-weight:600; margin-top:10px;">ชื่อ-นามสกุล</div><input id="swal-tname" class="swal2-input" value="${name}">`,
+            showCancelButton: true, confirmButtonText: 'บันทึก', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#0f766e', customClass: { popup: 'swal-wide' },
+            preConfirm: () => { return { isEdit: isEdit, oldId: id, newName: document.getElementById('swal-tname').value } }
+        }).then(res => {
+            if(res.isConfirmed) {
+                Swal.fire({title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+                fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminSaveTeacher", ...res.value }) })
+                .then(r=>r.json()).then(data => { if(data.status==="success") { Swal.fire('สำเร็จ', data.message, 'success'); loadMasterData(); } });
+            }
+        });
+    }
+
+    function deleteMasterData(type, id) {
+        Swal.fire({ title: 'ยืนยันการลบ?', text: "ลบแล้วจะไม่สามารถกู้คืนได้!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'ใช่, ลบเลย' })
+        .then(res => {
+            if(res.isConfirmed) {
+                let action = type === 'student' ? 'adminDeleteStudent' : 'adminDeleteTeacher';
+                Swal.fire({title: 'กำลังลบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+                fetch(API_URL, { method: "POST", body: JSON.stringify({ action: action, id: id }) })
+                .then(r=>r.json()).then(data => { if(data.status==="success") { Swal.fire('ลบสำเร็จ', '', 'success'); loadMasterData(); loadGroups(); } });
+            }
+        });
+    }
+
+    // ==========================================
+    // 📑 โค้ดส่วน พรีวิวเอกสาร และ ดูรายบุคคล 
     // ==========================================
     function loadGroups() {
+        let selectExport = document.getElementById("groupFilter"), selectAdmin = document.getElementById("adminGroupFilter");
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getGroups" }) })
         .then(res => res.json()).then(data => {
-            let selectExport = document.getElementById("groupFilter");
-            let selectAdmin = document.getElementById("adminGroupFilter");
-            
             if(data.status === "success") {
                 let options = '<option value="All">ดูทั้งหมดทุกกลุ่ม</option>';
-                let sortedGroups = data.data.sort((a, b) => a - b);
-                sortedGroups.forEach(g => { 
-                    let label = (!isNaN(g) && g !== "") ? "กลุ่ม " + g : g;
-                    options += `<option value="${g}">${label}</option>`; 
-                });
-                selectExport.innerHTML = options;
-                selectAdmin.innerHTML = options;
-                
-                // 🌟 โหลดรายชื่อนักเรียนต่อเลย
-                loadAdminStudents();
-            } else {
-                selectExport.innerHTML = '<option value="" disabled selected>โหลดข้อมูลผิดพลาด</option>';
-                Swal.fire('ระบบหลังบ้านมีปัญหา', data.message, 'error');
-            }
-        }).catch(err => {
-            document.getElementById("groupFilter").innerHTML = '<option value="" disabled selected>เชื่อมต่อไม่สำเร็จ</option>';
-            Swal.fire('ไม่สามารถเชื่อมต่อได้', 'กรุณาตรวจสอบ URL หรือการ Deploy ครับ', 'error');
-        });
-    }
-
-    // 🌟 ฟังก์ชันโหลดรายชื่อเด็กทั้งหมดมาเก็บไว้ (ทำครั้งเดียวตอนเปิดหน้า)
-    function loadAdminStudents() {
-        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminGetAllStudents" }) })
-        .then(res => res.json()).then(data => {
-            if(data.status === "success") {
-                globalAdminStudents = data.data;
-                renderAdminStudentList();
+                data.data.sort((a, b) => a - b).forEach(g => { let label = (!isNaN(g) && g !== "") ? "กลุ่ม " + g : g; options += `<option value="${g}">${label}</option>`; });
+                selectExport.innerHTML = options; selectAdmin.innerHTML = options;
+                fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminGetAllStudents" }) }).then(r => r.json()).then(d => { if(d.status === "success") { globalAdminStudents = d.data; renderAdminStudentList(); } });
             }
         });
     }
 
-    // 🌟 ฟังก์ชันวาดรายชื่อเด็ก โดยมีระบบคัดกรอง
-    function renderAdminStudentList() {
-        let filter = document.getElementById("adminGroupFilter").value;
-        let search = document.getElementById("adminSearchInput").value.toLowerCase();
-        
-        let filtered = globalAdminStudents.filter(s => {
-            let matchGroup = (filter === "All" || s.group == filter);
-            let matchSearch = s.name.toLowerCase().includes(search) || s.id.toString().includes(search);
-            return matchGroup && matchSearch;
-        });
-
-        let html = "";
-        if (filtered.length === 0) {
-            html = "<div style='text-align:center; padding:30px; color:#94a3b8;'>ไม่พบรายชื่อนักเรียน</div>";
-        } else {
-            filtered.forEach(s => {
-                let displayGroup = (!isNaN(s.group) && s.group !== "") ? "กลุ่ม " + s.group : s.group;
-                html += `
-                    <div class="student-list-item" onclick="viewStudentDetail('${s.id}')">
-                        <div>
-                            <div class="s-name">${s.name} <span class="s-group-badge">${displayGroup}</span></div>
-                            <div class="s-id">รหัสประจำตัว: ${s.id}</div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right" style="color:#cbd5e1;"></i>
-                    </div>
-                `;
-            });
-        }
-        document.getElementById("adminStudentListArea").innerHTML = html;
-    }
-
-    // ==========================================
-    // 🎓 ระบบคลิกดูรายละเอียดนักเรียน (เจาะลึก)
-    // ==========================================
-    function viewStudentDetail(sid) {
-        Swal.fire({title: 'กำลังดึงข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-
-        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminGetStudentDetails", studentId: sid }) })
-        .then(res => res.json()).then(data => {
-            Swal.close();
-            if(data.status === "success") {
-                // ซ่อนหน้ารายชื่อ โชว์หน้าเจาะลึก
-                document.getElementById("studentListView").style.display = "none";
-                document.getElementById("studentDetailSection").style.display = "block";
-                
-                let p = data.data.profile;
-                let displayGroup = (!isNaN(p.group) && p.group !== "") ? "กลุ่ม " + p.group : p.group;
-                
-                document.getElementById("d-name").innerText = p.name;
-                document.getElementById("d-info").innerText = `รหัส: ${p.id} | ${displayGroup}`;
-                document.getElementById("d-hours").innerText = p.totalHours;
-
-                let scoreHtml = "";
-                if(data.data.scores.length === 0) scoreHtml = "<tr><td colspan='5' style='text-align:center;'>ไม่มีประวัติคะแนน</td></tr>";
-                data.data.scores.forEach(sc => {
-                    scoreHtml += `<tr><td>${sc.date}</td><td>${sc.category}</td><td>${sc.subCategory}</td><td style="color:#ea580c; font-weight:bold;">${sc.rawScore}</td><td>${sc.weight}</td></tr>`;
-                });
-                document.getElementById("adminScoreBody").innerHTML = scoreHtml;
-
-                let attHtml = "";
-                if(data.data.attendance.length === 0) attHtml = "<tr><td colspan='4' style='text-align:center;'>ไม่มีประวัติการลงเวลา</td></tr>";
-                data.data.attendance.forEach(a => {
-                    let tc = a.type === "เข้างาน" ? "color:#10b981; font-weight:bold;" : "color:#f59e0b; font-weight:bold;";
-                    attHtml += `<tr><td>${a.date}</td><td style="${tc}">${a.type}</td><td>${a.detail}</td><td>${a.remark}</td></tr>`;
-                });
-                document.getElementById("adminAttBody").innerHTML = attHtml;
-
-            } else { Swal.fire('ไม่พบข้อมูล', data.message, 'error'); }
-        });
-    }
-
-    // 🌟 ปุ่มกดย้อนกลับไปหน้ารายชื่อ
-    function backToStudentList() {
-        document.getElementById("studentDetailSection").style.display = "none";
-        document.getElementById("studentListView").style.display = "block";
-    }
-
-    // ==========================================
-    // 📑 ฟังก์ชันตารางและออกเอกสาร
-    // ==========================================
     function fetchReport() {
-        let rType = document.getElementById("reportType").value;
-        let gFilter = document.getElementById("groupFilter").value;
-        if(!gFilter) return Swal.fire('แจ้งเตือน', 'กรุณารอโหลดข้อมูลกลุ่มก่อนครับ', 'warning');
-
+        let rType = document.getElementById("reportType").value, gFilter = document.getElementById("groupFilter").value;
         Swal.fire({title: 'กำลังดึงข้อมูลพรีวิว...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getAdminReport", reportType: rType, groupFilter: gFilter, exportForm: false }) })
-        .then(res => res.json()).then(data => {
-            Swal.close();
-            if(data.status === "success") {
-                currentReportData = data.data; currentReportType = rType;
-                renderTable();
-            } else Swal.fire('ผิดพลาด', data.message, 'error');
-        }).catch(err => Swal.fire('ผิดพลาด', 'ไม่สามารถเชื่อมต่อระบบได้', 'error'));
+        .then(res => res.json()).then(data => { Swal.close(); if(data.status === "success") { currentReportData = data.data; currentReportType = rType; renderTable(); } });
     }
 
     function renderTable() {
         document.getElementById("tableSection").style.display = "block";
         let thead = document.getElementById("tableHead"), tbody = document.getElementById("tableBody");
         thead.innerHTML = ""; tbody.innerHTML = "";
-
-        if (currentReportData.length === 0) {
-            tbody.innerHTML = "<tr><td colspan='10' style='text-align:center; color:#94a3b8; padding: 30px;'>ไม่พบข้อมูลในกลุ่มที่เลือก</td></tr>";
-            return;
-        }
-
+        if (currentReportData.length === 0) { tbody.innerHTML = "<tr><td colspan='10' style='text-align:center;'>ไม่พบข้อมูล</td></tr>"; return; }
         let hRow = "<tr>";
         if (currentReportType === "1") {
             hRow += "<th>ชื่อ-นามสกุล</th><th>รหัส</th><th>พฤติกรรม</th><th>ปฏิบัติ</th><th>สุทธิ</th><th>สถานะ</th>";
-            currentReportData.forEach(r => {
-                let badge = r.status === "ผ่าน" ? "background:#d1fae5; color:#047857; padding:4px 10px; border-radius:20px; font-weight:600; font-size:11px;" : "background:#fee2e2; color:#b91c1c; padding:4px 10px; border-radius:20px; font-weight:600; font-size:11px;";
-                tbody.innerHTML += `<tr><td>${r.name}</td><td>${r.id}</td><td>${r.bScore}</td><td>${r.pScore}</td><td style="color:#0f766e; font-weight:bold;">${r.total}</td><td><span style="${badge}">${r.status}</span></td></tr>`;
-            });
+            currentReportData.forEach(r => { let badge = r.status === "ผ่าน" ? "background:#d1fae5; color:#047857; padding:4px 10px; border-radius:20px; font-weight:600; font-size:11px;" : "background:#fee2e2; color:#b91c1c; padding:4px 10px; border-radius:20px; font-weight:600; font-size:11px;"; tbody.innerHTML += `<tr><td>${r.name}</td><td>${r.id}</td><td>${r.bScore}</td><td>${r.pScore}</td><td style="color:#0f766e; font-weight:bold;">${r.total}</td><td><span style="${badge}">${r.status}</span></td></tr>`; });
         } else if (currentReportType === "2") {
             hRow += "<th>รหัส</th><th>ชื่อ-นามสกุล</th><th>มา (วัน)</th><th>ลาป่วย</th><th>ลากิจ</th><th>ขาด</th><th>สาย</th>";
-            currentReportData.forEach(r => { 
-                let lateText = r.late > 0 ? `<span style="color:#ef4444; font-weight:bold;">${r.late}</span>` : r.late;
-                tbody.innerHTML += `<tr><td>${r.id}</td><td>${r.name}</td><td style="color:#10b981; font-weight:bold;">${r.present}</td><td>${r.sick}</td><td>${r.personal}</td><td>${r.absent}</td><td>${lateText}</td></tr>`; 
-            });
+            currentReportData.forEach(r => { let lateText = r.late > 0 ? `<span style="color:#ef4444; font-weight:bold;">${r.late}</span>` : r.late; tbody.innerHTML += `<tr><td>${r.id}</td><td>${r.name}</td><td style="color:#10b981; font-weight:bold;">${r.present}</td><td>${r.sick}</td><td>${r.personal}</td><td>${r.absent}</td><td>${lateText}</td></tr>`; });
         } else if (currentReportType === "3") {
             hRow += "<th>วันเวลา</th><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>สถานะ</th><th>รายละเอียด</th><th>ครูผู้ดูแล</th>";
-            currentReportData.forEach(r => {
-                let typeClass = r.type === "เข้างาน" ? "color:#10b981; font-weight:bold;" : "color:#f59e0b; font-weight:bold;";
-                tbody.innerHTML += `<tr><td>${r.date}</td><td>${r.id}</td><td>${r.name}</td><td style="${typeClass}">${r.type}</td><td>${r.detail}</td><td>${r.teacher}</td></tr>`;
-            });
+            currentReportData.forEach(r => { let typeClass = r.type === "เข้างาน" ? "color:#10b981; font-weight:bold;" : "color:#f59e0b; font-weight:bold;"; tbody.innerHTML += `<tr><td>${r.date}</td><td>${r.id}</td><td>${r.name}</td><td style="${typeClass}">${r.type}</td><td>${r.detail}</td><td>${r.teacher}</td></tr>`; });
         }
         hRow += "</tr>"; thead.innerHTML = hRow;
     }
 
     function generateFormDocument() {
-        let rType = document.getElementById("reportType").value;
-        let gFilter = document.getElementById("groupFilter").value;
-        
+        let rType = document.getElementById("reportType").value, gFilter = document.getElementById("groupFilter").value;
         Swal.fire({ title: 'กำลังสร้างเอกสาร PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getAdminReport", reportType: rType, groupFilter: gFilter, exportForm: true }) })
-        .then(res => res.json()).then(data => {
-            if(data.status === "success") {
-                Swal.fire({
-                    title: 'สร้างเอกสารสำเร็จ!', icon: 'success', showCancelButton: true,
-                    confirmButtonText: '<i class="fa-solid fa-file-pdf"></i> โหลด PDF',
-                    cancelButtonText: '<i class="fa-solid fa-file-excel"></i> โหลด Excel',
-                    confirmButtonColor: '#ef4444', cancelButtonColor: '#10b981'
-                }).then((result) => {
-                    if (result.isConfirmed) window.open(data.pdfUrl, '_blank');
-                    else if (result.dismiss === Swal.DismissReason.cancel) window.open(data.excelUrl, '_blank');
-                });
-            } else { Swal.fire('ผิดพลาด', data.message, 'error'); }
-        });
+        .then(res => res.json()).then(data => { if(data.status === "success") { Swal.fire({ title: 'สร้างเอกสารสำเร็จ!', icon: 'success', showCancelButton: true, confirmButtonText: '<i class="fa-solid fa-file-pdf"></i> โหลด PDF', cancelButtonText: '<i class="fa-solid fa-file-excel"></i> โหลด Excel', confirmButtonColor: '#ef4444', cancelButtonColor: '#10b981' }).then((res) => { if (res.isConfirmed) window.open(data.pdfUrl, '_blank'); else if (res.dismiss === Swal.DismissReason.cancel) window.open(data.excelUrl, '_blank'); }); } });
     }
 
     function exportToCSV() {
-        if (currentReportData.length === 0) return Swal.fire('แจ้งเตือน', 'ไม่มีข้อมูลสำหรับดาวน์โหลด', 'warning');
-        
-        let csv = '\uFEFF'; 
-        let headers = [];
-        document.querySelectorAll("#tableHead th").forEach(th => headers.push(`"${th.innerText}"`));
-        csv += headers.join(",") + "\n";
-        
-        let rows = document.querySelectorAll("#tableBody tr");
-        rows.forEach(row => {
-            let rowData = [];
-            row.querySelectorAll("td").forEach(td => { rowData.push(`"${td.innerText.replace(/"/g, '""')}"`); });
-            csv += rowData.join(",") + "\n";
-        });
-        
-        let titles = ["ใบคะแนนการฝึกงาน", "สรุปเวลาฝึกงาน", "เวลาลงฝึกงาน"];
-        let title = titles[parseInt(currentReportType)-1];
-        let groupLabel = document.getElementById("groupFilter").value;
-        if(!isNaN(groupLabel) && groupLabel !== "All") groupLabel = "กลุ่ม" + groupLabel;
-        
-        let filename = `${title}_${groupLabel}_${new Date().getTime()}.csv`;
-        let link = document.createElement("a");
-        link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-        link.download = filename;
-        link.click();
+        let csv = '\uFEFF', headers = [];
+        document.querySelectorAll("#tableHead th").forEach(th => headers.push(`"${th.innerText}"`)); csv += headers.join(",") + "\n";
+        document.querySelectorAll("#tableBody tr").forEach(row => { let rowData = []; row.querySelectorAll("td").forEach(td => rowData.push(`"${td.innerText.replace(/"/g, '""')}"`)); csv += rowData.join(",") + "\n"; });
+        let title = ["ใบคะแนนการฝึกงาน", "สรุปเวลาฝึกงาน", "เวลาลงฝึกงาน"][parseInt(currentReportType)-1];
+        let link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `${title}_${new Date().getTime()}.csv`; link.click();
     }
+
+    function renderAdminStudentList() {
+        let filter = document.getElementById("adminGroupFilter").value, search = document.getElementById("adminSearchInput").value.toLowerCase();
+        let filtered = globalAdminStudents.filter(s => (filter === "All" || s.group == filter) && (s.name.toLowerCase().includes(search) || s.id.toString().includes(search)));
+        let html = "";
+        filtered.forEach(s => { let displayGroup = (!isNaN(s.group) && s.group !== "") ? "กลุ่ม " + s.group : s.group; html += `<div class="student-list-item" onclick="viewStudentDetail('${s.id}')"><div><div class="s-name">${s.name} <span class="s-group-badge">${displayGroup}</span></div><div class="s-id">รหัสประจำตัว: ${s.id}</div></div><i class="fa-solid fa-chevron-right" style="color:#cbd5e1;"></i></div>`; });
+        document.getElementById("adminStudentListArea").innerHTML = html;
+    }
+
+    function viewStudentDetail(sid) {
+        Swal.fire({title: 'กำลังดึงข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminGetStudentDetails", studentId: sid }) }).then(res => res.json()).then(data => {
+            Swal.close(); if(data.status === "success") {
+                document.getElementById("studentListView").style.display = "none"; document.getElementById("studentDetailSection").style.display = "block";
+                let p = data.data.profile, displayGroup = (!isNaN(p.group) && p.group !== "") ? "กลุ่ม " + p.group : p.group;
+                document.getElementById("d-name").innerText = p.name; document.getElementById("d-info").innerText = `รหัส: ${p.id} | ${displayGroup}`; document.getElementById("d-hours").innerText = p.totalHours;
+                let scoreHtml = ""; data.data.scores.forEach(sc => scoreHtml += `<tr><td>${sc.date}</td><td>${sc.category}</td><td>${sc.subCategory}</td><td style="color:#ea580c; font-weight:bold;">${sc.rawScore}</td><td>${sc.weight}</td></tr>`); document.getElementById("adminScoreBody").innerHTML = scoreHtml;
+                let attHtml = ""; data.data.attendance.forEach(a => attHtml += `<tr><td>${a.date}</td><td style="${a.type === 'เข้างาน' ? 'color:#10b981;' : 'color:#f59e0b;'} font-weight:bold;">${a.type}</td><td>${a.detail}</td><td>${a.remark}</td></tr>`); document.getElementById("adminAttBody").innerHTML = attHtml;
+            }
+        });
+    }
+
+    function backToStudentList() { document.getElementById("studentDetailSection").style.display = "none"; document.getElementById("studentListView").style.display = "block"; }
 </script>
 </body>
 </html>
