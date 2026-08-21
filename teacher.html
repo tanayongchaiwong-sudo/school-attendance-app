@@ -11,32 +11,57 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
     <style>
-        :root { --primary: #f97316; --primary-hover: #ea580c; --bg: #f3f4f6; --text: #1f2937; --border: #d1d5db; }
+        :root { --primary: #f97316; --primary-hover: #ea580c; --bg: #f3f4f6; --text: #1f2937; --border: #e5e7eb; }
         body { font-family: 'Prompt', sans-serif; background-color: var(--bg); margin: 0; padding: 15px; color: var(--text); }
-        .container { max-width: 500px; margin: 0 auto; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 25px 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         
-        .header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px dashed var(--border); }
-        .header i { font-size: 40px; color: var(--primary); margin-bottom: 10px;}
+        .header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px dashed var(--border); position: relative;}
+        .header i { font-size: 35px; color: var(--primary); margin-bottom: 10px;}
         .header h2 { margin: 0; font-size: 20px; font-weight: 600; color: #9a3412;}
-        .header p { margin: 5px 0 0; font-size: 14px; color: #6b7280; background: #ffedd5; display: inline-block; padding: 4px 12px; border-radius: 20px;}
+        .header p { margin: 5px 0 0; font-size: 13px; color: #6b7280; background: #ffedd5; display: inline-block; padding: 4px 12px; border-radius: 20px;}
 
-        .form-group { margin-bottom: 15px; }
-        label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; color: #4b5563; }
-        select, input[type="text"] { width: 100%; padding: 12px; font-family: 'Prompt'; font-size: 14px; border: 1px solid var(--border); border-radius: 10px; background-color: #f9fafb; box-sizing: border-box; transition: 0.3s;}
-        select:focus, input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2); background: white; }
+        /* 🌟 สไตล์การ์ดงาน (Task Card) */
+        .task-list { display: flex; flex-direction: column; gap: 12px; }
+        .task-card { background: #ffffff; border: 1px solid var(--border); border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); position: relative; overflow: hidden;}
+        .task-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--primary); }
+        .task-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(249, 115, 22, 0.1); border-color: #fdba74; }
+        .task-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;}
+        .task-name { font-size: 15px; font-weight: 600; color: #1f2937; }
+        .task-time { font-size: 11px; color: #9ca3af; }
+        .task-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;}
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .b-cat { background: #e0e7ff; color: #4338ca; }
+        .b-sub { background: #fef3c7; color: #d97706; }
+        .task-detail { font-size: 12px; color: #6b7280; }
+
+        /* 🌟 สไตล์ฟอร์มประเมิน */
+        .btn-back { background: none; border: none; font-size: 15px; color: #6b7280; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: 20px; padding: 0; font-family: 'Prompt'; font-weight: 500; transition: 0.2s;}
+        .btn-back:hover { color: var(--primary); }
         
-        .rubric-box { background: #fff7ed; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #ffedd5; }
-        .rubric-box h4 { margin: 0 0 10px 0; color: #c2410c; font-size: 14px; display: flex; align-items: center; gap: 8px; }
-        .rubric-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px dashed #fed7aa; padding-bottom: 8px; }
-        .rubric-row:last-child { border: none; margin-bottom: 0; padding-bottom: 0; }
-        .rubric-row label { margin: 0; font-weight: 400; flex: 1; font-size: 14px;}
-        .rubric-row input[type="number"] { width: 80px; text-align: center; padding: 8px; border: 1px solid #fed7aa; border-radius: 8px; font-family: 'Prompt'; outline: none;}
-        .rubric-row input[type="number"]:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2); }
+        .student-info-box { background: #fff7ed; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #ffedd5; display: flex; align-items: center; gap: 15px;}
+        .student-avatar { width: 50px; height: 50px; background: #fdba74; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;}
+        .student-name-display { font-size: 16px; font-weight: 600; color: #9a3412; margin-bottom: 2px;}
+        .student-task-display { font-size: 12px; color: #c2410c; }
+
+        .rubric-box { background: #ffffff; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+        .rubric-box h4 { margin: 0 0 15px 0; color: #1f2937; font-size: 14px; display: flex; align-items: center; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--border);}
+        .rubric-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .rubric-row:last-child { margin-bottom: 0; }
+        .rubric-row label { margin: 0; font-weight: 500; flex: 1; font-size: 13px; color: #4b5563;}
+        .rubric-row input[type="number"] { width: 70px; text-align: center; padding: 8px; border: 2px solid #e5e7eb; border-radius: 8px; font-family: 'Prompt'; outline: none; font-size: 14px; background: #f9fafb; font-weight: 600; color: var(--primary); transition: 0.2s;}
+        .rubric-row input[type="number"]:focus { border-color: var(--primary); background: white; }
+
+        .form-group { margin-top: 20px; margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #4b5563; }
+        .form-group input[type="text"] { width: 100%; padding: 12px; font-family: 'Prompt'; font-size: 14px; border: 2px solid var(--border); border-radius: 10px; background-color: #f9fafb; box-sizing: border-box; transition: 0.3s;}
+        .form-group input:focus { outline: none; border-color: var(--primary); background: white; }
 
         .btn-primary { padding: 14px; font-family: 'Prompt'; font-weight: 600; font-size: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;}
-        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(249, 115, 22, 0.3);}
+        
         .empty-state { text-align: center; padding: 40px 20px; color: #9ca3af; }
         .empty-state i { font-size: 45px; margin-bottom: 15px; color: #d1d5db;}
+        
         .hidden { display: none !important; }
     </style>
 </head>
@@ -48,33 +73,36 @@
 </div>
 
 <div class="container hidden" id="mainContainer">
-    <div class="header">
-        <i class="fa-solid fa-clipboard-check"></i>
-        <h2>รายการรอประเมิน</h2>
-        <p>ให้คะแนนการปฏิบัติงานนักเรียน</p>
-    </div>
-
-    <div id="emptyState" class="empty-state hidden">
-        <i class="fa-solid fa-mug-hot"></i>
-        <p style="font-size: 15px; font-weight: 500; color: #6b7280; margin:0;">ไม่มีรายการรอประเมินในขณะนี้ครับ</p>
-    </div>
-
-    <div id="evaluationForm" class="hidden">
-        <div class="form-group">
-            <label>เลือกรายการของนักเรียนที่ต้องการประเมิน</label>
-            <select id="requestSelect" onchange="generateDynamicForm()">
-                <option value="" disabled selected>-- กำลังโหลด... --</option>
-            </select>
+    
+    <!-- 📋 Step 1: หน้ารายการงาน (Task List) -->
+    <div id="step1List">
+        <div class="header">
+            <i class="fa-solid fa-clipboard-check"></i>
+            <h2>รายการรอประเมิน</h2>
+            <p>เลือกการ์ดนักเรียนเพื่อให้คะแนน</p>
         </div>
 
+        <div id="emptyState" class="empty-state hidden">
+            <i class="fa-solid fa-mug-hot"></i>
+            <p style="font-size: 15px; font-weight: 500; color: #6b7280; margin:0;">พักผ่อนได้เลยครับ! ไม่มีงานค้างแล้ว</p>
+        </div>
+
+        <div class="task-list" id="taskListArea"></div>
+    </div>
+
+    <!-- 📝 Step 2: หน้าฟอร์มให้คะแนน (Evaluation Form) -->
+    <div id="step2Form" class="hidden">
+        <button class="btn-back" onclick="goBackToList()"><i class="fa-solid fa-arrow-left"></i> กลับหน้ารายการ</button>
+        
+        <div id="studentInfoArea"></div>
         <div id="dynamicRubricArea"></div>
 
-        <div class="form-group" style="margin-top: 20px;">
-            <label>หมายเหตุ / ข้อเสนอแนะ (ถ้ามี)</label>
+        <div class="form-group">
+            <label><i class="fa-solid fa-comment-dots"></i> หมายเหตุ / ข้อเสนอแนะ (ถ้ามี)</label>
             <input type="text" id="remark1" placeholder="พิมพ์คำติชมเพื่อการพัฒนา...">
         </div>
 
-        <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <div style="display: flex; gap: 10px; margin-top: 25px;">
             <button class="btn-primary" style="flex: 1;" onclick="submitPendingScore()">
                 <i class="fa-solid fa-floppy-disk"></i> บันทึกคะแนน
             </button>
@@ -83,16 +111,18 @@
             </button>
         </div>
     </div>
+
 </div>
 
 <script>
-    // 🚨 1. ใส่ LIFF ID (ของหน้าประเมินครู)
+    // 🚨 1. ใส่ LIFF ID หน้าประเมินครูตรงนี้
     const LIFF_ID = "2011162626-dON8ee2c"; 
     // 🚨 2. ใส่ API URL
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec"; 
 
     let currentTeacherId = "";
     let pendingRequests = [];
+    let currentSelectedIndex = -1; // ตัวแปรเก็บว่ากำลังตรวจงานของการ์ดไหน
 
     window.onload = function() {
         liff.init({ liffId: LIFF_ID }).then(() => {
@@ -117,20 +147,7 @@
             if(data.status === "success") {
                 currentTeacherId = data.teacherId;
                 pendingRequests = data.data;
-                let select = document.getElementById("requestSelect");
-                select.innerHTML = '<option value="" disabled selected>-- เลือกรายการ --</option>';
-                
-                if (pendingRequests.length === 0) {
-                    document.getElementById("evaluationForm").classList.add("hidden");
-                    document.getElementById("emptyState").classList.remove("hidden");
-                } else {
-                    document.getElementById("evaluationForm").classList.remove("hidden");
-                    document.getElementById("emptyState").classList.add("hidden");
-                    pendingRequests.forEach((req, idx) => {
-                        let txt = `${req.studentName} [${req.category}] - ${req.subCategory}`;
-                        select.innerHTML += `<option value="${idx}">${txt}</option>`;
-                    });
-                }
+                renderTaskList();
             } else {
                 Swal.fire('ผิดพลาด', data.message, 'error');
             }
@@ -139,24 +156,69 @@
         });
     }
 
-    // สร้างฟอร์มให้คะแนนอัตโนมัติตามเรื่องที่เลือก
-    function generateDynamicForm() {
-        let idx = document.getElementById("requestSelect").value;
-        if(idx === "") return;
-        let req = pendingRequests[idx];
-        let html = '';
+    // 🌟 สร้างการ์ดงาน
+    function renderTaskList() {
+        if (pendingRequests.length === 0) {
+            document.getElementById("taskListArea").classList.add("hidden");
+            document.getElementById("emptyState").classList.remove("hidden");
+        } else {
+            document.getElementById("taskListArea").classList.remove("hidden");
+            document.getElementById("emptyState").classList.add("hidden");
+            
+            let html = "";
+            pendingRequests.forEach((req, idx) => {
+                let detailHtml = req.detail ? `<div class="task-detail"><i class="fa-solid fa-bars-staggered"></i> รายละเอียด: ${req.detail}</div>` : "";
+                
+                html += `
+                <div class="task-card" onclick="openEvaluationForm(${idx})">
+                    <div class="task-header">
+                        <div class="task-name">${req.studentName}</div>
+                        <div class="task-time">${req.date}</div>
+                    </div>
+                    <div class="task-badges">
+                        <span class="badge b-cat">${req.category}</span>
+                        <span class="badge b-sub">${req.subCategory}</span>
+                    </div>
+                    ${detailHtml}
+                </div>`;
+            });
+            document.getElementById("taskListArea").innerHTML = html;
+        }
+    }
 
+    // 🌟 สลับหน้าจอมาที่ฟอร์มให้คะแนน
+    function openEvaluationForm(idx) {
+        currentSelectedIndex = idx;
+        let req = pendingRequests[idx];
+        
+        // สลับ UI
+        document.getElementById("step1List").classList.add("hidden");
+        document.getElementById("step2Form").classList.remove("hidden");
+
+        // สร้าง Header ข้อมูลเด็ก
+        document.getElementById("studentInfoArea").innerHTML = `
+            <div class="student-info-box">
+                <div class="student-avatar"><i class="fa-solid fa-user-graduate"></i></div>
+                <div>
+                    <div class="student-name-display">${req.studentName}</div>
+                    <div class="student-task-display">${req.category} - ${req.subCategory} ${req.detail ? '('+req.detail+')' : ''}</div>
+                </div>
+            </div>
+        `;
+
+        // สร้างเกณฑ์ (Rubric)
+        let html = '';
         if (req.category === "ประเมินรายวัน") {
             html += `<div class="rubric-box">
-                <h4><i class="fa-solid fa-star"></i> พฤติกรรม (เต็ม 40)</h4>
+                <h4><i class="fa-solid fa-star" style="color: #eab308;"></i> พฤติกรรม (เต็ม 40)</h4>
                 <div class="rubric-row"><label>ซื่อสัตย์ ตรงต่อเวลา</label><input type="number" class="b-score" placeholder="0-10" max="10"></div>
                 <div class="rubric-row"><label>รับผิดชอบ กระตือรือร้น</label><input type="number" class="b-score" placeholder="0-10" max="10"></div>
                 <div class="rubric-row"><label>ทำงานเป็นทีม เอื้อเฟื้อ</label><input type="number" class="b-score" placeholder="0-10" max="10"></div>
                 <div class="rubric-row"><label>ปฏิภาณไหวพริบ คล่องแคล่ว</label><input type="number" class="b-score" placeholder="0-5" max="5"></div>
                 <div class="rubric-row"><label>กิริยามารยาท แต่งกาย</label><input type="number" class="b-score" placeholder="0-5" max="5"></div>
             </div>
-            <div class="rubric-box" style="background:#f0fdf4; border-color:#bbf7d0;">
-                <h4 style="color:#15803d;"><i class="fa-solid fa-wrench"></i> ทักษะปฏิบัติงาน (เต็ม 20)</h4>
+            <div class="rubric-box">
+                <h4><i class="fa-solid fa-wrench" style="color: #3b82f6;"></i> ทักษะปฏิบัติงาน (เต็ม 20)</h4>
                 <div class="rubric-row"><label>เตรียมเครื่อง/ห้อง</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
                 <div class="rubric-row"><label>เตรียมผู้ป่วย</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
                 <div class="rubric-row"><label>ถ่ายและประเมินภาพ</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
@@ -166,21 +228,21 @@
         else if (req.category === "ส่งใบงาน") {
             let maxRaw = req.detail.includes("ที่ 1") ? 1 : 2; 
             html += `<div class="rubric-box">
-                <h4><i class="fa-solid fa-file-pen"></i> ประเมินใบงาน (${req.subCategory} - ${req.detail})</h4>
+                <h4><i class="fa-solid fa-file-pen" style="color: #8b5cf6;"></i> ประเมินใบงาน</h4>
                 <div class="rubric-row"><label>คะแนนที่ได้</label><input type="number" class="raw-score" placeholder="0-${maxRaw}" max="${maxRaw}"></div>
             </div>`;
         }
         else if (req.category === "สอบปฏิบัติ") {
             if (req.subCategory.includes("OPG")) {
-                html += `<div class="rubric-box"><h4><i class="fa-solid fa-stethoscope"></i> สอบ OPG (${req.detail})</h4>
+                html += `<div class="rubric-box"><h4><i class="fa-solid fa-stethoscope" style="color: #ec4899;"></i> สอบ OPG</h4>
                 <div class="rubric-row"><label>เตรียมเครื่องมือ/ผู้ป่วย</label><input type="number" class="raw-score" placeholder="0-2" max="2"></div>
                 <div class="rubric-row"><label>จัดท่าผู้ป่วย/ถ่ายภาพ</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div>
                 <div class="rubric-row"><label>การดูภาพ/แก้ไขปัญหา</label><input type="number" class="raw-score" placeholder="0-3" max="3"></div></div>`;
             } else if (req.subCategory.includes("เรียงภาพ FM")) {
-                html += `<div class="rubric-box"><h4><i class="fa-solid fa-images"></i> สอบเรียงภาพ FM (${req.detail})</h4>
+                html += `<div class="rubric-box"><h4><i class="fa-solid fa-images" style="color: #ec4899;"></i> สอบเรียงภาพ FM</h4>
                 <div class="rubric-row"><label>คะแนนสอบเรียงภาพ</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div></div>`;
             } else {
-                html += `<div class="rubric-box"><h4><i class="fa-solid fa-tooth"></i> สอบ ${req.subCategory} (${req.detail})</h4>
+                html += `<div class="rubric-box"><h4><i class="fa-solid fa-tooth" style="color: #ec4899;"></i> สอบ ${req.subCategory}</h4>
                 <div class="rubric-row"><label>เตรียมเครื่องมือ</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div>
                 <div class="rubric-row"><label>เตรียมผู้ป่วย</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div>
                 <div class="rubric-row"><label>ถ่ายภาพรังสี</label><input type="number" class="raw-score" placeholder="0-10" max="10"></div>
@@ -189,26 +251,31 @@
             }
         }
         else if (req.category === "สอบประเมินภาพ") {
-            html += `<div class="rubric-box"><h4><i class="fa-solid fa-magnifying-glass"></i> สอบประเมินภาพ</h4>
+            html += `<div class="rubric-box"><h4><i class="fa-solid fa-magnifying-glass" style="color: #14b8a6;"></i> สอบประเมินภาพ</h4>
                 <div class="rubric-row"><label>วิเคราะห์ในช่องปาก</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div>
                 <div class="rubric-row"><label>วิเคราะห์นอกช่องปาก</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div></div>`;
         }
 
         document.getElementById("dynamicRubricArea").innerHTML = html;
+        document.getElementById("remark1").value = ""; // เคลียร์ช่องหมายเหตุ
     }
 
-    // บันทึกและดึงคะแนนย่อย
+    function goBackToList() {
+        currentSelectedIndex = -1;
+        document.getElementById("step2Form").classList.add("hidden");
+        document.getElementById("step1List").classList.remove("hidden");
+    }
+
+    // บันทึกคะแนน
     function submitPendingScore() {
-        let idx = document.getElementById("requestSelect").value;
-        if(idx === "") return Swal.fire('แจ้งเตือน', 'กรุณาเลือกรายการที่ต้องการประเมินก่อนครับ', 'warning');
+        if(currentSelectedIndex === -1) return;
         
-        let req = pendingRequests[idx];
+        let req = pendingRequests[currentSelectedIndex];
         let sumB = 0, sumS = 0, sumRaw = 0;
         let subScoresList = []; 
         let isInvalid = false;
         let invalidMsg = "";
         
-        // กวาดข้อมูลและตรวจสอบค่า
         let inputs = document.querySelectorAll('.rubric-row input[type="number"]');
         for (let i = 0; i < inputs.length; i++) {
             let inp = inputs[i];
@@ -232,7 +299,7 @@
 
         Swal.fire({
             title: 'ยืนยันการให้คะแนน?',
-            text: "ระบบจะบันทึกคะแนนและแจ้งเตือนไปยังนักเรียนทันที",
+            text: "ระบบจะบันทึกคะแนนลงในฐานข้อมูลทันที",
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#f97316',
@@ -255,7 +322,7 @@
                 fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
                 .then(res => res.json()).then(data => {
                     if(data.status === "success") {
-                        Swal.fire('สำเร็จ!', 'บันทึกคะแนนและแยกคอลัมน์เรียบร้อย', 'success').then(() => window.location.reload());
+                        Swal.fire('สำเร็จ!', 'บันทึกคะแนนเรียบร้อย', 'success').then(() => window.location.reload());
                     } else {
                         Swal.fire('ผิดพลาด', data.message, 'error');
                     }
@@ -266,9 +333,8 @@
 
     // ฟังก์ชันปฏิเสธคำขอ
     function rejectRequest() {
-        let idx = document.getElementById("requestSelect").value;
-        if(idx === "") return Swal.fire('แจ้งเตือน', 'กรุณาเลือกรายการประเมินที่ต้องการปฏิเสธ', 'warning');
-        let req = pendingRequests[idx];
+        if(currentSelectedIndex === -1) return;
+        let req = pendingRequests[currentSelectedIndex];
 
         Swal.fire({
             title: 'ปฏิเสธคำขอนี้?',
