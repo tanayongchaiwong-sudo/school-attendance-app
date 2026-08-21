@@ -273,30 +273,45 @@
         }
     });
 
-    // 🌟 ฟังก์ชัน Login
+    // 🌟 ฟังก์ชัน Login (อัปเกรดให้มีป๊อปอัปแจ้งเตือนชัดเจน)
     function checkLogin() {
         let pwd = document.getElementById("adminPassword").value;
-        if(!pwd) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสผ่าน', 'warning');
+        if(!pwd) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสผ่านก่อนครับ', 'warning');
 
-        Swal.fire({title: 'กำลังตรวจสอบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+        // แสดงหน้าต่างโหลดข้อมูล
+        Swal.fire({title: 'กำลังตรวจสอบรหัสผ่าน...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
         
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminLogin", password: pwd }) })
         .then(res => res.json()).then(data => {
             if(data.status === "success") {
-                Swal.close();
-                sessionStorage.setItem("adminLoggedIn", "true"); // จำค่าไว้ใน Session
-                document.getElementById("loginScreen").style.display = "none";
-                document.getElementById("adminApp").style.display = "flex";
-                loadGroups(); 
+                // 🟢 กรณีรหัสถูก: เด้งป๊อปอัปสำเร็จ โชว์ 1.5 วินาที แล้วค่อยเข้าหน้าหลัก
+                Swal.fire({
+                    icon: 'success',
+                    title: 'เข้าสู่ระบบสำเร็จ!',
+                    text: 'กำลังพาท่านเข้าสู่หน้าจัดการระบบ...',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    sessionStorage.setItem("adminLoggedIn", "true"); // จำค่าการล็อกอิน
+                    document.getElementById("loginScreen").style.display = "none";
+                    document.getElementById("adminApp").style.display = "flex";
+                    loadGroups(); 
+                });
             } else {
-                Swal.fire('ปฏิเสธการเข้าถึง', data.message, 'error');
+                // 🔴 กรณีรหัสผิด: เด้งแจ้งเตือนสีแดง และล้างช่องใส่รหัส
+                Swal.fire({
+                    icon: 'error',
+                    title: 'รหัสผ่านไม่ถูกต้อง!',
+                    text: 'กรุณาตรวจสอบรหัสผ่านแล้วลองใหม่อีกครั้งครับ',
+                    confirmButtonColor: '#0f766e'
+                });
                 document.getElementById("adminPassword").value = "";
+                document.getElementById("adminPassword").focus();
             }
         }).catch(err => {
-            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่ครับ', 'error');
         });
     }
-
     // 🌟 ฟังก์ชัน Logout
     function logout() {
         sessionStorage.removeItem("adminLoggedIn");
