@@ -80,8 +80,10 @@
             </div>
         </div>
         <ul class="nav-menu">
-            <li class="nav-item"><a class="nav-link active" onclick="switchTab('export')"><i class="fa-solid fa-file-pdf"></i> ออกเอกสาร & พรีวิว</a></li>
-            <li class="nav-item"><a class="nav-link" onclick="switchTab('student')"><i class="fa-solid fa-user-graduate"></i> ข้อมูลนักเรียนเจาะลึก</a></li>
+            <!-- 🚨 เพิ่ม parameter "this" ให้ฟังก์ชันทำงานได้ทุกเบราว์เซอร์ -->
+            <li class="nav-item"><a class="nav-link active" onclick="switchTab('export', this)"><i class="fa-solid fa-file-pdf"></i> ออกเอกสาร & พรีวิว</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="switchTab('student', this)"><i class="fa-solid fa-user-graduate"></i> ข้อมูลนักเรียนเจาะลึก</a></li>
+            <!-- 🚨 อย่าลืมใส่ ID ชีตที่นี่ -->
             <li class="nav-item"><a class="nav-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1U7x_0elVlm-FoGgY2un_u0p9k3gfPaVvQ4qyY0KfOVw', '_blank')"><i class="fa-solid fa-database"></i> ไปที่ฐานข้อมูล (Sheets) <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px; margin-left: auto;"></i></a></li>
         </ul>
         <div style="padding: 20px; text-align: center; color: #5eead4; font-size: 12px; border-top: 1px solid rgba(255,255,255,0.1);">
@@ -194,31 +196,33 @@
     </div>
 
 <script>
-    // 🚨 1. นำ API_URL มาวางตรงนี้
+    // 🚨 นำ API_URL มาวางตรงนี้
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec";
 
     let currentReportData = [];
     let currentReportType = "";
 
-    window.onload = function() { 
+    // 🌟 เปลี่ยนมาใช้ DOMContentLoaded จะเร็วกว่า onload และลดปัญหาหน้าจอค้าง
+    document.addEventListener("DOMContentLoaded", function() {
         loadGroups(); 
-    };
+    });
 
-    function switchTab(tabId) {
+    // 🌟 แก้ไขให้รับ element เข้ามาด้วย ป้องกัน Error ในมือถือและ Firefox
+    function switchTab(tabId, element) {
         document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
         
         document.getElementById('sec-' + tabId).classList.add('active');
-        event.currentTarget.classList.add('active');
+        if(element) element.classList.add('active');
     }
 
     // ==========================================
     // 📑 ระบบพรีวิวเอกสาร
     // ==========================================
     function loadGroups() {
+        let select = document.getElementById("groupFilter");
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getGroups" }) })
         .then(res => res.json()).then(data => {
-            let select = document.getElementById("groupFilter");
             if(data.status === "success") {
                 select.innerHTML = '<option value="All">ดูทั้งหมดทุกกลุ่ม</option>';
                 let sortedGroups = data.data.sort((a, b) => a - b);
@@ -231,8 +235,9 @@
                 Swal.fire('ระบบหลังบ้านมีปัญหา', data.message, 'error');
             }
         }).catch(err => {
-            document.getElementById("groupFilter").innerHTML = '<option value="" disabled selected>เชื่อมต่อไม่สำเร็จ</option>';
-            Swal.fire('ไม่สามารถเชื่อมต่อได้', 'กรุณาตรวจสอบว่านำ API URL ของจริงมาใส่แล้วหรือยัง และกด Deploy เป็นเวอร์ชันใหม่แล้วหรือไม่', 'error');
+            // 🌟 ถ้าระบบพังหรือ URL ผิด จะเด้งบอกที่นี่ทันที! ไม่ค้างเงียบๆ แน่นอนครับ
+            select.innerHTML = '<option value="" disabled selected>เชื่อมต่อไม่สำเร็จ</option>';
+            Swal.fire('ไม่สามารถเชื่อมต่อได้', 'กรุณาตรวจสอบว่ากด Deploy เวอร์ชันใหม่ หรือใช้งานอินเทอร์เน็ตอยู่หรือไม่ครับ', 'error');
         });
     }
 
@@ -267,8 +272,8 @@
         if (currentReportType === "1") {
             hRow += "<th>ชื่อ-นามสกุล</th><th>รหัส</th><th>พฤติกรรม</th><th>ปฏิบัติ</th><th>สุทธิ</th><th>สถานะ</th>";
             currentReportData.forEach(r => {
-                let badge = r.status === "ผ่าน" ? "status-pass" : "status-fail";
-                tbody.innerHTML += `<tr><td>${r.name}</td><td>${r.id}</td><td>${r.bScore}</td><td>${r.pScore}</td><td style="color:#0f766e; font-weight:bold;">${r.total}</td><td><span class="${badge}">${r.status}</span></td></tr>`;
+                let badge = r.status === "ผ่าน" ? "background:#d1fae5; color:#047857; padding:4px 10px; border-radius:20px; font-weight:600; font-size:11px;" : "background:#fee2e2; color:#b91c1c; padding:4px 10px; border-radius:20px; font-weight:600; font-size:11px;";
+                tbody.innerHTML += `<tr><td>${r.name}</td><td>${r.id}</td><td>${r.bScore}</td><td>${r.pScore}</td><td style="color:#0f766e; font-weight:bold;">${r.total}</td><td><span style="${badge}">${r.status}</span></td></tr>`;
             });
         } else if (currentReportType === "2") {
             hRow += "<th>รหัส</th><th>ชื่อ-นามสกุล</th><th>มา (วัน)</th><th>ลาป่วย</th><th>ลากิจ</th><th>ขาด</th><th>สาย</th>";
@@ -310,6 +315,34 @@
         });
     }
 
+    // 🌟 ฟังก์ชันโหลด CSV ที่หายไป นำกลับมาใส่ให้แล้วครับ
+    function exportToCSV() {
+        if (currentReportData.length === 0) return Swal.fire('แจ้งเตือน', 'ไม่มีข้อมูลสำหรับดาวน์โหลด', 'warning');
+        
+        let csv = '\uFEFF'; 
+        let headers = [];
+        document.querySelectorAll("#tableHead th").forEach(th => headers.push(`"${th.innerText}"`));
+        csv += headers.join(",") + "\n";
+        
+        let rows = document.querySelectorAll("#tableBody tr");
+        rows.forEach(row => {
+            let rowData = [];
+            row.querySelectorAll("td").forEach(td => { rowData.push(`"${td.innerText.replace(/"/g, '""')}"`); });
+            csv += rowData.join(",") + "\n";
+        });
+        
+        let titles = ["ใบคะแนนการฝึกงาน", "สรุปเวลาฝึกงาน", "เวลาลงฝึกงาน"];
+        let title = titles[parseInt(currentReportType)-1];
+        let groupLabel = document.getElementById("groupFilter").value;
+        if(!isNaN(groupLabel) && groupLabel !== "All") groupLabel = "กลุ่ม" + groupLabel;
+        
+        let filename = `${title}_${groupLabel}_${new Date().getTime()}.csv`;
+        let link = document.createElement("a");
+        link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+        link.download = filename;
+        link.click();
+    }
+
     // ==========================================
     // 🎓 ระบบค้นหานักเรียนแบบเจาะลึก
     // ==========================================
@@ -331,7 +364,6 @@
                 document.getElementById("d-info").innerText = `รหัส: ${p.id} | ${displayGroup}`;
                 document.getElementById("d-hours").innerText = p.totalHours;
 
-                // วาดตารางคะแนน
                 let scoreHtml = "";
                 if(data.data.scores.length === 0) scoreHtml = "<tr><td colspan='5' style='text-align:center;'>ไม่มีประวัติคะแนน</td></tr>";
                 data.data.scores.forEach(sc => {
@@ -339,7 +371,6 @@
                 });
                 document.getElementById("adminScoreBody").innerHTML = scoreHtml;
 
-                // วาดตารางเวลา
                 let attHtml = "";
                 if(data.data.attendance.length === 0) attHtml = "<tr><td colspan='4' style='text-align:center;'>ไม่มีประวัติการลงเวลา</td></tr>";
                 data.data.attendance.forEach(a => {
