@@ -14,7 +14,6 @@
         body { font-family: 'Prompt', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--text); }
         .container { max-width: 500px; margin: 0 auto; padding-bottom: 30px;}
         
-        /* 🌟 Profile Card */
         .profile-card { background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 25px 20px; border-radius: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 10px 25px rgba(234, 88, 12, 0.25); margin-bottom: 20px; position: relative; }
         .profile-card img { width: 65px; height: 65px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.8); object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .profile-info { flex: 1; }
@@ -38,7 +37,6 @@
         .tab-btn { flex: 1; padding: 10px; text-align: center; font-family: 'Prompt'; font-size: 13px; font-weight: 600; color: #64748b; background: none; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s;}
         .tab-btn.active { background: #ffedd5; color: var(--primary); }
         
-        /* 📋 Lists */
         .list-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid #f1f5f9;}
         .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px dashed #e2e8f0; padding-bottom: 10px; }
         .list-header h3 { margin: 0; font-size: 15px; display: flex; align-items: center; gap: 8px; color: #ea580c; font-weight: 600;}
@@ -46,8 +44,11 @@
         .group-filter { padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-family: 'Prompt'; font-size: 12px; outline: none; background: #f8fafc; color: #334155; font-weight: 500;}
         .group-filter:focus { border-color: #f97316; }
 
-        .student-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #e2e8f0; }
-        .student-item:last-child { border: none; padding-bottom: 0; }
+        /* 🌟 ปรับรายชื่อนักเรียนให้กดได้ */
+        .student-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px dashed #e2e8f0; cursor: pointer; transition: 0.2s; border-radius: 8px;}
+        .student-item:hover { background: #f8fafc; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-color: transparent;}
+        .student-item:last-child { border-bottom: none; }
+        
         .s-name { font-size: 14px; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 6px;}
         .s-group-badge { font-size: 10px; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: #64748b; font-weight: 500;}
         .s-id { font-size: 11px; color: #94a3b8; margin-top: 2px;}
@@ -68,7 +69,6 @@
         .btn-edit { background: #e0e7ff; color: #4338ca; }
         .btn-revoke { background: #fee2e2; color: #b91c1c; }
 
-        /* 🌟 สไตล์กล่องแก้ไขคะแนน */
         .rubric-box { background: #fff7ed; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #ffedd5; text-align: left; }
         .rubric-box h4 { margin: 0 0 10px 0; color: #c2410c; font-size: 14px; display: flex; align-items: center; gap: 8px; }
         .rubric-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px dashed #fed7aa; padding-bottom: 8px; }
@@ -82,6 +82,16 @@
         .pending-list-popup { max-height: 50vh; overflow-y: auto; text-align: left; padding-right: 5px; display: flex; flex-direction: column; gap: 8px;}
         .pending-item-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 15px; border-left: 4px solid #f97316;}
         
+        /* 🌟 สไตล์กล่องโชว์งานของนักเรียนแต่ละคน */
+        .detail-list { display: flex; flex-direction: column; gap: 8px; max-height: 55vh; overflow-y: auto; padding-right: 5px; text-align: left;}
+        .detail-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;}
+        .dc-header { display: flex; justify-content: space-between; align-items: flex-start;}
+        .dc-title { font-size: 13px; font-weight: 500; color: #334155; display: flex; align-items: flex-start; gap: 6px;}
+        .dc-title i { margin-top: 3px; }
+        .dc-status { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px; white-space: nowrap;}
+        .dc-status.done { background: #d1fae5; color: #047857; } 
+        .dc-status.todo { background: #fef08a; color: #b45309; }
+
         .hidden { display: none !important; }
         
         ::-webkit-scrollbar { width: 6px; height: 6px;}
@@ -109,14 +119,12 @@
     </div>
 
     <div class="stat-grid">
-        <!-- 🌟 การ์ดรอประเมิน (คลิกได้) -->
         <div class="stat-box clickable-box" onclick="showPendingTasks()">
             <div class="icon-circle"><i class="fa-solid fa-clipboard-question"></i></div>
             <div class="stat-num" id="tPending">0</div>
             <div class="stat-label">งานรอประเมิน</div>
             <div class="action-hint"><i class="fa-solid fa-hand-pointer"></i> กดดูรายการ</div>
         </div>
-        <!-- 🌟 การ์ดจำนวนเด็ก -->
         <div class="stat-box">
             <div class="icon-circle" style="background: #e0e7ff; color: #4f46e5;"><i class="fa-solid fa-users"></i></div>
             <div class="stat-num" id="tStudents">0</div>
@@ -129,7 +137,6 @@
         <button class="tab-btn" id="tabHist" onclick="switchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติประเมิน</button>
     </div>
 
-    <!-- 🌟 ภาพรวมนักเรียน -->
     <div class="list-card" id="viewStudents">
         <div class="list-header">
             <h3><i class="fa-solid fa-users"></i> ข้อมูลนักเรียน</h3>
@@ -140,7 +147,6 @@
         <div id="studentListArea"></div>
     </div>
 
-    <!-- 🌟 ประวัติการประเมิน -->
     <div class="list-card hidden" id="viewHistory">
         <div class="list-header">
             <h3><i class="fa-solid fa-clock-rotate-left"></i> ประวัติให้คะแนนล่าสุด</h3>
@@ -153,9 +159,8 @@
 <script>
     // 🚨 1. ใส่ LIFF ID (ของหน้า Teacher Dashboard นี้)
     const LIFF_ID = "2011162626-V8r8boat";
-    // 🚨 2. ใส่ LIFF ID หน้าให้คะแนนครู (เพื่อกดกระโดดไปหน้าให้คะแนน)
+    // 🚨 2. ใส่ LIFF ID หน้าให้คะแนนครู (เพื่อเด้งไปตอนกดประเมิน)
     const EVALUATION_LIFF_URL = "https://liff.line.me/2011162626-dON8ee2c";
-    // 🚨 3. ใส่ API URL
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec";
 
     let currentTeacherName = "";
@@ -196,7 +201,6 @@
                 document.getElementById("userName").innerText = "ครู" + data.teacherName;
                 document.getElementById("tPending").innerText = data.pendingCount;
 
-                // อัปเดต Dropdown เลือกกลุ่ม
                 let filterDropdown = document.getElementById("groupFilter");
                 filterDropdown.innerHTML = '<option value="All">ดูทุกกลุ่ม</option>';
                 if(data.groups) {
@@ -209,16 +213,15 @@
 
                 renderStudentList(); 
 
-                // วาดประวัติ
                 let hHtml = "";
-                if (data.history.length === 0) hHtml = "<p style='text-align:center; color:#9ca3af; font-size:13px; margin-top:20px;'>ยังไม่มีประวัติการให้คะแนนครับ</p>";
+                if (data.history.length === 0) hHtml = "<p style='text-align:center; color:#9ca3af; font-size:13px;'>ยังไม่มีประวัติการให้คะแนนครับ</p>";
                 else {
                     data.history.forEach((h, idx) => {
                         hHtml += `<div class="history-item">
                                     <div class="h-header"><div class="h-title">${h.studentName}</div><div class="h-score">${h.rawScore}</div></div>
                                     <div class="h-detail"><b>${h.category}</b> - ${h.subCategory} ${h.detail ? '('+h.detail+')' : ''}<br><i class="fa-regular fa-clock"></i> ${h.date}</div>
                                     <div class="action-btns">
-                                        <button class="btn-sm btn-revoke" onclick="revokeScore('${h.logId}')"><i class="fa-solid fa-rotate-left"></i> ดึงงานกลับ</button>
+                                        <button class="btn-sm btn-revoke" onclick="revokeScore('${h.logId}')"><i class="fa-solid fa-rotate-left"></i> ดึงงานกลับ/ยกเลิก</button>
                                         <button class="btn-sm btn-edit" onclick="editScore(${idx})"><i class="fa-solid fa-pen"></i> แก้คะแนนแยกข้อ</button>
                                     </div>
                                  </div>`;
@@ -229,8 +232,6 @@
                 document.getElementById("loadingDiv").style.display = "none";
                 document.getElementById("mainDiv").classList.remove("hidden");
             } else { Swal.fire('ผิดพลาด', data.message, 'error'); }
-        }).catch(err => {
-            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
         });
     }
 
@@ -246,7 +247,8 @@
         } else {
             filteredStudents.forEach(s => { 
                 let displayGroup = (!isNaN(s.group) && s.group !== "") ? "กลุ่ม " + s.group : s.group;
-                sHtml += `<div class="student-item">
+                // 🌟 เพิ่ม onclick ให้กดดูรายละเอียดเด็กคนนั้นๆ ได้
+                sHtml += `<div class="student-item" onclick="showStudentDetails('${s.id}')">
                             <div>
                                 <div class="s-name">${s.name} <span class="s-group-badge">${displayGroup}</span></div>
                                 <div class="s-id">รหัส: ${s.id}</div>
@@ -259,6 +261,53 @@
             });
         }
         document.getElementById("studentListArea").innerHTML = sHtml;
+    }
+
+    // 🌟 ระบบดูงานค้าง/งานเสร็จ ของนักเรียนแบบเจาะจง
+    function showStudentDetails(sId) {
+        let s = gStudentData.find(x => x.id === sId);
+        if(!s) return;
+
+        let html = `<div class="detail-list">`;
+        
+        // 1. โชว์งานที่ค้างรอตรวจ
+        html += `<div style="font-weight: 600; color: #b45309; margin-bottom: 8px; margin-top: 5px; text-align: left;"><i class="fa-solid fa-hourglass-half"></i> งานที่ค้างอยู่ / รอตรวจ (${s.pendingTasks.length})</div>`;
+        if(s.pendingTasks.length === 0) {
+            html += `<div style="text-align:center; padding: 10px; background: #fffbeb; border-radius: 8px; color: #b45309; font-size: 12px;">ไม่มีงานค้างครับ 🎉</div>`;
+        } else {
+            s.pendingTasks.forEach(t => {
+                html += `<div class="detail-card">
+                            <div class="dc-header">
+                                <div class="dc-title"><i class="fa-solid fa-clock" style="color:#f59e0b;"></i> ${t}</div>
+                                <div class="dc-status todo">รอตรวจ</div>
+                            </div>
+                         </div>`;
+            });
+        }
+
+        // 2. โชว์งานที่ทำสำเร็จแล้ว
+        html += `<div style="font-weight: 600; color: #047857; margin-top: 20px; margin-bottom: 8px; text-align: left;"><i class="fa-solid fa-circle-check"></i> งานที่ทำสำเร็จแล้ว (${s.completedTasks.length})</div>`;
+        if(s.completedTasks.length === 0) {
+            html += `<div style="text-align:center; padding: 10px; background: #ecfdf5; border-radius: 8px; color: #047857; font-size: 12px;">ยังไม่มีงานที่สำเร็จ</div>`;
+        } else {
+            s.completedTasks.forEach(t => {
+                html += `<div class="detail-card">
+                            <div class="dc-header">
+                                <div class="dc-title"><i class="fa-solid fa-check" style="color:#10b981;"></i> ${t}</div>
+                                <div class="dc-status done">สำเร็จ</div>
+                            </div>
+                         </div>`;
+            });
+        }
+        html += `</div>`;
+
+        Swal.fire({
+            title: `ข้อมูลของ ${s.name}`,
+            html: html,
+            customClass: { popup: 'swal-wide', title: 'swal-title-custom' },
+            confirmButtonText: 'ปิดหน้าต่าง',
+            confirmButtonColor: '#64748b'
+        });
     }
 
     function showPendingTasks() {
@@ -277,113 +326,57 @@
             title: 'งานที่รอประเมิน',
             html: html,
             showCancelButton: true,
-            confirmButtonText: '<i class="fa-solid fa-clipboard-check"></i> ไปหน้าประเมินให้คะแนน',
+            confirmButtonText: '<i class="fa-solid fa-clipboard-check"></i> ไปหน้าให้คะแนน',
             cancelButtonText: 'ปิด',
             confirmButtonColor: '#ea580c',
             cancelButtonColor: '#94a3b8',
             customClass: { popup: 'swal-wide', title: 'swal-title-custom' }
         }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = EVALUATION_LIFF_URL;
-            }
+            if (result.isConfirmed) { window.location.href = EVALUATION_LIFF_URL; }
         });
     }
 
     function editScore(idx) {
         let h = gHistoryData[idx];
         let sub = h.subScores || []; 
-        
-        let html = `<div style="font-size:13px; color:#64748b; margin-bottom:15px; text-align:left; background: #f8fafc; padding: 10px; border-radius: 8px;">
-            นักเรียน: <b>${h.studentName}</b><br>งาน: ${h.category} - ${h.subCategory}
-            </div>`;
+        let html = `<div style="font-size:13px; color:#64748b; margin-bottom:15px; text-align:left; background: #f8fafc; padding: 10px; border-radius: 8px;">นักเรียน: <b>${h.studentName}</b><br>งาน: ${h.category} - ${h.subCategory}</div>`;
         
         if (h.category === "ประเมินรายวัน") {
-            html += `<div class="rubric-box">
-                <h4><i class="fa-solid fa-star"></i> พฤติกรรม (เต็ม 40)</h4>
-                <div class="rubric-row"><label>ซื่อสัตย์ ตรงต่อเวลา</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="10"></div>
-                <div class="rubric-row"><label>รับผิดชอบ กระตือรือร้น</label><input type="number" class="edit-sub-score" value="${sub[1]||''}" max="10"></div>
-                <div class="rubric-row"><label>ทำงานเป็นทีม เอื้อเฟื้อ</label><input type="number" class="edit-sub-score" value="${sub[2]||''}" max="10"></div>
-                <div class="rubric-row"><label>ปฏิภาณไหวพริบ คล่องแคล่ว</label><input type="number" class="edit-sub-score" value="${sub[3]||''}" max="5"></div>
-                <div class="rubric-row"><label>กิริยามารยาท แต่งกาย</label><input type="number" class="edit-sub-score" value="${sub[4]||''}" max="5"></div>
-            </div>
-            <div class="rubric-box" style="background:#f0fdf4; border-color:#bbf7d0;">
-                <h4 style="color:#15803d;"><i class="fa-solid fa-wrench"></i> ทักษะปฏิบัติงาน (เต็ม 20)</h4>
-                <div class="rubric-row"><label>เตรียมเครื่อง/ห้อง</label><input type="number" class="edit-sub-score" value="${sub[5]||''}" max="5"></div>
-                <div class="rubric-row"><label>เตรียมผู้ป่วย</label><input type="number" class="edit-sub-score" value="${sub[6]||''}" max="5"></div>
-                <div class="rubric-row"><label>ถ่ายและประเมินภาพ</label><input type="number" class="edit-sub-score" value="${sub[7]||''}" max="5"></div>
-                <div class="rubric-row"><label>ดูแลอุปกรณ์หลังใช้</label><input type="number" class="edit-sub-score" value="${sub[8]||''}" max="5"></div>
-            </div>`;
+            html += `<div class="rubric-box"><h4><i class="fa-solid fa-star"></i> พฤติกรรม (เต็ม 40)</h4><div class="rubric-row"><label>ซื่อสัตย์ ตรงต่อเวลา</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="10"></div><div class="rubric-row"><label>รับผิดชอบ กระตือรือร้น</label><input type="number" class="edit-sub-score" value="${sub[1]||''}" max="10"></div><div class="rubric-row"><label>ทำงานเป็นทีม เอื้อเฟื้อ</label><input type="number" class="edit-sub-score" value="${sub[2]||''}" max="10"></div><div class="rubric-row"><label>ปฏิภาณไหวพริบ คล่องแคล่ว</label><input type="number" class="edit-sub-score" value="${sub[3]||''}" max="5"></div><div class="rubric-row"><label>กิริยามารยาท แต่งกาย</label><input type="number" class="edit-sub-score" value="${sub[4]||''}" max="5"></div></div><div class="rubric-box" style="background:#f0fdf4; border-color:#bbf7d0;"><h4 style="color:#15803d;"><i class="fa-solid fa-wrench"></i> ทักษะปฏิบัติงาน (เต็ม 20)</h4><div class="rubric-row"><label>เตรียมเครื่อง/ห้อง</label><input type="number" class="edit-sub-score" value="${sub[5]||''}" max="5"></div><div class="rubric-row"><label>เตรียมผู้ป่วย</label><input type="number" class="edit-sub-score" value="${sub[6]||''}" max="5"></div><div class="rubric-row"><label>ถ่ายและประเมินภาพ</label><input type="number" class="edit-sub-score" value="${sub[7]||''}" max="5"></div><div class="rubric-row"><label>ดูแลอุปกรณ์หลังใช้</label><input type="number" class="edit-sub-score" value="${sub[8]||''}" max="5"></div></div>`;
         } 
         else if (h.category === "ส่งใบงาน" || h.category === "สอบประเมินภาพ") {
             let maxRaw = h.detail.includes("ที่ 1") ? 1 : (h.category === "สอบประเมินภาพ" ? 5 : 2); 
-            html += `<div class="rubric-box">
-                <h4><i class="fa-solid fa-file-pen"></i> ประเมินผล</h4>
-                <div class="rubric-row"><label>คะแนนที่ได้</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="${maxRaw}"></div>
-            </div>`;
+            html += `<div class="rubric-box"><h4><i class="fa-solid fa-file-pen"></i> ประเมินผล</h4><div class="rubric-row"><label>คะแนนที่ได้</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="${maxRaw}"></div></div>`;
         }
         else if (h.category === "สอบปฏิบัติ") {
             if (h.subCategory.includes("OPG")) {
-                html += `<div class="rubric-box"><h4><i class="fa-solid fa-stethoscope"></i> สอบ OPG</h4>
-                <div class="rubric-row"><label>เตรียมเครื่องมือ/ผู้ป่วย</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="2"></div>
-                <div class="rubric-row"><label>จัดท่าผู้ป่วย/ถ่ายภาพ</label><input type="number" class="edit-sub-score" value="${sub[1]||''}" max="5"></div>
-                <div class="rubric-row"><label>การดูภาพ/แก้ไขปัญหา</label><input type="number" class="edit-sub-score" value="${sub[2]||''}" max="3"></div></div>`;
+                html += `<div class="rubric-box"><h4><i class="fa-solid fa-stethoscope"></i> สอบ OPG</h4><div class="rubric-row"><label>เตรียมเครื่องมือ/ผู้ป่วย</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="2"></div><div class="rubric-row"><label>จัดท่าผู้ป่วย/ถ่ายภาพ</label><input type="number" class="edit-sub-score" value="${sub[1]||''}" max="5"></div><div class="rubric-row"><label>การดูภาพ/แก้ไขปัญหา</label><input type="number" class="edit-sub-score" value="${sub[2]||''}" max="3"></div></div>`;
             } else if (h.subCategory.includes("เรียงภาพ FM")) {
-                html += `<div class="rubric-box"><h4><i class="fa-solid fa-images"></i> สอบเรียงภาพ FM</h4>
-                <div class="rubric-row"><label>คะแนนสอบเรียงภาพ</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="5"></div></div>`;
+                html += `<div class="rubric-box"><h4><i class="fa-solid fa-images"></i> สอบเรียงภาพ FM</h4><div class="rubric-row"><label>คะแนนสอบเรียงภาพ</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="5"></div></div>`;
             } else {
-                html += `<div class="rubric-box"><h4><i class="fa-solid fa-tooth"></i> สอบปฏิบัติทั่วไป</h4>
-                <div class="rubric-row"><label>เตรียมเครื่องมือ</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="5"></div>
-                <div class="rubric-row"><label>เตรียมผู้ป่วย</label><input type="number" class="edit-sub-score" value="${sub[1]||''}" max="5"></div>
-                <div class="rubric-row"><label>ถ่ายภาพรังสี</label><input type="number" class="edit-sub-score" value="${sub[2]||''}" max="10"></div>
-                <div class="rubric-row"><label>ดูแลเครื่องมือหลังใช้</label><input type="number" class="edit-sub-score" value="${sub[3]||''}" max="5"></div>
-                <div class="rubric-row"><label>ประเมิน/แก้ไขภาพ</label><input type="number" class="edit-sub-score" value="${sub[4]||''}" max="5"></div></div>`;
+                html += `<div class="rubric-box"><h4><i class="fa-solid fa-tooth"></i> สอบปฏิบัติทั่วไป</h4><div class="rubric-row"><label>เตรียมเครื่องมือ</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="5"></div><div class="rubric-row"><label>เตรียมผู้ป่วย</label><input type="number" class="edit-sub-score" value="${sub[1]||''}" max="5"></div><div class="rubric-row"><label>ถ่ายภาพรังสี</label><input type="number" class="edit-sub-score" value="${sub[2]||''}" max="10"></div><div class="rubric-row"><label>ดูแลเครื่องมือหลังใช้</label><input type="number" class="edit-sub-score" value="${sub[3]||''}" max="5"></div><div class="rubric-row"><label>ประเมิน/แก้ไขภาพ</label><input type="number" class="edit-sub-score" value="${sub[4]||''}" max="5"></div></div>`;
             }
         }
 
-        html += `<div style="text-align:left; font-size:13px; font-weight:600; margin-top:10px; color:#475569;">เหตุผลการแก้ไข</div>
-                 <input id="swal-remark" class="swal2-input" placeholder="เช่น เด็กทำผลงานเพิ่ม..." style="margin-top:5px; max-width:100%; height:40px; font-size:14px; border-radius:8px;">`;
+        html += `<div style="text-align:left; font-size:13px; font-weight:600; margin-top:10px; color:#475569;">เหตุผลการแก้ไข</div><input id="swal-remark" class="swal2-input" placeholder="เช่น เด็กทำผลงานเพิ่ม..." style="margin-top:5px; max-width:100%; height:40px; font-size:14px; border-radius:8px;">`;
 
         Swal.fire({
-            title: 'แก้ไขคะแนน',
-            html: html,
-            showCancelButton: true,
-            confirmButtonText: 'บันทึกคะแนนใหม่',
-            cancelButtonText: 'ยกเลิก',
-            confirmButtonColor: '#ea580c',
-            cancelButtonColor: '#94a3b8',
-            customClass: { popup: 'swal-wide', title: 'swal-title-custom' }, 
+            title: 'แก้ไขคะแนน', html: html, showCancelButton: true, confirmButtonText: 'บันทึกคะแนนใหม่', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#ea580c', cancelButtonColor: '#94a3b8', customClass: { popup: 'swal-wide', title: 'swal-title-custom' }, 
             preConfirm: () => {
                 let inputs = document.querySelectorAll('.edit-sub-score');
-                let subScoresList = [];
-                let isInvalid = false;
-                let invalidMsg = "";
-
+                let subScoresList = [], isInvalid = false, invalidMsg = "";
                 for (let i = 0; i < inputs.length; i++) {
-                    let inp = inputs[i];
-                    let label = inp.parentElement.querySelector('label').innerText;
-                    let val = parseFloat(inp.value);
-                    let maxVal = parseFloat(inp.getAttribute('max'));
-
-                    if (isNaN(val) || val < 0 || val > maxVal) {
-                        isInvalid = true;
-                        invalidMsg = `คะแนนหัวข้อ "${label}" ไม่ถูกต้อง! (ต้องอยู่ระหว่าง 0 ถึง ${maxVal})`;
-                        break;
-                    }
+                    let inp = inputs[i], label = inp.parentElement.querySelector('label').innerText, val = parseFloat(inp.value), maxVal = parseFloat(inp.getAttribute('max'));
+                    if (isNaN(val) || val < 0 || val > maxVal) { isInvalid = true; invalidMsg = `คะแนนหัวข้อ "${label}" ไม่ถูกต้อง! (ต้องอยู่ระหว่าง 0 ถึง ${maxVal})`; break; }
                     subScoresList.push(val);
                 }
-
                 if (isInvalid) { Swal.showValidationMessage(invalidMsg); return false; }
                 return { subScores: subScoresList, remark: document.getElementById('swal-remark').value }
             }
         }).then((res) => {
             if(res.isConfirmed) {
                 Swal.fire({title: 'กำลังอัปเดต...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-                let payload = {
-                    action: "editScore",
-                    logId: h.logId, category: h.category, subCategory: h.subCategory, detail: h.detail,
-                    subScoresList: res.value.subScores, newRemark: res.value.remark
-                };
-                fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+                fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "editScore", logId: h.logId, category: h.category, subCategory: h.subCategory, detail: h.detail, subScoresList: res.value.subScores, newRemark: res.value.remark }) })
                 .then(r => r.json()).then(data => {
                     if(data.status === "success") Swal.fire('สำเร็จ', data.message, 'success').then(() => window.location.reload());
                     else Swal.fire('ผิดพลาด', data.message, 'error');
@@ -394,15 +387,7 @@
 
     function revokeScore(logId) {
         Swal.fire({
-            title: 'ดึงงานกลับมารอประเมิน?',
-            text: "คะแนนเดิมจะถูกลบทิ้ง และสถานะงานของเด็กจะกลับไปเป็น 'รอประเมิน' อีกครั้ง",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#b91c1c',
-            cancelButtonColor: '#94a3b8',
-            confirmButtonText: 'ยืนยันดึงงานกลับ',
-            cancelButtonText: 'ยกเลิก',
-            customClass: { popup: 'swal-wide', title: 'swal-title-custom' }
+            title: 'ดึงงานกลับมารอประเมิน?', text: "คะแนนเดิมจะถูกลบทิ้ง และสถานะงานของเด็กจะกลับไปเป็น 'รอประเมิน' อีกครั้ง", icon: 'warning', showCancelButton: true, confirmButtonColor: '#b91c1c', cancelButtonColor: '#94a3b8', confirmButtonText: 'ยืนยันดึงงานกลับ', cancelButtonText: 'ยกเลิก', customClass: { popup: 'swal-wide', title: 'swal-title-custom' }
         }).then((res) => {
             if(res.isConfirmed) {
                 Swal.fire({title: 'กำลังยกเลิก...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
@@ -418,24 +403,15 @@
     function openEditModal() {
         Swal.fire({
             title: 'แก้ไขชื่อ-นามสกุล',
-            html: `
-                <div style="text-align: left; font-size: 13px; margin-bottom: 5px; font-weight: 500; color: #4b5563;">ชื่อ-นามสกุลคุณครู</div>
-                <input id="swal-tname" class="swal2-input" value="${currentTeacherName}" style="margin-top:0; max-width:90%; border-radius:8px;">
-            `,
-            showCancelButton: true,
-            confirmButtonText: 'บันทึก',
-            cancelButtonText: 'ยกเลิก',
-            confirmButtonColor: '#ea580c',
-            customClass: { popup: 'swal-wide', title: 'swal-title-custom' },
+            html: `<div style="text-align: left; font-size: 13px; margin-bottom: 5px; font-weight: 500; color: #4b5563;">ชื่อ-นามสกุลคุณครู</div><input id="swal-tname" class="swal2-input" value="${currentTeacherName}" style="margin-top:0; max-width:90%; border-radius:8px;">`,
+            showCancelButton: true, confirmButtonText: 'บันทึก', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#ea580c', customClass: { popup: 'swal-wide', title: 'swal-title-custom' },
             preConfirm: () => { return document.getElementById('swal-tname').value.trim(); }
         }).then((result) => {
             if(result.isConfirmed && result.value) {
                 Swal.fire({title:'กำลังบันทึก...', allowOutsideClick: false, didOpen:()=>Swal.showLoading()});
                 liff.getProfile().then(profile => {
                     fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateProfile', role: 'teacher', userId: profile.userId, fullName: result.value }) })
-                    .then(r=>r.json()).then(data=>{
-                        if(data.status==='success') Swal.fire('สำเร็จ', 'อัปเดตชื่อเรียบร้อย', 'success').then(()=>window.location.reload());
-                    });
+                    .then(r=>r.json()).then(data=>{ if(data.status==='success') Swal.fire('สำเร็จ', 'อัปเดตชื่อเรียบร้อย', 'success').then(()=>window.location.reload()); });
                 });
             }
         });
