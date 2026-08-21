@@ -20,7 +20,7 @@
         .header h2 { margin: 0; font-size: 20px; font-weight: 600; color: #9a3412;}
         .header p { margin: 5px 0 0; font-size: 13px; color: #6b7280; background: #ffedd5; display: inline-block; padding: 4px 12px; border-radius: 20px;}
 
-        /* 🌟 สไตล์การ์ดงาน (Task Card) */
+        /* สไตล์การ์ดงาน (Task Card) */
         .task-list { display: flex; flex-direction: column; gap: 12px; }
         .task-card { background: #ffffff; border: 1px solid var(--border); border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); position: relative; overflow: hidden;}
         .task-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--primary); }
@@ -34,7 +34,7 @@
         .b-sub { background: #fef3c7; color: #d97706; }
         .task-detail { font-size: 12px; color: #6b7280; }
 
-        /* 🌟 สไตล์ฟอร์มประเมิน */
+        /* สไตล์ฟอร์มประเมิน */
         .btn-back { background: none; border: none; font-size: 15px; color: #6b7280; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: 20px; padding: 0; font-family: 'Prompt'; font-weight: 500; transition: 0.2s;}
         .btn-back:hover { color: var(--primary); }
         
@@ -56,13 +56,14 @@
         .form-group input[type="text"] { width: 100%; padding: 12px; font-family: 'Prompt'; font-size: 14px; border: 2px solid var(--border); border-radius: 10px; background-color: #f9fafb; box-sizing: border-box; transition: 0.3s;}
         .form-group input:focus { outline: none; border-color: var(--primary); background: white; }
 
-        .btn-primary { padding: 14px; font-family: 'Prompt'; font-weight: 600; font-size: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;}
+        .btn-primary { padding: 12px 10px; font-family: 'Prompt'; font-weight: 600; font-size: 14px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 6px;}
         .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(249, 115, 22, 0.3);}
         
         .empty-state { text-align: center; padding: 40px 20px; color: #9ca3af; }
         .empty-state i { font-size: 45px; margin-bottom: 15px; color: #d1d5db;}
         
         .hidden { display: none !important; }
+        .swal-wide { width: 95% !important; max-width: 500px !important; border-radius: 16px; }
     </style>
 </head>
 <body>
@@ -102,11 +103,15 @@
             <input type="text" id="remark1" placeholder="พิมพ์คำติชมเพื่อการพัฒนา...">
         </div>
 
-        <div style="display: flex; gap: 10px; margin-top: 25px;">
-            <button class="btn-primary" style="flex: 1;" onclick="submitPendingScore()">
-                <i class="fa-solid fa-floppy-disk"></i> บันทึกคะแนน
+        <!-- 🌟 ปุ่ม 3 ปุ่ม: บันทึก | ส่งต่อ(สีฟ้า) | ปฏิเสธ(สีแดง) -->
+        <div style="display: flex; gap: 8px; margin-top: 25px;">
+            <button class="btn-primary" style="flex: 1.2;" onclick="submitPendingScore()">
+                <i class="fa-solid fa-floppy-disk"></i> บันทึก
             </button>
-            <button class="btn-primary" style="background: #ef4444; width: auto; padding: 14px 20px;" onclick="rejectRequest()">
+            <button class="btn-primary" style="background: #3b82f6; flex: 1;" onclick="reassignRequest()">
+                <i class="fa-solid fa-share"></i> ส่งต่อครูอื่น
+            </button>
+            <button class="btn-primary" style="background: #ef4444; flex: 0.8;" onclick="rejectRequest()">
                 <i class="fa-solid fa-xmark"></i> ปฏิเสธ
             </button>
         </div>
@@ -122,13 +127,15 @@
 
     let currentTeacherId = "";
     let pendingRequests = [];
-    let currentSelectedIndex = -1; // ตัวแปรเก็บว่ากำลังตรวจงานของการ์ดไหน
+    let currentSelectedIndex = -1; 
+    let globalTeachers = []; // 🌟 เก็บรายชื่อครูทั้งหมดสำหรับระบบ "ส่งต่อ"
 
     window.onload = function() {
         liff.init({ liffId: LIFF_ID }).then(() => {
             if (liff.isLoggedIn()) {
                 liff.getProfile().then(p => { 
                     fetchPendingRequests(p.userId); 
+                    fetchTeachersList(); // โหลดรายชื่อครู
                 });
             } else {
                 liff.login();
@@ -137,6 +144,13 @@
             Swal.fire('ผิดพลาด', 'ไม่สามารถเชื่อมต่อ LINE LIFF ได้', 'error');
         });
     };
+
+    function fetchTeachersList() {
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getTeachersList" }) })
+        .then(res => res.json()).then(data => {
+            if(data.status === "success") globalTeachers = data.data;
+        });
+    }
 
     function fetchPendingRequests(uid) {
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getPendingRequests", teacherUid: uid }) })
@@ -156,7 +170,6 @@
         });
     }
 
-    // 🌟 สร้างการ์ดงาน
     function renderTaskList() {
         if (pendingRequests.length === 0) {
             document.getElementById("taskListArea").classList.add("hidden");
@@ -186,16 +199,13 @@
         }
     }
 
-    // 🌟 สลับหน้าจอมาที่ฟอร์มให้คะแนน
     function openEvaluationForm(idx) {
         currentSelectedIndex = idx;
         let req = pendingRequests[idx];
         
-        // สลับ UI
         document.getElementById("step1List").classList.add("hidden");
         document.getElementById("step2Form").classList.remove("hidden");
 
-        // สร้าง Header ข้อมูลเด็ก
         document.getElementById("studentInfoArea").innerHTML = `
             <div class="student-info-box">
                 <div class="student-avatar"><i class="fa-solid fa-user-graduate"></i></div>
@@ -206,7 +216,6 @@
             </div>
         `;
 
-        // สร้างเกณฑ์ (Rubric)
         let html = '';
         if (req.category === "ประเมินรายวัน") {
             html += `<div class="rubric-box">
@@ -257,7 +266,7 @@
         }
 
         document.getElementById("dynamicRubricArea").innerHTML = html;
-        document.getElementById("remark1").value = ""; // เคลียร์ช่องหมายเหตุ
+        document.getElementById("remark1").value = ""; 
     }
 
     function goBackToList() {
@@ -266,7 +275,62 @@
         document.getElementById("step1List").classList.remove("hidden");
     }
 
-    // บันทึกคะแนน
+    // 🌟 ระบบส่งต่อคำขอให้ครูท่านอื่น (Reassign)
+    function reassignRequest() {
+        if(currentSelectedIndex === -1) return;
+        let req = pendingRequests[currentSelectedIndex];
+
+        let optionsHtml = '<option value="" disabled selected>-- เลือกคุณครูท่านใหม่ --</option>';
+        globalTeachers.forEach(t => {
+            // ป้องกันไม่ให้เลือกส่งต่อหาตัวเอง
+            if (t.id !== currentTeacherId) {
+                optionsHtml += `<option value="${t.id}">ครู${t.name}</option>`;
+            }
+        });
+
+        Swal.fire({
+            title: 'ส่งต่อให้คุณครูท่านอื่น',
+            html: `
+                <div style="font-size: 13px; color: #4b5563; margin-bottom: 15px; text-align:left; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <b>นักเรียน:</b> ${req.studentName}<br>
+                    <b>เรื่อง:</b> ${req.category} - ${req.subCategory}
+                </div>
+                <div style="text-align: left; font-size: 13px; font-weight: 500; margin-bottom: 8px; color: #1f2937;">เลือกคุณครูที่ต้องการส่งต่อ:</div>
+                <select id="swal-new-teacher" class="swal2-select" style="width: 100%; max-width: 100%; font-size: 14px; font-family: 'Prompt'; margin: 0 0 15px 0; display: block; border-radius: 8px; padding: 10px;">
+                    ${optionsHtml}
+                </select>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'ยืนยันการส่งต่อ',
+            cancelButtonText: 'ยกเลิก',
+            confirmButtonColor: '#3b82f6',
+            cancelButtonColor: '#94a3b8',
+            customClass: { popup: 'swal-wide' },
+            preConfirm: () => {
+                let tid = document.getElementById('swal-new-teacher').value;
+                if (!tid) {
+                    Swal.showValidationMessage('กรุณาเลือกคุณครูปลายทางด้วยครับ');
+                    return false;
+                }
+                return tid;
+            }
+        }).then((result) => {
+            if(result.isConfirmed) {
+                Swal.fire({title: 'กำลังส่งต่อ...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+                fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'resubmitRequest', logId: req.logId, newTeacherId: result.value })
+                }).then(r => r.json()).then(data => {
+                    if(data.status === 'success') {
+                        Swal.fire('สำเร็จ', 'ส่งต่อคำขอให้คุณครูท่านใหม่เรียบร้อยแล้ว!', 'success').then(() => window.location.reload());
+                    } else {
+                        Swal.fire('ผิดพลาด', data.message, 'error');
+                    }
+                });
+            }
+        });
+    }
+
     function submitPendingScore() {
         if(currentSelectedIndex === -1) return;
         
@@ -331,7 +395,6 @@
         });
     }
 
-    // ฟังก์ชันปฏิเสธคำขอ
     function rejectRequest() {
         if(currentSelectedIndex === -1) return;
         let req = pendingRequests[currentSelectedIndex];
