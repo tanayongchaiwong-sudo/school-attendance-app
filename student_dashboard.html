@@ -18,7 +18,12 @@
         .edit-btn { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 20px; font-family: 'Prompt'; font-size: 12px; cursor: pointer; transition: 0.3s; }
         
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .stat-box { background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .stat-box { background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: 0.3s; }
+        
+        /* 🌟 เอฟเฟกต์สำหรับกล่องที่กดได้ */
+        .clickable-box { cursor: pointer; border: 2px solid transparent; }
+        .clickable-box:hover { transform: translateY(-4px); border-color: #10b981; box-shadow: 0 5px 15px rgba(16, 185, 129, 0.2); background-color: #f0fdf4; }
+
         .stat-box i { font-size: 24px; color: #4f46e5; margin-bottom: 8px; display: block; }
         .stat-num { font-size: 22px; font-weight: 600; color: #111827; }
         .stat-label { font-size: 12px; color: #6b7280; }
@@ -42,10 +47,11 @@
         .h-reason { font-size: 11px; color: #be123c; margin-top: 6px; background: #ffe4e6; padding: 6px 10px; border-radius: 6px; display: inline-block;}
         
         .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-top: 2px;}
-        
-        /* 🌟 สร้างป้ายสถานะใหม่ เป็นสีฟ้าสำหรับ "ส่งคำขอสำเร็จ" เสมอ */
         .status-Submitted { background: #dbeafe; color: #1d4ed8; } 
         .status-Rejected { background: #fecaca; color: #be123c; }
+        
+        /* สไตล์ตาราง SweetAlert */
+        .swal-wide { width: 95% !important; max-width: 500px !important; border-radius: 16px; }
     </style>
 </head>
 <body>
@@ -60,15 +66,31 @@
     </div>
     
     <div class="stat-grid">
-        <div class="stat-box"><i class="fa-solid fa-clock"></i><div class="stat-num" id="sHours">0</div><div class="stat-label">ชั่วโมงสะสม</div></div>
-        <div class="stat-box"><i class="fa-solid fa-calendar-check" style="color: #10b981;"></i><div class="stat-num" id="sCheckin">0</div><div class="stat-label">มาทำงาน (วัน)</div></div>
-        <div class="stat-box"><i class="fa-solid fa-person-running" style="color: #f59e0b;"></i><div class="stat-num" id="sLate">0</div><div class="stat-label">มาสาย (ครั้ง)</div></div>
-        <div class="stat-box"><i class="fa-solid fa-graduation-cap" style="color: #ec4899;"></i><div class="stat-num" id="sExam">0</div><div class="stat-label">สอบผ่าน (หัวข้อ)</div></div>
+        <div class="stat-box">
+            <i class="fa-solid fa-clock"></i>
+            <div class="stat-num" id="sHours">0</div>
+            <div class="stat-label">ชั่วโมงสะสม</div>
+        </div>
+        <!-- 🌟 เปลี่ยนกล่องนี้ให้สามารถกดได้ -->
+        <div class="stat-box clickable-box" onclick="showAttendanceDetails()">
+            <i class="fa-solid fa-calendar-check" style="color: #10b981;"></i>
+            <div class="stat-num" id="sCheckin">0</div>
+            <div class="stat-label" style="line-height: 1.4;">มาทำงาน (วัน)<br><span style="font-size:10px; color:#059669; font-weight:600;"><i class="fa-solid fa-hand-pointer"></i> กดดูรายละเอียด</span></div>
+        </div>
+        <div class="stat-box">
+            <i class="fa-solid fa-person-running" style="color: #f59e0b;"></i>
+            <div class="stat-num" id="sLate">0</div>
+            <div class="stat-label">มาสาย (ครั้ง)</div>
+        </div>
+        <div class="stat-box">
+            <i class="fa-solid fa-graduation-cap" style="color: #ec4899;"></i>
+            <div class="stat-num" id="sExam">0</div>
+            <div class="stat-label">สอบผ่าน (หัวข้อ)</div>
+        </div>
     </div>
     
     <div class="card-box">
         <h3><i class="fa-solid fa-list-check" style="color: #10b981;"></i> เป้าหมายการสอบ</h3>
-        
         <div class="progress-container">
             <div class="progress-header">
                 <span>ความคืบหน้า</span>
@@ -78,11 +100,9 @@
                 <div class="progress-bar-fill" id="progressBar"></div>
             </div>
         </div>
-
         <div class="exam-checklist">
             <div style="font-weight: 600; margin-bottom: 5px; color: #059669;">✅ ผ่านแล้ว:</div>
             <div id="passedList" style="margin-bottom: 10px; padding-left: 10px;">-</div>
-            
             <div style="font-weight: 600; margin-bottom: 5px; color: #ef4444;">❌ ยังไม่ผ่าน:</div>
             <div id="remainingList" style="padding-left: 10px;">-</div>
         </div>
@@ -96,17 +116,18 @@
 </div>
 
 <script>
-    // 🚨 อย่าลืมใส่ LIFF ID ของนักเรียนตรงนี้นะครับ
+    // 🚨 1. ใส่ LIFF ID หน้า Dashboard นักเรียน ตรงนี้ 🚨
     const LIFF_ID = "2011162626-3ElMqLDI";
     const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec";
 
     let currentProfile = { id: "", name: "", group: "" };
+    let globalAttendanceLog = []; // 🌟 เก็บประวัติละเอียดไว้โชว์
 
     const MASTER_EXAMS = [
         { name: "Pre-Clinic Part 1", key: "Part 1" },
         { name: "Pre-Clinic Part 2", key: "Part 2" },
         { name: "Pre-Clinic Part 3", key: "Part 3" },
-        { name: "สอบ OPG", key: "สอบถ่ายนอกช่องปาก (OPG)" },
+        { name: "สอบถ่ายนอกช่องปาก (OPG)", key: "สอบถ่ายนอกช่องปาก (OPG)" },
         { name: "สอบ Pa (Anterior)", key: "Pa (Anterior)" },
         { name: "สอบ Pa (Posterior)", key: "Pa (Posterior)" },
         { name: "สอบ Bite Wing", key: "Bite Wing" },
@@ -135,6 +156,7 @@
                 currentProfile.id = d.studentId;
                 currentProfile.name = d.studentName;
                 currentProfile.group = d.studentGroup;
+                globalAttendanceLog = d.attendanceLog || []; // 🌟 เก็บค่าที่ได้จาก API
 
                 document.getElementById("userName").innerText = d.studentName + " (" + d.studentId + ")";
                 document.getElementById("userGroup").innerText = "กลุ่มเรียน: " + d.studentGroup;
@@ -166,10 +188,7 @@
                 if(d.recentHistory.length === 0) hList.innerHTML = "<p style='text-align:center; color:#9ca3af; font-size:13px;'>ยังไม่มีประวัติการส่งงานครับ</p>";
                 else {
                     d.recentHistory.forEach(h => {
-                        // 🌟 ปรับใหม่! บังคับให้สถานะทุกงาน (ทั้ง Pending และ Completed) โชว์เป็น "ส่งคำขอสำเร็จ" เสมอ
                         let stText = "ส่งคำขอสำเร็จ", stClass = "status-Submitted", reasonHtml = "";
-                        
-                        // ถ้าระบบครูมีการ "ปฏิเสธ" (Rejected) ถึงจะขึ้นสีแดงพร้อมบอกเหตุผล (เพื่อให้เด็กกลับไปแก้ตัว)
                         if(h.status.includes("Rejected")) { 
                             stText = "ถูกปฏิเสธ"; stClass = "status-Rejected"; 
                             let reason = h.status.replace("Rejected:", "").trim();
@@ -189,6 +208,59 @@
                 }
                 document.getElementById("loadingDiv").style.display = "none"; document.getElementById("mainDiv").style.display = "block";
             } else Swal.fire('ผิดพลาด', data.message, 'error');
+        });
+    }
+
+    // 🌟 ฟังก์ชันแสดงรายละเอียดการเข้างานทั้งหมด
+    function showAttendanceDetails() {
+        if(globalAttendanceLog.length === 0) {
+            return Swal.fire('ข้อมูลว่างเปล่า', 'ยังไม่มีประวัติการลงเวลาเข้า-ออกงานครับ', 'info');
+        }
+        
+        let tableHtml = `
+        <div style="overflow-x: auto; max-height: 50vh; font-family: 'Prompt'; margin-top: 10px;">
+            <table style="width: 100%; min-width: 320px; border-collapse: collapse; text-align: left; font-size: 13px;">
+                <thead style="position: sticky; top: 0; background: #f3f4f6; color: #4b5563;">
+                    <tr>
+                        <th style="padding: 10px; border-bottom: 2px solid #e5e7eb; border-radius: 8px 0 0 0;">วันที่</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #e5e7eb; text-align: center;">เข้า</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #e5e7eb; text-align: center;">ออก</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #e5e7eb; text-align: center;">ชม.</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #e5e7eb; border-radius: 0 8px 0 0;">หมายเหตุ</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        globalAttendanceLog.forEach(row => {
+            // ทำสีตัวหนังสือในหมายเหตุให้ดูง่ายขึ้น
+            let remarkHtml = row.remark;
+            if(remarkHtml.includes("สาย") || remarkHtml.includes("ขาด")) {
+                remarkHtml = `<span style="color: #ef4444; font-weight:600;">${remarkHtml}</span>`;
+            } else if(remarkHtml.includes("ลา")) {
+                remarkHtml = `<span style="color: #f59e0b; font-weight:600;">${remarkHtml}</span>`;
+            }
+            
+            tableHtml += `
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                    <td style="padding: 10px; color: #374151;">${row.date}</td>
+                    <td style="padding: 10px; text-align: center; color: #10b981; font-weight:600;">${row.in}</td>
+                    <td style="padding: 10px; text-align: center; color: #f59e0b; font-weight:600;">${row.out}</td>
+                    <td style="padding: 10px; text-align: center; font-weight:bold; color:#4f46e5;">${row.hours}</td>
+                    <td style="padding: 10px; font-size: 11px;">${remarkHtml || "-"}</td>
+                </tr>
+            `;
+        });
+        
+        tableHtml += `</tbody></table></div>`;
+        
+        Swal.fire({
+            title: '📅 ประวัติการฝึกงาน',
+            html: tableHtml,
+            customClass: { popup: 'swal-wide' },
+            showCloseButton: true,
+            confirmButtonText: 'ปิดหน้าต่าง',
+            confirmButtonColor: '#4f46e5'
         });
     }
 
