@@ -102,7 +102,12 @@
             if(data.status === "success") {
                 let select = document.getElementById("groupFilter");
                 select.innerHTML = '<option value="All">ดูทั้งหมดทุกกลุ่ม</option>';
-                data.data.forEach(g => { select.innerHTML += `<option value="${g}">${g}</option>`; });
+                // เรียงลำดับตัวเลข 1, 2, 3 และเติมคำว่า "กลุ่ม "
+                let sortedGroups = data.data.sort((a, b) => a - b);
+                sortedGroups.forEach(g => { 
+                    let label = (!isNaN(g) && g !== "") ? "กลุ่ม " + g : g;
+                    select.innerHTML += `<option value="${g}">${label}</option>`; 
+                });
             }
         });
     }
