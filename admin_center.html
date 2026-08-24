@@ -6,7 +6,10 @@
     <title>Super Admin Center - ระบบจัดการฝึกปฏิบัติงาน</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- นำเข้าไลบรารีเพิ่มเติม -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root { --primary: #0f766e; --primary-hover: #0d9488; --bg: #f8fafc; --text: #1e293b; --border: #e2e8f0; --sidebar: #042f2e; }
@@ -82,6 +85,11 @@
         .db-tab-btn.active { background: #ccfbf1; color: #0f766e; }
 
         .swal-wide { width: 95% !important; max-width: 600px !important; border-radius: 20px; padding: 20px 10px; }
+        
+        /* 🌟 สไตล์กล่อง Widget */
+        .widget-card { background: white; border: 1px solid var(--border); padding: 25px 20px; border-radius: 16px; text-align: center; transition: 0.3s; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+        .widget-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); border-color: #cbd5e1; }
+        
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -111,7 +119,8 @@
                 </div>
             </div>
             <ul class="nav-menu">
-                <li class="nav-item"><a class="nav-link active" onclick="switchTab('export', this)"><i class="fa-solid fa-file-pdf"></i> ออกเอกสาร & พรีวิว</a></li>
+                <li class="nav-item"><a class="nav-link active" onclick="switchTab('dashboard', this); loadDashboardData();"><i class="fa-solid fa-chart-pie"></i> สถิติภาพรวม</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="switchTab('export', this)"><i class="fa-solid fa-file-pdf"></i> ออกเอกสาร & พรีวิว</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchTab('student', this)"><i class="fa-solid fa-user-graduate"></i> ข้อมูลนักเรียนเจาะลึก</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchTab('database', this); loadMasterData();"><i class="fa-solid fa-database"></i> จัดการฐานข้อมูล (CMS)</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1U7x_0elVlm-FoGgY2un_u0p9k3gfPaVvQ4qyY0KfOVw', '_blank')"><i class="fa-solid fa-table-list"></i> ไปที่ชีตฐานข้อมูล <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px; margin-left: auto;"></i></a></li>
@@ -123,8 +132,62 @@
         </div>
 
         <div class="main-content">
+            
+            <!-- 📊 Section 0: สถิติภาพรวม (Dashboard) -->
+            <div id="sec-dashboard" class="section active">
+                <div class="page-header">
+                    <h1 class="page-title">สถิติภาพรวม (Dashboard)</h1>
+                    <p class="page-desc">วิเคราะห์ข้อมูลการเข้างานและคะแนนของนักเรียน (สามารถคลิกที่ปุ่มหรือกราฟเพื่อดูรายชื่อเจาะลึกได้)</p>
+                </div>
+                
+                <div class="card" style="margin-bottom: 20px; padding: 15px 25px;">
+                    <div class="form-group" style="max-width: 300px; margin: 0;">
+                        <label>กรองตามกลุ่มเรียน</label>
+                        <select id="dashGroupFilter" class="form-control" onchange="loadDashboardData()">
+                            <option value="All">ดูทั้งหมดทุกกลุ่ม</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex-row" style="margin-bottom: 20px;">
+                    <!-- Widget 1: Total Students -->
+                    <div class="widget-card" style="flex:1;" onclick="showStudentListPopup()">
+                        <i class="fa-solid fa-users" style="font-size:35px; color:#3b82f6; margin-bottom:15px;"></i>
+                        <h3 style="margin:0; font-size:32px; color:#1e293b;" id="dashTotalStudents">0</h3>
+                        <p style="margin:5px 0 0 0; color:#64748b; font-size:14px;">นักเรียนทั้งหมด (คน)</p>
+                    </div>
+                    <!-- Widget 2: Total Lates -->
+                    <div class="widget-card" style="flex:1;" onclick="showLateRankingPopup()">
+                        <i class="fa-solid fa-person-running" style="font-size:35px; color:#f59e0b; margin-bottom:15px;"></i>
+                        <h3 style="margin:0; font-size:32px; color:#1e293b;" id="dashTotalLates">0</h3>
+                        <p style="margin:5px 0 0 0; color:#64748b; font-size:14px;">ยอดการมาสาย (ครั้ง)</p>
+                    </div>
+                    <!-- Widget 3: Total Leaves -->
+                    <div class="widget-card" style="flex:1;" onclick="showLeavePopup()">
+                        <i class="fa-solid fa-bed" style="font-size:35px; color:#ef4444; margin-bottom:15px;"></i>
+                        <h3 style="margin:0; font-size:32px; color:#1e293b;" id="dashTotalLeaves">0</h3>
+                        <p style="margin:5px 0 0 0; color:#64748b; font-size:14px;">ยอดการลา (ครั้ง)</p>
+                    </div>
+                </div>
+
+                <div class="flex-row">
+                    <div class="card" style="flex: 2; min-width: 400px;">
+                        <h3 style="margin-top:0; color:#0f766e; font-size: 16px;"><i class="fa-solid fa-chart-column"></i> คะแนนเฉลี่ยแยกตามหัวข้อสอบ (คลิกที่แท่งเพื่อดูรายชื่อ)</h3>
+                        <div style="height: 300px; position: relative;">
+                            <canvas id="scoreBarChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card" style="flex: 1; min-width: 300px;">
+                        <h3 style="margin-top:0; color:#0f766e; font-size: 16px;"><i class="fa-solid fa-chart-pie"></i> สถิติเข้างาน (คลิกที่สีเพื่อดูรายชื่อ)</h3>
+                        <div style="height: 300px; position: relative; display: flex; justify-content: center;">
+                            <canvas id="attDoughnutChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 📑 Section 1: ออกเอกสาร -->
-            <div id="sec-export" class="section active">
+            <div id="sec-export" class="section">
                 <div class="page-header">
                     <h1 class="page-title">ระบบพรีวิวและออกเอกสาร</h1>
                     <p class="page-desc">เรียกดูข้อมูลดิบและสร้างหน้าพิมพ์เอกสาร PDF (รูปแบบ A4 แนวนอน)</p>
@@ -189,7 +252,6 @@
                             <div style="text-align: right;"><div style="font-size: 13px; color: #64748b;">ชั่วโมงสะสม</div><div style="font-size: 24px; font-weight: bold; color: #0f766e;" id="d-hours">0.00</div></div>
                         </div>
                         
-                        <!-- 🌟 ตารางคะแนน -->
                         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                             <h3 style="margin: 0; font-size: 15px; color: #0f766e;"><i class="fa-solid fa-star"></i> ประวัติคะแนนที่ได้รับ</h3>
                             <button id="btnSortScore" class="btn btn-outline btn-sm" onclick="toggleSortScore()"><i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า</button>
@@ -201,7 +263,6 @@
                             </table>
                         </div>
                         
-                        <!-- 🌟 ตารางเวลาเข้าออก -->
                         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                             <h3 style="margin: 0; font-size: 15px; color: #0f766e;"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติเข้า-ออกงาน</h3>
                             <button id="btnSortAtt" class="btn btn-outline btn-sm" onclick="toggleSortAtt()"><i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า</button>
@@ -300,6 +361,14 @@
                     </div>
 
                     <button class="btn btn-primary" style="margin-top:20px; width:100%;" onclick="saveSystemSettings()"><i class="fa-solid fa-floppy-disk"></i> บันทึกการตั้งค่าทั้งหมด</button>
+
+                    <!-- 🚨 พื้นที่อันตราย Data Archiving -->
+                    <div style="border-top: 2px solid #fee2e2; padding-top: 20px; margin-top: 30px;">
+                        <h4 style="margin:0 0 10px 0; color:#b91c1c;"><i class="fa-solid fa-triangle-exclamation"></i> พื้นที่อันตราย (Danger Zone)</h4>
+                        <p style="font-size:13px; color:#ef4444; margin-bottom:15px;">เมื่อสิ้นสุดปีการศึกษา สามารถกดปุ่มนี้เพื่อสำรองข้อมูลและล้างประวัติทั้งหมด (เตรียมพร้อมสำหรับรุ่นถัดไป)</p>
+                        <button class="btn btn-danger" style="width:100%; padding:15px; font-size:16px;" onclick="archiveYearData()"><i class="fa-solid fa-box-archive"></i> ปิดจบปีการศึกษา (สำรองข้อมูล & ล้างประวัติ)</button>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -307,7 +376,7 @@
 
 <script>
     // 🚨 1. นำ API_URL มาวางตรงนี้
-    const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbzPyR4k6rVOrBFIB4QiBYBO9ntaY0mWpo7mck4RTzeV-rWpWLa-mRviLfuyG8lH62s/exec";
 
     let currentReportData = [], currentReportType = "", globalAdminStudents = [];
     let dbStudents = [], dbTeachers = [], dbSettings = {};
@@ -315,10 +384,14 @@
 
     let currentDeepDiveScores = [];
     let currentDeepDiveAtt = [];
-    let sortOrderScore = -1; // -1 = ใหม่ไปเก่า, 1 = เก่าไปใหม่
+    let sortOrderScore = -1; 
     let sortOrderAtt = -1;
 
-    // 🌟 วุ้นแปลภาษาของหน้าเว็บ
+    // 🌟 ตัวแปรสำหรับ Dashboard
+    let barChart = null;
+    let doughnutChart = null;
+    let dashRawData = null; // เก็บข้อมูลดึงจากหลังบ้าน
+
     function normalizeId(id) {
         if (id === null || id === undefined) return "";
         let str = String(id).trim();
@@ -390,13 +463,20 @@
                 let groups = new Set();
                 dbStudents.forEach(s => { if(s.group) groups.add(s.group); });
                 
-                let selectExport = document.getElementById("groupFilter"), selectAdmin = document.getElementById("adminGroupFilter");
+                let selectExport = document.getElementById("groupFilter");
+                let selectAdmin = document.getElementById("adminGroupFilter");
+                let selectDash = document.getElementById("dashGroupFilter"); // 🌟 ฟิลเตอร์หน้ากราฟ
+                
                 let options = '<option value="All">ดูทั้งหมดทุกกลุ่ม</option>';
                 Array.from(groups).sort((a, b) => a - b).forEach(g => { let label = (!isNaN(g) && g !== "") ? "กลุ่ม " + g : g; options += `<option value="${g}">${label}</option>`; });
-                selectExport.innerHTML = options; selectAdmin.innerHTML = options;
+                
+                selectExport.innerHTML = options; 
+                selectAdmin.innerHTML = options;
+                selectDash.innerHTML = options;
                 
                 globalAdminStudents = dbStudents; 
                 renderAdminStudentList();
+                loadDashboardData(); // โหลดกราฟตอนเริ่ม
             }
         });
     }
@@ -440,7 +520,6 @@
     }
 
     function fillSettingsForm() {
-        // น้ำหนักคะแนน
         document.getElementById('set-w-beh').value = dbSettings['WEIGHT_BEHAVIOR'] || "35";
         document.getElementById('set-w-prac').value = dbSettings['WEIGHT_PRACTICE'] || "25";
         document.getElementById('set-w-ass').value = dbSettings['WEIGHT_ASSIGNMENT'] || "5";
@@ -451,12 +530,9 @@
         document.getElementById('set-w-bw').value = dbSettings['WEIGHT_EXAM_BW'] || "5";
         document.getElementById('set-w-pre').value = dbSettings['WEIGHT_EXAM_PRE'] || "5";
         document.getElementById('set-w-eval').value = dbSettings['WEIGHT_EXAM_EVAL'] || "5";
-        // ตัวคูณ
         document.getElementById('set-m1').value = dbSettings['MUL_ATTEMPT_1'] !== undefined ? dbSettings['MUL_ATTEMPT_1'] : "5";
         document.getElementById('set-m2').value = dbSettings['MUL_ATTEMPT_2'] !== undefined ? dbSettings['MUL_ATTEMPT_2'] : "4";
         document.getElementById('set-m3').value = dbSettings['MUL_ATTEMPT_3'] !== undefined ? dbSettings['MUL_ATTEMPT_3'] : "0";
-        
-        // ข้อมูลเอกสารและพิกัด
         document.getElementById('set-pwd').value = dbSettings['ADMIN_PASSWORD'] || "admin";
         document.getElementById('set-year').value = dbSettings['ACADEMIC_YEAR'] || "2568";
         document.getElementById('set-period').value = dbSettings['REPORT_PERIOD'] || "8 - 29 พ.ค. 69";
@@ -484,7 +560,6 @@
                 "MUL_ATTEMPT_1": document.getElementById('set-m1').value,
                 "MUL_ATTEMPT_2": document.getElementById('set-m2').value,
                 "MUL_ATTEMPT_3": document.getElementById('set-m3').value,
-
                 "ADMIN_PASSWORD": document.getElementById('set-pwd').value,
                 "ACADEMIC_YEAR": document.getElementById('set-year').value,
                 "REPORT_PERIOD": document.getElementById('set-period').value,
@@ -540,6 +615,169 @@
                 Swal.fire({title: 'กำลังลบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
                 fetch(API_URL, { method: "POST", body: JSON.stringify({ action: action, id: id }) })
                 .then(r=>r.json()).then(data => { if(data.status==="success") { Swal.fire('ลบสำเร็จ', '', 'success'); loadGroupsAndSettings(); } });
+            }
+        });
+    }
+
+    // ==========================================
+    // 📊 ระบบ DASHBOARD กราฟและสถิติ
+    // ==========================================
+    function loadDashboardData() {
+        let filter = document.getElementById("dashGroupFilter").value;
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminGetDashboardStats", groupFilter: filter }) })
+        .then(res => res.json()).then(data => {
+            if (data.status === "success") {
+                dashRawData = data.data; // เก็บไว้ใช้ตอนคลิก
+                
+                // อัปเดตตัวเลขในการ์ดสรุปผล
+                document.getElementById("dashTotalStudents").innerText = dashRawData.totalStudents;
+                document.getElementById("dashTotalLates").innerText = dashRawData.attStats.late;
+                document.getElementById("dashTotalLeaves").innerText = dashRawData.attStats.leave;
+
+                // อัปเดต Bar Chart (คะแนนสอบเฉลี่ย)
+                if (barChart) barChart.destroy();
+                let ctxBar = document.getElementById('scoreBarChart').getContext('2d');
+                barChart = new Chart(ctxBar, {
+                    type: 'bar',
+                    data: {
+                        labels: dashRawData.chartData.barLabels,
+                        datasets: [{
+                            label: 'คะแนนเฉลี่ยที่ได้',
+                            data: dashRawData.chartData.barData,
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, max: 30 } }, // สมมติว่าคะแนนดิบเต็มประมาณ 30
+                        onClick: (e, elements) => {
+                            if (elements.length > 0) {
+                                let index = elements[0].index;
+                                let subTitle = barChart.data.labels[index];
+                                showScoreDetailPopup(subTitle);
+                            }
+                        },
+                        onHover: (e, elements) => { e.native.target.style.cursor = elements[0] ? 'pointer' : 'default'; }
+                    }
+                });
+
+                // อัปเดต Doughnut Chart (สถิติเข้างาน)
+                if (doughnutChart) doughnutChart.destroy();
+                let ctxDoughnut = document.getElementById('attDoughnutChart').getContext('2d');
+                doughnutChart = new Chart(ctxDoughnut, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['ตรงเวลา', 'มาสาย', 'ลางาน'],
+                        datasets: [{
+                            data: [dashRawData.attStats.onTime, dashRawData.attStats.late, dashRawData.attStats.leave],
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                            hoverOffset: 10
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } },
+                        onClick: (e, elements) => {
+                            if (elements.length > 0) {
+                                let index = elements[0].index;
+                                let label = doughnutChart.data.labels[index];
+                                if (label === 'มาสาย') showLateRankingPopup();
+                                else if (label === 'ลางาน') showLeavePopup();
+                                // ถ้ากด 'ตรงเวลา' จะไม่แสดงตารางเพื่อความรวดเร็ว
+                            }
+                        },
+                        onHover: (e, elements) => { e.native.target.style.cursor = elements[0] ? 'pointer' : 'default'; }
+                    }
+                });
+            }
+        });
+    }
+
+    // 🌟 ฟังก์ชันแสดง Popup เวลากดที่ Widget หรือกราฟ
+    function showStudentListPopup() {
+        if (!globalAdminStudents) return;
+        let filter = document.getElementById("dashGroupFilter").value;
+        let filtered = globalAdminStudents.filter(s => (filter === "All" || s.group == filter));
+        
+        let html = '<div style="max-height:300px; overflow-y:auto; text-align:left;"><table style="width:100%; font-size:13px; border-collapse:collapse;">';
+        html += '<tr style="background:#f1f5f9; position:sticky; top:0;"><th>รหัสนักเรียน</th><th>ชื่อ-นามสกุล</th><th>กลุ่ม</th></tr>';
+        filtered.forEach(s => { html += `<tr style="border-bottom:1px dashed #e2e8f0;"><td>${s.id}</td><td>${s.name}</td><td>${s.group}</td></tr>`; });
+        html += '</table></div>';
+        Swal.fire({title: 'รายชื่อนักเรียน 📋', html: html, confirmButtonColor: '#0f766e', confirmButtonText: 'ปิด', width: '500px'});
+    }
+
+    function showLateRankingPopup() {
+        if(!dashRawData || dashRawData.lateRanking.length === 0) return Swal.fire('ข้อมูล', 'ไม่มีสถิติการมาสายในกลุ่มนี้ครับ 🎉', 'info');
+        let html = '<div style="max-height:300px; overflow-y:auto; text-align:left;"><table style="width:100%; font-size:13px; border-collapse:collapse;">';
+        html += '<tr style="background:#f1f5f9; position:sticky; top:0;"><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>จำนวนครั้งที่สาย</th></tr>';
+        dashRawData.lateRanking.forEach(s => { html += `<tr style="border-bottom:1px dashed #e2e8f0;"><td>${s.id}</td><td>${s.name}</td><td style="color:#ef4444; font-weight:bold; text-align:center;">${s.count}</td></tr>`; });
+        html += '</table></div>';
+        Swal.fire({title: 'อันดับนักเรียนมาสาย 🏃‍♂️', html: html, confirmButtonColor: '#0f766e', confirmButtonText: 'ปิด', width: '500px'});
+    }
+
+    function showLeavePopup() {
+        if(!dashRawData || dashRawData.rawLeaveList.length === 0) return Swal.fire('ข้อมูล', 'ไม่มีสถิติการลาในกลุ่มนี้ครับ', 'info');
+        let html = '<div style="max-height:300px; overflow-y:auto; text-align:left;"><table style="width:100%; font-size:13px; border-collapse:collapse;">';
+        html += '<tr style="background:#f1f5f9; position:sticky; top:0;"><th>วันที่ลา</th><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>เหตุผล</th></tr>';
+        dashRawData.rawLeaveList.forEach(s => { html += `<tr style="border-bottom:1px dashed #e2e8f0;"><td style="white-space:nowrap;">${s.date}</td><td>${s.id}</td><td>${s.name}</td><td style="color:#ef4444;">${s.remark}</td></tr>`; });
+        html += '</table></div>';
+        Swal.fire({title: 'รายละเอียดการลางาน 🛏️', html: html, confirmButtonColor: '#0f766e', confirmButtonText: 'ปิด', width: '600px'});
+    }
+
+    function showScoreDetailPopup(subTitle) {
+        if(!dashRawData || !dashRawData.chartData.rawScoreData[subTitle]) return;
+        let list = dashRawData.chartData.rawScoreData[subTitle].rawList;
+        list.sort((a, b) => b.score - a.score); // เรียงจากคะแนนมากไปน้อย
+        
+        let html = '<div style="max-height:300px; overflow-y:auto; text-align:left;"><table style="width:100%; font-size:13px; border-collapse:collapse;">';
+        html += '<tr style="background:#f1f5f9; position:sticky; top:0;"><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>คะแนนดิบที่ได้</th></tr>';
+        list.forEach(s => { 
+            let color = s.score < 15 ? "#ef4444" : "#10b981"; // ไฮไลต์สีแดงถ้าคะแนนดิบน้อยกว่า 15 (สมมติเต็ม 30)
+            html += `<tr style="border-bottom:1px dashed #e2e8f0;"><td>${s.id}</td><td>${s.name}</td><td style="color:${color}; font-weight:bold; text-align:center;">${s.score}</td></tr>`; 
+        });
+        html += '</table></div>';
+        Swal.fire({title: `สถิติคะแนน: ${subTitle} 🎯`, html: html, confirmButtonColor: '#0f766e', confirmButtonText: 'ปิด', width: '500px'});
+    }
+
+    // ==========================================
+    // 🧹 ระบบ Data Archiving (ปิดจบปีการศึกษา)
+    // ==========================================
+    function archiveYearData() {
+        Swal.fire({
+            title: 'ยืนยันการปิดจบปีการศึกษา?',
+            html: '<p style="color:#ef4444; font-size:14px; margin-top:0;"><b>คำเตือน:</b> การกระทำนี้จะล้างประวัติคำขอ, การลงเวลา, และคะแนนทั้งหมดของปีนี้!</p><p style="font-size:13px;">พิมพ์คำว่า <b>CONFIRM</b> ในช่องด้านล่างเพื่อยืนยัน</p>',
+            input: 'text',
+            inputAttributes: { autocapitalize: 'off' },
+            showCancelButton: true,
+            confirmButtonText: '<i class="fa-solid fa-triangle-exclamation"></i> ยืนยันการล้างข้อมูล',
+            cancelButtonText: 'ยกเลิก',
+            confirmButtonColor: '#b91c1c',
+            customClass: { popup: 'swal-wide' },
+            preConfirm: (inputValue) => {
+                if (inputValue !== "CONFIRM") { Swal.showValidationMessage('กรุณาพิมพ์ CONFIRM ให้ถูกต้องครับ'); return false; }
+                return true;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({title: 'กำลังสร้างไฟล์ Backup และล้างข้อมูล...<br><span style="font-size:14px;font-weight:normal;">โปรดรอสักครู่ (อาจใช้เวลา 10-30 วินาที)</span>', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+                fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminArchiveData" }) })
+                .then(r => r.json()).then(data => {
+                    if (data.status === "success") {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'ล้างข้อมูลสำเร็จ!',
+                            html: `ระบบได้เตรียมชีตให้ว่างเปล่าพร้อมรับนักเรียนรุ่นถัดไปแล้ว<br><br><a href="${data.url}" target="_blank" style="color:#0f766e; font-weight:bold; text-decoration:underline;">เปิดดูไฟล์ Archive ข้อมูลของปีนี้ (Backup)</a>`,
+                            confirmButtonColor: '#0f766e',
+                            confirmButtonText: 'รับทราบ'
+                        }).then(() => location.reload());
+                    } else {
+                        Swal.fire('ผิดพลาด', data.message, 'error');
+                    }
+                });
             }
         });
     }
@@ -732,7 +970,6 @@
         });
     }
 
-    // 🌟 ระบบวาดตารางและสลับการเรียงข้อมูลคะแนน
     function renderDeepDiveScores() {
         let scoreHtml = ""; 
         if(currentDeepDiveScores.length === 0) scoreHtml = "<tr><td colspan='6' style='text-align:center;'>ไม่มีประวัติคะแนน</td></tr>";
@@ -795,14 +1032,13 @@
         document.getElementById("btnSortAtt").innerHTML = sortOrderAtt === -1 ? `<i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า` : `<i class="fa-solid fa-arrow-up-wide-short"></i> เรียง: เก่าไปใหม่`;
     }
 
-    // 🌟 🌟 ระบบฟอร์มแก้ไขคะแนนย่อย (Edit Sub-Scores Modal)
     function openEditScoreModal(logId) {
         let sc = currentDeepDiveScores.find(s => s.logId === logId);
         if(!sc) return;
 
         let html = `<div style="text-align:left; font-size:14px; font-weight:600; margin-bottom:15px; color:#0f766e;">แก้ไขคะแนน: ${sc.subCategory} ${sc.detail && sc.detail !== "-" ? '('+sc.detail+')' : ''}</div>`;
         let inputsHtml = "";
-        let ss = sc.subScores || []; // ดึงคะแนนย่อยเก่ามาใส่ให้แก้ไข
+        let ss = sc.subScores || []; 
 
         if (sc.category === "ประเมินรายวัน") {
             inputsHtml += `<h4 style="margin:5px 0; font-size:13px; text-align:left; color:#475569;">พฤติกรรม (เต็ม 8)</h4>`;
