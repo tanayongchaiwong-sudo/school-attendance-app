@@ -81,7 +81,7 @@
         .db-tab-btn { background: none; border: none; font-family: 'Prompt'; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; padding: 10px 15px; border-radius: 8px; transition: 0.2s;}
         .db-tab-btn.active { background: #ccfbf1; color: #0f766e; }
 
-        .swal-wide { width: 95% !important; max-width: 500px !important; border-radius: 20px; padding: 20px 10px; }
+        .swal-wide { width: 95% !important; max-width: 600px !important; border-radius: 20px; padding: 20px 10px; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -159,7 +159,7 @@
                 </div>
             </div>
 
-            <!-- 🎓 Section 2: ข้อมูลเจาะลึก (เพิ่มปุ่ม บันทึกวันลา) -->
+            <!-- 🎓 Section 2: ข้อมูลเจาะลึก -->
             <div id="sec-student" class="section">
                 <div class="page-header">
                     <h1 class="page-title">ระบบจัดการนักเรียนรายบุคคล</h1>
@@ -189,17 +189,23 @@
                             <div style="text-align: right;"><div style="font-size: 13px; color: #64748b;">ชั่วโมงสะสม</div><div style="font-size: 24px; font-weight: bold; color: #0f766e;" id="d-hours">0.00</div></div>
                         </div>
                         
+                        <!-- 🌟 ตารางคะแนน -->
                         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                             <h3 style="margin: 0; font-size: 15px; color: #0f766e;"><i class="fa-solid fa-star"></i> ประวัติคะแนนที่ได้รับ</h3>
                             <button id="btnSortScore" class="btn btn-outline btn-sm" onclick="toggleSortScore()"><i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า</button>
                         </div>
-                        <div class="table-responsive" style="margin-bottom: 20px;"><table id="adminScoreTable"><thead><tr><th>วันเวลา</th><th>หมวดหมู่</th><th>หัวข้อ</th><th>คะแนนดิบ</th><th>% น้ำหนัก</th></tr></thead><tbody id="adminScoreBody"></tbody></table></div>
+                        <div class="table-responsive" style="margin-bottom: 20px;">
+                            <table id="adminScoreTable">
+                                <thead><tr><th>วันเวลา</th><th>หมวดหมู่</th><th>หัวข้อ</th><th>คะแนนดิบ</th><th>% น้ำหนัก</th><th>จัดการ</th></tr></thead>
+                                <tbody id="adminScoreBody"></tbody>
+                            </table>
+                        </div>
                         
+                        <!-- 🌟 ตารางเวลาเข้าออก -->
                         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                             <h3 style="margin: 0; font-size: 15px; color: #0f766e;"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติเข้า-ออกงาน</h3>
                             <button id="btnSortAtt" class="btn btn-outline btn-sm" onclick="toggleSortAtt()"><i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า</button>
                         </div>
-                        <!-- 🌟 เพิ่มคอลัมน์ จัดการ ให้ตารางเวลา -->
                         <div class="table-responsive"><table id="adminAttTable"><thead><tr><th>วันเวลา</th><th>ประเภท</th><th>รายละเอียด</th><th>หมายเหตุ</th><th>จัดการ</th></tr></thead><tbody id="adminAttBody"></tbody></table></div>
                     </div>
                 </div>
@@ -240,6 +246,32 @@
 
                 <div id="db-settings" class="card" style="display:none;">
                     <h3 style="margin:0 0 15px 0; color:#0f766e;">ตั้งค่าระบบและฟอร์มเอกสาร</h3>
+
+                    <div style="border-bottom: 1px dashed #cbd5e1; padding-bottom: 15px; margin-bottom: 15px;">
+                        <h4 style="margin:0 0 10px 0; color:#475569;"><i class="fa-solid fa-scale-balanced"></i> น้ำหนักคะแนน (เปอร์เซ็นต์ %) และตัวคูณ</h4>
+                        <div class="flex-row" style="margin-bottom:10px;">
+                            <div class="form-group"><label>พฤติกรรม (รายวัน)</label><input type="number" id="set-w-beh" class="form-control" placeholder="35"></div>
+                            <div class="form-group"><label>ปฏิบัติ (รายวัน)</label><input type="number" id="set-w-prac" class="form-control" placeholder="25"></div>
+                            <div class="form-group"><label>ส่งใบงาน</label><input type="number" id="set-w-ass" class="form-control" placeholder="5"></div>
+                        </div>
+                        <div class="flex-row" style="margin-bottom:10px;">
+                            <div class="form-group"><label>สอบ OPG</label><input type="number" id="set-w-opg" class="form-control" placeholder="5"></div>
+                            <div class="form-group"><label>สอบ FM</label><input type="number" id="set-w-fm" class="form-control" placeholder="5"></div>
+                            <div class="form-group"><label>สอบฟันหน้า</label><input type="number" id="set-w-ant" class="form-control" placeholder="5"></div>
+                            <div class="form-group"><label>สอบฟันหลัง</label><input type="number" id="set-w-post" class="form-control" placeholder="5"></div>
+                        </div>
+                        <div class="flex-row" style="margin-bottom:10px;">
+                            <div class="form-group"><label>สอบ Bite Wing</label><input type="number" id="set-w-bw" class="form-control" placeholder="5"></div>
+                            <div class="form-group"><label>สอบ Pre-Clinic</label><input type="number" id="set-w-pre" class="form-control" placeholder="5"></div>
+                            <div class="form-group"><label>สอบประเมินภาพ</label><input type="number" id="set-w-eval" class="form-control" placeholder="5"></div>
+                        </div>
+                        <h5 style="margin:10px 0; color:#475569;">ตัวคูณรอบสอบปฏิบัติ (Multiplier)</h5>
+                        <div class="flex-row">
+                            <div class="form-group"><label>สอบครั้งที่ 1 (คูณ)</label><input type="number" id="set-m1" class="form-control" placeholder="5"></div>
+                            <div class="form-group"><label>สอบครั้งที่ 2 (คูณ)</label><input type="number" id="set-m2" class="form-control" placeholder="4"></div>
+                            <div class="form-group"><label>สอบครั้งที่ 3 (คูณ)</label><input type="number" id="set-m3" class="form-control" placeholder="0"></div>
+                        </div>
+                    </div>
 
                     <div style="border-bottom: 1px dashed #cbd5e1; padding-bottom: 15px; margin-bottom: 15px;">
                         <h4 style="margin:0 0 10px 0; color:#475569;"><i class="fa-solid fa-file-signature"></i> ข้อมูลในเอกสารอ้างอิง</h4>
@@ -345,6 +377,9 @@
         element.classList.add('active');
     }
 
+    // ==========================================
+    // 🗄️ ระบบโหลดและจัดการฐานข้อมูล (CMS)
+    // ==========================================
     function loadGroupsAndSettings() {
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminGetMasterData" }) })
         .then(res => res.json()).then(data => {
@@ -405,6 +440,23 @@
     }
 
     function fillSettingsForm() {
+        // น้ำหนักคะแนน
+        document.getElementById('set-w-beh').value = dbSettings['WEIGHT_BEHAVIOR'] || "35";
+        document.getElementById('set-w-prac').value = dbSettings['WEIGHT_PRACTICE'] || "25";
+        document.getElementById('set-w-ass').value = dbSettings['WEIGHT_ASSIGNMENT'] || "5";
+        document.getElementById('set-w-opg').value = dbSettings['WEIGHT_EXAM_OPG'] || "5";
+        document.getElementById('set-w-fm').value = dbSettings['WEIGHT_EXAM_FM'] || "5";
+        document.getElementById('set-w-ant').value = dbSettings['WEIGHT_EXAM_ANT'] || "5";
+        document.getElementById('set-w-post').value = dbSettings['WEIGHT_EXAM_POST'] || "5";
+        document.getElementById('set-w-bw').value = dbSettings['WEIGHT_EXAM_BW'] || "5";
+        document.getElementById('set-w-pre').value = dbSettings['WEIGHT_EXAM_PRE'] || "5";
+        document.getElementById('set-w-eval').value = dbSettings['WEIGHT_EXAM_EVAL'] || "5";
+        // ตัวคูณ
+        document.getElementById('set-m1').value = dbSettings['MUL_ATTEMPT_1'] !== undefined ? dbSettings['MUL_ATTEMPT_1'] : "5";
+        document.getElementById('set-m2').value = dbSettings['MUL_ATTEMPT_2'] !== undefined ? dbSettings['MUL_ATTEMPT_2'] : "4";
+        document.getElementById('set-m3').value = dbSettings['MUL_ATTEMPT_3'] !== undefined ? dbSettings['MUL_ATTEMPT_3'] : "0";
+        
+        // ข้อมูลเอกสารและพิกัด
         document.getElementById('set-pwd').value = dbSettings['ADMIN_PASSWORD'] || "admin";
         document.getElementById('set-year').value = dbSettings['ACADEMIC_YEAR'] || "2568";
         document.getElementById('set-period').value = dbSettings['REPORT_PERIOD'] || "8 - 29 พ.ค. 69";
@@ -419,6 +471,20 @@
         let payload = {
             action: "adminSaveSettings",
             settings: {
+                "WEIGHT_BEHAVIOR": document.getElementById('set-w-beh').value,
+                "WEIGHT_PRACTICE": document.getElementById('set-w-prac').value,
+                "WEIGHT_ASSIGNMENT": document.getElementById('set-w-ass').value,
+                "WEIGHT_EXAM_OPG": document.getElementById('set-w-opg').value,
+                "WEIGHT_EXAM_FM": document.getElementById('set-w-fm').value,
+                "WEIGHT_EXAM_ANT": document.getElementById('set-w-ant').value,
+                "WEIGHT_EXAM_POST": document.getElementById('set-w-post').value,
+                "WEIGHT_EXAM_BW": document.getElementById('set-w-bw').value,
+                "WEIGHT_EXAM_PRE": document.getElementById('set-w-pre').value,
+                "WEIGHT_EXAM_EVAL": document.getElementById('set-w-eval').value,
+                "MUL_ATTEMPT_1": document.getElementById('set-m1').value,
+                "MUL_ATTEMPT_2": document.getElementById('set-m2').value,
+                "MUL_ATTEMPT_3": document.getElementById('set-m3').value,
+
                 "ADMIN_PASSWORD": document.getElementById('set-pwd').value,
                 "ACADEMIC_YEAR": document.getElementById('set-year').value,
                 "REPORT_PERIOD": document.getElementById('set-period').value,
@@ -437,7 +503,7 @@
     function openStudentModal(isEdit, id='', name='', group='') {
         Swal.fire({
             title: isEdit ? 'แก้ไขข้อมูลนักเรียน' : 'เพิ่มนักเรียนใหม่',
-            html: ` <div style="text-align:left; font-size:13px; font-weight:600;">รหัสนักเรียน</div><input id="swal-sid" class="swal2-input" value="${id}" type="number">
+            html: ` <div style="text-align:left; font-size:13px; font-weight:600;">รหัสนักเรียน</div><input id="swal-sid" class="swal2-input" value="${id}">
                     <div style="text-align:left; font-size:13px; font-weight:600; margin-top:10px;">ชื่อ-นามสกุล</div><input id="swal-sname" class="swal2-input" value="${name}">
                     <div style="text-align:left; font-size:13px; font-weight:600; margin-top:10px;">กลุ่ม (ใส่เฉพาะเลข)</div><input id="swal-sgroup" class="swal2-input" value="${group}" type="number">`,
             showCancelButton: true, confirmButtonText: 'บันทึก', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#0f766e', customClass: { popup: 'swal-wide' },
@@ -666,11 +732,21 @@
         });
     }
 
+    // 🌟 ระบบวาดตารางและสลับการเรียงข้อมูลคะแนน
     function renderDeepDiveScores() {
         let scoreHtml = ""; 
-        if(currentDeepDiveScores.length === 0) scoreHtml = "<tr><td colspan='5' style='text-align:center;'>ไม่มีประวัติคะแนน</td></tr>";
+        if(currentDeepDiveScores.length === 0) scoreHtml = "<tr><td colspan='6' style='text-align:center;'>ไม่มีประวัติคะแนน</td></tr>";
         else {
-            currentDeepDiveScores.forEach(sc => { scoreHtml += `<tr><td>${sc.date}</td><td>${sc.category}</td><td>${sc.subCategory}</td><td style="color:#ea580c; font-weight:bold;">${sc.rawScore}</td><td>${sc.weight}</td></tr>`; });
+            currentDeepDiveScores.forEach(sc => { 
+                scoreHtml += `<tr>
+                    <td>${sc.date}</td>
+                    <td>${sc.category}</td>
+                    <td>${sc.subCategory}</td>
+                    <td style="color:#ea580c; font-weight:bold;">${sc.rawScore}</td>
+                    <td>${sc.weight}</td>
+                    <td><button class="btn btn-outline btn-sm" onclick="openEditScoreModal('${sc.logId}')" title="แก้ไขคะแนน"><i class="fa-solid fa-pen"></i></button></td>
+                </tr>`; 
+            });
         }
         document.getElementById("adminScoreBody").innerHTML = scoreHtml;
     }
@@ -689,7 +765,6 @@
             currentDeepDiveAtt.forEach(a => {
                 let isLeave = a.remark.includes("ลา") && (!a.type || a.type === "-");
                 if(isLeave) {
-                    // ดึงเฉพาะข้อความเหตุผลการลาออกมาโชว์ในช่องแก้ไข
                     let pureRemark = ""; let match = a.remark.match(/\((.*?)\)/); if(match) pureRemark = match[1];
                     let lType = a.remark.includes("ลาป่วย") ? "ลาป่วย" : "ลากิจ";
                     let dObj = new Date(a.rawDate);
@@ -700,8 +775,8 @@
                         <td colspan="2" style="color:#ef4444; font-weight:bold; text-align:center;"><i class="fa-solid fa-bed"></i> ${a.remark}</td>
                         <td class="text-left" style="font-size: 13px;">บันทึกโดย Admin</td>
                         <td>
-                            <button class="btn btn-outline btn-sm" onclick="openLeaveModal(true, '${a.logId}', '${dateInputFormat}', '${lType}', '${pureRemark}')"><i class="fa-solid fa-pen"></i></button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteLeave('${a.logId}')"><i class="fa-solid fa-trash"></i></button>
+                            <button class="btn btn-outline btn-sm" onclick="openLeaveModal(true, '${a.logId}', '${dateInputFormat}', '${lType}', '${pureRemark}')" title="แก้ไข"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteLeave('${a.logId}')" title="ลบ"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>`;
                 } else {
@@ -720,7 +795,79 @@
         document.getElementById("btnSortAtt").innerHTML = sortOrderAtt === -1 ? `<i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า` : `<i class="fa-solid fa-arrow-up-wide-short"></i> เรียง: เก่าไปใหม่`;
     }
 
-    // 🌟 ป๊อปอัปบันทึกวันลา (ควบรวมโหมดเพิ่มและแก้ไข)
+    // 🌟 🌟 ระบบฟอร์มแก้ไขคะแนนย่อย (Edit Sub-Scores Modal)
+    function openEditScoreModal(logId) {
+        let sc = currentDeepDiveScores.find(s => s.logId === logId);
+        if(!sc) return;
+
+        let html = `<div style="text-align:left; font-size:14px; font-weight:600; margin-bottom:15px; color:#0f766e;">แก้ไขคะแนน: ${sc.subCategory} ${sc.detail && sc.detail !== "-" ? '('+sc.detail+')' : ''}</div>`;
+        let inputsHtml = "";
+        let ss = sc.subScores || []; // ดึงคะแนนย่อยเก่ามาใส่ให้แก้ไข
+
+        if (sc.category === "ประเมินรายวัน") {
+            inputsHtml += `<h4 style="margin:5px 0; font-size:13px; text-align:left; color:#475569;">พฤติกรรม (เต็ม 8)</h4>`;
+            let bLabels = ["ซื่อสัตย์", "รับผิดชอบ", "ทำงานเป็นทีม", "ไหวพริบ", "มารยาท"];
+            for(let i=0; i<5; i++) {
+                inputsHtml += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><label style="font-size:13px;">${bLabels[i]}</label> <input type="number" id="es-${i}" class="swal2-input" style="width:80px; height:35px; margin:0; text-align:center;" value="${ss[i]||0}" max="8" min="0"></div>`;
+            }
+            inputsHtml += `<h4 style="margin:15px 0 5px 0; font-size:13px; text-align:left; color:#475569;">ปฏิบัติ (เต็ม 5)</h4>`;
+            let sLabels = ["เตรียมเครื่อง", "เตรียมผู้ป่วย", "ถ่ายภาพ", "ดูแลอุปกรณ์"];
+            for(let i=0; i<4; i++) {
+                inputsHtml += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><label style="font-size:13px;">${sLabels[i]}</label> <input type="number" id="es-${i+5}" class="swal2-input" style="width:80px; height:35px; margin:0; text-align:center;" value="${ss[i+5]||0}" max="5" min="0"></div>`;
+            }
+        } else if (sc.category === "ส่งใบงาน") {
+            inputsHtml += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><label style="font-size:13px;">คะแนนที่ได้</label> <input type="number" id="es-0" class="swal2-input" style="width:80px; height:35px; margin:0; text-align:center;" value="${ss[0]||0}"></div>`;
+        } else if (sc.category === "สอบประเมินภาพ") {
+            let labels = ["วิเคราะห์ในช่องปาก", "วิเคราะห์นอกช่องปาก"];
+            for(let i=0; i<2; i++) {
+                inputsHtml += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><label style="font-size:13px;">${labels[i]}</label> <input type="number" id="es-${i}" class="swal2-input" style="width:80px; height:35px; margin:0; text-align:center;" value="${ss[i]||0}"></div>`;
+            }
+        } else if (sc.category === "สอบปฏิบัติ") {
+            let labels = [];
+            if (sc.subCategory.includes("OPG") || sc.subCategory.includes("นอกช่องปาก")) labels = ["เตรียมเครื่องมือ", "จัดท่า/ถ่ายภาพ", "ดูภาพ/แก้ไขปัญหา"];
+            else if (sc.subCategory.includes("FM") || sc.subCategory.includes("เรียงภาพ")) labels = ["คะแนนสอบเรียงภาพ"];
+            else labels = ["เตรียมเครื่องมือ", "เตรียมผู้ป่วย", "ถ่ายภาพรังสี", "ดูแลเครื่องมือหลังใช้", "ประเมิน/แก้ไขภาพ"];
+
+            for(let i=0; i<labels.length; i++) {
+                inputsHtml += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><label style="font-size:13px;">${labels[i]}</label> <input type="number" id="es-${i}" class="swal2-input" style="width:80px; height:35px; margin:0; text-align:center;" value="${ss[i]||0}"></div>`;
+            }
+        } else {
+            inputsHtml += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><label style="font-size:13px;">คะแนนดิบที่ได้</label> <input type="number" id="es-0" class="swal2-input" style="width:80px; height:35px; margin:0; text-align:center;" value="${sc.rawScore||0}"></div>`;
+        }
+
+        html += inputsHtml;
+        html += `<div style="text-align:left; font-size:13px; font-weight:600; margin-top:15px; margin-bottom:5px; color:#475569;">หมายเหตุการแก้ไข</div>`;
+        html += `<input type="text" id="es-remark" class="swal2-input" style="width:100%; margin:0;" value="${sc.remark.replace('[แก้ไข] ', '')}">`;
+
+        Swal.fire({
+            html: html,
+            showCancelButton: true, confirmButtonText: '<i class="fa-solid fa-floppy-disk"></i> บันทึกคะแนน', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#0f766e', customClass: { popup: 'swal-wide' },
+            preConfirm: () => {
+                let subList = [];
+                let i = 0;
+                while(document.getElementById(`es-${i}`)) {
+                    subList.push(parseFloat(document.getElementById(`es-${i}`).value) || 0);
+                    i++;
+                }
+                return {
+                    logId: logId, category: sc.category, subCategory: sc.subCategory, detail: sc.detail,
+                    subScoresList: subList, newRemark: document.getElementById('es-remark').value
+                }
+            }
+        }).then(res => {
+            if(res.isConfirmed) {
+                Swal.fire({title: 'กำลังบันทึกคะแนน...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+                fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "editScore", ...res.value }) })
+                .then(r => r.json()).then(data => {
+                    if (data.status === "success") {
+                        Swal.fire('บันทึกสำเร็จ!', 'เปอร์เซ็นต์น้ำหนักถูกคำนวณใหม่แล้ว', 'success');
+                        viewStudentDetail(currentViewStudentId); 
+                    } else Swal.fire('ผิดพลาด', data.message, 'error');
+                });
+            }
+        });
+    }
+
     function openLeaveModal(isEdit = false, logId = '', oldDate = '', oldType = 'ลาป่วย', oldRemark = '') {
         Swal.fire({
             title: isEdit ? 'แก้ไขวันลา' : 'บันทึกวันลา',
@@ -737,17 +884,12 @@
                 <div style="text-align:left; font-size:13px; font-weight:600; margin-top:15px; margin-bottom:8px; color:#475569;">เหตุผลการลา (ใส่หรือไม่ใส่ก็ได้)</div>
                 <input id="leave-remark" type="text" class="swal2-input" value="${oldRemark}" placeholder="เช่น เป็นไข้, ธุระครอบครัว" style="width: 85%; font-family:'Prompt';">
             `,
-            showCancelButton: true, confirmButtonText: 'บันทึกข้อมูล', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#ef4444',
+            showCancelButton: true, confirmButtonText: 'บันทึกข้อมูล', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#ef4444', customClass: { popup: 'swal-wide' },
             preConfirm: () => {
                 let date = document.getElementById('leave-date').value;
                 if (!date) { Swal.showValidationMessage('กรุณาเลือกวันที่ก่อนครับ'); return false; }
                 return {
-                    isEdit: isEdit,
-                    logId: logId,
-                    studentId: currentViewStudentId,
-                    leaveDate: date,
-                    leaveType: document.getElementById('leave-type').value,
-                    remark: document.getElementById('leave-remark').value
+                    isEdit: isEdit, logId: logId, studentId: currentViewStudentId, leaveDate: date, leaveType: document.getElementById('leave-type').value, remark: document.getElementById('leave-remark').value
                 }
             }
         }).then(res => {
@@ -765,25 +907,15 @@
         });
     }
 
-    // 🌟 ฟังก์ชันลบวันลา
     function deleteLeave(logId) {
-        Swal.fire({
-            title: 'ยืนยันการลบ?',
-            text: "คุณต้องการลบข้อมูลวันลานี้ใช่หรือไม่?",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            confirmButtonText: 'ใช่, ลบเลย',
-            cancelButtonText: 'ยกเลิก'
-        }).then((result) => {
+        Swal.fire({ title: 'ยืนยันการลบ?', text: "คุณต้องการลบข้อมูลวันลานี้ใช่หรือไม่?", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'ใช่, ลบเลย', cancelButtonText: 'ยกเลิก' })
+        .then((result) => {
             if (result.isConfirmed) {
                 Swal.fire({title: 'กำลังลบข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
                 fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminDeleteLeave", logId: logId }) })
                 .then(r => r.json()).then(data => {
-                    if (data.status === "success") {
-                        Swal.fire('ลบสำเร็จ!', '', 'success');
-                        viewStudentDetail(currentViewStudentId);
-                    } else Swal.fire('ผิดพลาด', data.message, 'error');
+                    if (data.status === "success") { Swal.fire('ลบสำเร็จ!', '', 'success'); viewStudentDetail(currentViewStudentId); } 
+                    else Swal.fire('ผิดพลาด', data.message, 'error');
                 });
             }
         });
