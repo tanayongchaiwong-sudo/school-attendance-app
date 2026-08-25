@@ -306,7 +306,6 @@
                 <div id="db-settings" class="card" style="display:none;">
                     <h3 style="margin:0 0 15px 0; color:#0f766e;">ตั้งค่าระบบและฟอร์มเอกสาร</h3>
 
-                    <!-- 🌟 ส่วนใหม่: ระบบล็อคข้อสอบ -->
                     <div style="border-bottom: 1px dashed #cbd5e1; padding-bottom: 15px; margin-bottom: 15px;">
                         <h4 style="margin:0 0 10px 0; color:#be185d;"><i class="fa-solid fa-lock"></i> ระบบควบคุมข้อสอบ (Pre-Clinic)</h4>
                         <div class="form-group">
@@ -372,7 +371,6 @@
 
                     <button class="btn btn-primary" style="margin-top:20px; width:100%;" onclick="saveSystemSettings()"><i class="fa-solid fa-floppy-disk"></i> บันทึกการตั้งค่าทั้งหมด</button>
 
-                    <!-- 🚨 พื้นที่อันตราย Data Archiving -->
                     <div style="border-top: 2px solid #fee2e2; padding-top: 20px; margin-top: 30px;">
                         <h4 style="margin:0 0 10px 0; color:#b91c1c;"><i class="fa-solid fa-triangle-exclamation"></i> พื้นที่อันตราย (Danger Zone)</h4>
                         <p style="font-size:13px; color:#ef4444; margin-bottom:15px;">เมื่อสิ้นสุดปีการศึกษา สามารถกดปุ่มนี้เพื่อสำรองข้อมูลและล้างประวัติทั้งหมด (เตรียมพร้อมสำหรับรุ่นถัดไป)</p>
@@ -557,8 +555,7 @@
         let payload = {
             action: "adminSaveSettings",
             settings: {
-                "EXAM_PRECLINIC_STATUS": document.getElementById('set-exam-status').value, // 🌟 ล็อคข้อสอบ
-                
+                "EXAM_PRECLINIC_STATUS": document.getElementById('set-exam-status').value,
                 "WEIGHT_BEHAVIOR": document.getElementById('set-w-beh').value,
                 "WEIGHT_PRACTICE": document.getElementById('set-w-prac').value,
                 "WEIGHT_ASSIGNMENT": document.getElementById('set-w-ass').value,
@@ -569,11 +566,9 @@
                 "WEIGHT_EXAM_BW": document.getElementById('set-w-bw').value,
                 "WEIGHT_EXAM_PRE": document.getElementById('set-w-pre').value,
                 "WEIGHT_EXAM_EVAL": document.getElementById('set-w-eval').value,
-                
                 "MUL_ATTEMPT_1": document.getElementById('set-m1').value,
                 "MUL_ATTEMPT_2": document.getElementById('set-m2').value,
                 "MUL_ATTEMPT_3": document.getElementById('set-m3').value,
-                
                 "ADMIN_PASSWORD": document.getElementById('set-pwd').value,
                 "ACADEMIC_YEAR": document.getElementById('set-year').value,
                 "REPORT_PERIOD": document.getElementById('set-period').value,
@@ -824,10 +819,10 @@
             currentReportData.forEach(r => { 
                 let isLeave = r.remark.includes("ลา") && (!r.type || r.type === "-");
                 if(isLeave) {
-                    tbody.innerHTML += `<tr style="background:#fef2f2;"><td style="white-space:nowrap;">${r.date.split(' ')[0]}</td><td>${r.id}</td><td>${r.name}</td><td colspan="3" style="color:#ef4444; font-weight:bold; text-align:center;"><i class="fa-solid fa-bed"></i> ${r.remark}</td></tr>`;
+                    tbody.innerHTML += `<tr style="background:#fef2f2;"><td style="padding: 3px;">${r.date.split(' ')[0]}</td><td class="text-left" style="padding: 3px 6px;"><b>${r.id}</b> ${r.name}</td><td colspan="3" style="color:#ef4444; font-weight:bold; padding: 3px;">${r.remark}</td><td class="text-center" style="font-size: 11px; padding: 3px;">-</td></tr>`;
                 } else {
-                    let typeClass = r.type === "เข้างาน" ? "color:#10b981; font-weight:bold;" : "color:#f59e0b; font-weight:bold;"; 
-                    tbody.innerHTML += `<tr><td style="white-space:nowrap;">${r.date}</td><td>${r.id}</td><td>${r.name}</td><td style="${typeClass}">${r.type}</td><td>${r.detail}</td><td>${r.teacher}</td></tr>`; 
+                    let typeColor = r.type === "เข้างาน" ? "color:#10b981;" : "color:#f59e0b;"; 
+                    tbody.innerHTML += `<tr><td style="padding: 3px;">${r.date}</td><td class="text-left" style="padding: 3px 6px;"><b>${r.id}</b> ${r.name}</td><td style="font-weight:bold; ${typeColor} padding: 3px;">${r.type}</td><td style="padding: 3px;">${r.teacher}</td><td style="padding: 3px;">${r.detail}</td><td class="text-left" style="font-size: 11px; padding: 3px 6px;">${r.remark}</td></tr>`; 
                 }
             });
         }
@@ -890,6 +885,7 @@
                 table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 15px; }
                 th, td { border: 1px solid #000; padding: 6px 4px; text-align: center; vertical-align: middle; }
                 th { font-weight: bold; background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; line-height: 1.2;}
+                tr { page-break-inside: avoid; }
                 .signature-section { display: flex; justify-content: space-between; margin-top: 30px; font-size: 16px; page-break-inside: avoid; }
                 .sign-box { width: 45%; text-align: center; }
             </style></head><body>`;
@@ -913,19 +909,46 @@
             <div class="signature-section" style="justify-content: flex-end; margin-top: 20px;"><div class="sign-box" style="text-align: right; width: 60%; line-height: 1.8;">ผู้กรอกข้อมูล ........(${teacherName})........ครูผู้สอน<br>หัวหน้าคลินิกผู้ดูแล ................................................................<br>วันที่ ${currentDateThai}</div></div>`;
         }
         else if (type === "3") {
-            html += `<div class="header-title text-center" style="line-height: 1.5; margin-bottom: 20px;">การฝึกปฏิบัติงานทางคลินิก หลักสูตรประกาศนียบัตรผู้ช่วยทันตแพทย์ ประจำปีการศึกษา ${academicYear}<br>คลินิกรังสีวิทยาช่องปากและแม็กซิลโลเฟเชียล<br>ระหว่างวันที่ ${periodText} (${groupText})</div>
-            <table><thead><tr><th width="15%">ประทับเวลา</th><th width="25%">เลขประจําตัว<br>ชื่อ-นามสกุล</th><th width="15%">เข้า-ออกงาน</th><th width="20%">ผู้ดูแล</th><th width="10%">เวรประจำวัน</th><th width="15%">หมายเหตุ</th></tr></thead><tbody>`;
+            html += `<div class="header-title text-center" style="line-height: 1.2; margin-bottom: 15px; font-size: 16px;">การฝึกปฏิบัติงานทางคลินิก หลักสูตรประกาศนียบัตรผู้ช่วยทันตแพทย์ ประจำปีการศึกษา ${academicYear}<br>คลินิกรังสีวิทยาช่องปากและแม็กซิลโลเฟเชียล<br>ระหว่างวันที่ ${periodText} (${groupText})</div>
+            <table style="font-size: 12px; margin-bottom: 15px;">
+            <thead>
+                <tr>
+                    <th width="14%" style="padding: 4px;">ประทับเวลา</th>
+                    <th width="26%" style="padding: 4px;">เลขประจําตัว / ชื่อ-นามสกุล</th>
+                    <th width="12%" style="padding: 4px;">สถานะ</th>
+                    <th width="18%" style="padding: 4px;">ผู้ดูแล</th>
+                    <th width="12%" style="padding: 4px;">เวรประจำวัน</th>
+                    <th width="18%" style="padding: 4px;">หมายเหตุ</th>
+                </tr>
+            </thead><tbody>`;
             currentReportData.forEach(r => {
                 let isLeave = r.remark.includes("ลา") && (!r.type || r.type === "-");
                 if(isLeave) {
-                    html += `<tr style="background-color: #fef2f2;"><td>${r.date.split(' ')[0]}</td><td class="text-left" style="padding-left:10px;">${r.id}<br>${r.name}</td><td colspan="3" style="color:#ef4444; font-weight:bold;">${r.remark}</td><td class="text-left" style="font-size: 13px;">-</td></tr>`;
+                    html += `<tr style="background-color: #fef2f2;">
+                        <td style="padding: 3px;">${r.date.split(' ')[0]}</td>
+                        <td class="text-left" style="padding: 3px 6px;"><b>${r.id}</b> ${r.name}</td>
+                        <td colspan="3" style="color:#ef4444; font-weight:bold; padding: 3px;">${r.remark}</td>
+                        <td class="text-center" style="font-size: 11px; padding: 3px;">-</td>
+                    </tr>`;
                 } else {
                     let typeColor = r.type === "เข้างาน" ? "color:#10b981;" : "color:#f59e0b;";
-                    html += `<tr><td>${r.date}</td><td class="text-left" style="padding-left:10px;">${r.id}<br>${r.name}</td><td style="font-weight:bold; ${typeColor}">${r.type}</td><td>${r.teacher}</td><td>${r.detail}</td><td class="text-left" style="font-size: 13px;">${r.remark}</td></tr>`;
+                    html += `<tr>
+                        <td style="padding: 3px;">${r.date}</td>
+                        <td class="text-left" style="padding: 3px 6px;"><b>${r.id}</b> ${r.name}</td>
+                        <td style="font-weight:bold; ${typeColor} padding: 3px;">${r.type}</td>
+                        <td style="padding: 3px;">${r.teacher}</td>
+                        <td style="padding: 3px;">${r.detail}</td>
+                        <td class="text-left" style="font-size: 11px; padding: 3px 6px;">${r.remark}</td>
+                    </tr>`;
                 }
             });
             html += `</tbody></table>
-            <div class="signature-section" style="justify-content: flex-end; margin-top: 20px;"><div class="sign-box" style="text-align: right; width: 60%; line-height: 1.8;">ผู้กรอกข้อมูล ........(${teacherName})........ครูผู้สอน<br>หัวหน้าคลินิก / ผู้ดูแล ................................................................<br></div></div>`;
+            <div class="signature-section" style="justify-content: flex-end; margin-top: 15px; font-size: 14px;">
+                <div class="sign-box" style="text-align: right; width: 60%; line-height: 1.5;">
+                    ผู้กรอกข้อมูล ........(${teacherName})........ครูผู้สอน<br>
+                    หัวหน้าคลินิก / ผู้ดูแล ................................................................<br>
+                </div>
+            </div>`;
         }
 
         html += `<script>window.onload = function() { setTimeout(() => { window.print(); }, 500); };<\/script></body></html>`;
