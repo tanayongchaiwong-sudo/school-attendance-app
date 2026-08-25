@@ -35,7 +35,6 @@
         .btn-primary { width: 100%; padding: 14px; font-family: 'Prompt'; font-weight: 600; font-size: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; margin-top: 15px; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.3s;}
         .btn-back { position: absolute; left: 0; top: 0; background: none; border: none; color: #64748b; font-size: 18px; cursor: pointer; padding: 5px; }
         
-        /* 🌟 สไตล์ปุ่มสอบเข้าห้องโดยเฉพาะ */
         .exam-btn { background: white; border: 2px solid #fce7f3; padding: 15px; border-radius: 16px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); width: 100%; text-align: left; }
         .exam-btn:hover { border-color: #f472b6; background: #fdf2f8; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(236, 72, 153, 0.1); }
         .exam-btn-icon { width: 45px; height: 45px; background: #fce7f3; color: #ec4899; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
@@ -89,7 +88,6 @@
             <label>รหัสประจำตัวนักเรียน</label>
             <div class="input-wrapper">
                 <i id="idIcon" class="fa-solid fa-id-card"></i>
-                <!-- 🌟 เพิ่ม debounce ให้เริ่มค้นหาชื่อหลังพิมพ์เสร็จ 1 วินาที -->
                 <input type="number" id="studentId" placeholder="กรอกรหัสนักเรียน" onkeyup="debounceCheckName()" onchange="checkName()">
             </div>
         </div>
@@ -104,7 +102,6 @@
         <hr style="border: 0; border-top: 1px dashed #e5e7eb; margin: 20px 0;">
 
         <div id="divPreClinicButtons" class="hidden" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
-            <!-- โค้ดปุ่มจะถูกสร้างอัตโนมัติตรงนี้ -->
         </div>
 
         <div class="form-group" id="divSubCategory">
@@ -158,16 +155,17 @@
 <script>
     // 🚨 1. ใส่ LIFF ID (ของหน้าศูนย์บริการนักเรียน)
     const LIFF_ID = "2011162626-lcdf4ybN"; 
-    // 🚨 2. ใส่ API URL 
+    
+    // 🚨 2. ใส่ API URL (อันใหม่ที่ได้จากการ Deploy ล่าสุด)
     const API_URL = "https://script.google.com/macros/s/AKfycbzPyR4k6rVOrBFIB4QiBYBO9ntaY0mWpo7mck4RTzeV-rWpWLa-mRviLfuyG8lH62s/exec"; 
 
     let studentCompletedExams = [];
     let studentSubmittedTasks = []; 
-    let typingTimer; // ตัวแปรสำหรับหน่วงเวลาพิมพ์
+    let typingTimer; 
+    let globalExamStatus = "LOCKED"; // 🌟 เก็บสถานะกุญแจล็อคข้อสอบ
 
     const formData = {
         "ลงเวลาเข้า-ออก": {
-            // 🌟 เพิ่มหมวด "ลา" เข้าไป
             options: { "เข้างาน": [], "ออกงาน": ["ฟิล์มนอกช่องปาก", "ฟิล์มในช่องปาก", "ฟิล์มผู้ป่วยนอกเวลา"], "ลา": [] },
             subLabel: "สถานะ", detailLabel: "เวรปฏิบัติงาน (เฉพาะออกงาน)"
         },
@@ -197,7 +195,7 @@
             },
             subLabel: "เลือกหัวข้อที่ต้องการสอบ", detailLabel: "",
             links: {
-                // 🚨 3. อย่าลืมนำลิงก์หน้าข้อสอบ (exam.html) มาใส่ตรงนี้นะครับ
+                // 🚨 3. นำลิงก์หน้าข้อสอบ (exam.html) มาใส่ตรงนี้นะครับ
                 "Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก": "https://liff.line.me/2011162626-TL70LvNp?part=Part 1",
                 "Part 2: ขั้นตอนการถ่ายภาพรังสีชนิดในช่องปาก": "https://liff.line.me/2011162626-TL70LvNp?part=Part 2",
                 "Part 3: ขั้นตอนการถ่ายภาพรังสีชนิดนอกช่องปาก": "https://liff.line.me/2011162626-TL70LvNp?part=Part 3"
@@ -209,7 +207,6 @@
         liff.init({ liffId: LIFF_ID }).then(() => {
             if (liff.isLoggedIn()) {
                 liff.getProfile().then(p => {
-                    // ทันทีที่โหลดหน้า ให้โชว์ว่ากำลังประมวลผลดึงรหัส
                     let nameInput = document.getElementById("fullName");
                     let nameIcon = document.getElementById("nameIcon");
                     nameInput.placeholder = "กำลังดึงข้อมูลส่วนตัว... ⏳";
@@ -265,7 +262,6 @@
         });
     }
 
-    // 🌟 ฟังก์ชันจัดการ UI การค้นหาชื่อนักเรียน
     function debounceCheckName() {
         clearTimeout(typingTimer);
         let nameInput = document.getElementById("fullName");
@@ -274,7 +270,7 @@
         nameInput.placeholder = "รอพิมพ์รหัสเสร็จ...";
         nameIcon.className = "fa-solid fa-user";
         nameIcon.style.color = "#9ca3af";
-        typingTimer = setTimeout(checkName, 1000); // รอผู้ใช้หยุดพิมพ์ 1 วินาทีแล้วค่อยหา
+        typingTimer = setTimeout(checkName, 1000); 
     }
 
     function resetNameStatus() {
@@ -284,6 +280,7 @@
         nameInput.placeholder = "กรุณากรอกรหัสด้วยตนเอง ✍️";
         nameIcon.className = "fa-solid fa-triangle-exclamation";
         nameIcon.style.color = "#f59e0b";
+        globalExamStatus = "LOCKED";
     }
 
     function checkName() {
@@ -310,6 +307,9 @@
                 
                 studentCompletedExams = data.completedExams || []; 
                 studentSubmittedTasks = data.submittedTasks || []; 
+                
+                // 🌟 รับสถานะกุญแจข้อสอบจาก Admin
+                globalExamStatus = data.examStatus || "LOCKED"; 
 
                 let hasP1 = studentCompletedExams.includes("Part 1") || studentCompletedExams.includes("Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก");
                 let hasP2 = studentCompletedExams.includes("Part 2") || studentCompletedExams.includes("Part 2: ขั้นตอนการถ่ายภาพรังสีชนิดในช่องปาก");
@@ -329,6 +329,8 @@
                 
                 studentCompletedExams = [];
                 studentSubmittedTasks = [];
+                globalExamStatus = "LOCKED";
+                
                 let btnPreClinic = document.getElementById("btnPreClinic");
                 if (btnPreClinic) btnPreClinic.classList.remove("hidden");
             }
@@ -336,6 +338,7 @@
             nameInput.placeholder = "ระบบขัดข้อง ลองพิมพ์ใหม่อีกครั้ง";
             nameIcon.className = "fa-solid fa-triangle-exclamation";
             nameIcon.style.color = "#ef4444";
+            globalExamStatus = "LOCKED";
         });
     }
 
@@ -344,7 +347,6 @@
         let subSelect = document.getElementById("subCategory");
         let btnSubmit = document.getElementById("btnSubmit");
         
-        // รีเซ็ตการแสดงผลพื้นฐาน
         btnSubmit.classList.remove("hidden");
         document.getElementById("divPreClinicButtons").classList.add("hidden");
         document.getElementById("btnSubmitText").innerText = "ยืนยันการส่งข้อมูล";
@@ -383,30 +385,36 @@
             btnContainer.classList.remove("hidden");
             btnContainer.innerHTML = '<label style="margin-bottom: 5px;">เลือกหัวข้อที่ต้องการสอบ</label>';
 
-            let availableOptions = Object.keys(formData[cat].options).filter(opt => {
-                let shortOpt = opt.split(":")[0].trim();
-                return !studentCompletedExams.includes(shortOpt) && !studentCompletedExams.includes(opt);
-            });
-            
-            if (availableOptions.length === 0) {
-                btnContainer.innerHTML += '<div style="text-align:center; padding:15px; background:#ecfdf5; color:#059669; border-radius:10px; font-weight:600;"><i class="fa-solid fa-circle-check"></i> ✅ คุณสอบครบทุก Part แล้วครับ!</div>';
-            } else {
-                availableOptions.forEach(opt => {
-                    let link = formData[cat].links[opt];
-                    let shortName = opt.split(":")[0].trim(); 
-                    let descName = opt.split(":")[1] ? opt.split(":")[1].trim() : ""; 
-                    
-                    btnContainer.innerHTML += `
-                        <button class="exam-btn" onclick="window.location.href='${link}'">
-                            <div class="exam-btn-icon"><i class="fa-solid fa-laptop-code"></i></div>
-                            <div class="exam-btn-content">
-                                <div class="exam-btn-title">สอบเข้าห้อง ${shortName}</div>
-                                <div class="exam-btn-desc">${descName}</div>
-                            </div>
-                            <i class="fa-solid fa-chevron-right" style="color: #cbd5e1; font-size: 16px;"></i>
-                        </button>
-                    `;
+            // 🌟 เช็คสวิตช์กุญแจแอดมินก่อน
+            if (globalExamStatus === "LOCKED") {
+                btnContainer.innerHTML += '<div style="text-align:center; padding:15px; background:#fef2f2; color:#ef4444; border-radius:10px; font-weight:600;"><i class="fa-solid fa-lock"></i> 🔒 คุณครูยังไม่เปิดระบบให้ทำข้อสอบครับ</div>';
+            } 
+            else {
+                let availableOptions = Object.keys(formData[cat].options).filter(opt => {
+                    let shortOpt = opt.split(":")[0].trim();
+                    return !studentCompletedExams.includes(shortOpt) && !studentCompletedExams.includes(opt);
                 });
+                
+                if (availableOptions.length === 0) {
+                    btnContainer.innerHTML += '<div style="text-align:center; padding:15px; background:#ecfdf5; color:#059669; border-radius:10px; font-weight:600;"><i class="fa-solid fa-circle-check"></i> ✅ คุณสอบครบทุก Part แล้วครับ!</div>';
+                } else {
+                    availableOptions.forEach(opt => {
+                        let link = formData[cat].links[opt];
+                        let shortName = opt.split(":")[0].trim(); 
+                        let descName = opt.split(":")[1] ? opt.split(":")[1].trim() : ""; 
+                        
+                        btnContainer.innerHTML += `
+                            <button class="exam-btn" onclick="window.location.href='${link}'">
+                                <div class="exam-btn-icon"><i class="fa-solid fa-laptop-code"></i></div>
+                                <div class="exam-btn-content">
+                                    <div class="exam-btn-title">สอบเข้าห้อง ${shortName}</div>
+                                    <div class="exam-btn-desc">${descName}</div>
+                                </div>
+                                <i class="fa-solid fa-chevron-right" style="color: #cbd5e1; font-size: 16px;"></i>
+                            </button>
+                        `;
+                    });
+                }
             }
 
         } else {
@@ -449,7 +457,6 @@
         let detailSelect = document.getElementById("detail");
         let btnSubmit = document.getElementById("btnSubmit");
 
-        // 🌟 ดักจับระบบการลา ไม่เอาครู ไม่เอา GPS
         if (cat === "ลงเวลาเข้า-ออก") {
             if (sub === "ลา") {
                 document.getElementById("divTeacher").classList.add("hidden");
@@ -503,7 +510,6 @@
 
         if(!sId || !fullName || fullName.includes("ไม่พบ")) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสนักเรียนให้ถูกต้องก่อนครับ', 'warning');
 
-        // 🌟 1. ดักจับกรณีกดลา (ให้เด้ง Popup บังคับใส่เหตุผล)
         if (cat === "ลงเวลาเข้า-ออก" && sub === "ลา") {
             Swal.fire({
                 title: 'ระบุเหตุผลการลา',
@@ -519,32 +525,18 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     let payload = {
-                        action: "submitStudentRequest",
-                        studentId: sId,
-                        category: cat,
-                        subCategory: sub,
-                        detail: "-",
-                        teacherId: "",
-                        location: "",
-                        remark: result.value, // เหตุผลที่เด็กเพิ่งพิมพ์
-                        submitterUid: ""
+                        action: "submitStudentRequest", studentId: sId, category: cat, subCategory: sub,
+                        detail: "-", teacherId: "", location: "", remark: result.value, submitterUid: ""
                     };
                     executeSubmit(payload);
                 }
             });
         } 
-        // 🌟 2. ดักจับกรณีปกติ (เช็คข้อมูลตามปกติ)
         else {
             let payload = {
-                action: "submitStudentRequest",
-                studentId: sId,
-                category: cat,
-                subCategory: sub,
-                detail: document.getElementById("detail").value,
-                teacherId: document.getElementById("teacherId").value,
-                location: document.getElementById("location").value,
-                remark: document.getElementById("remark").value,
-                submitterUid: ""
+                action: "submitStudentRequest", studentId: sId, category: cat, subCategory: sub,
+                detail: document.getElementById("detail").value, teacherId: document.getElementById("teacherId").value,
+                location: document.getElementById("location").value, remark: document.getElementById("remark").value, submitterUid: ""
             };
 
             if(!payload.category || !payload.subCategory) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกหมวดหมู่ให้ครบถ้วนครับ', 'warning');
