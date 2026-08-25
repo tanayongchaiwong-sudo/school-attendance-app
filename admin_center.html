@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- นำเข้าไลบรารีเพิ่มเติม -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -86,7 +85,6 @@
 
         .swal-wide { width: 95% !important; max-width: 600px !important; border-radius: 20px; padding: 20px 10px; }
         
-        /* 🌟 สไตล์กล่อง Widget */
         .widget-card { background: white; border: 1px solid var(--border); padding: 25px 20px; border-radius: 16px; text-align: center; transition: 0.3s; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
         .widget-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); border-color: #cbd5e1; }
         
@@ -308,6 +306,18 @@
                 <div id="db-settings" class="card" style="display:none;">
                     <h3 style="margin:0 0 15px 0; color:#0f766e;">ตั้งค่าระบบและฟอร์มเอกสาร</h3>
 
+                    <!-- 🌟 ส่วนใหม่: ระบบล็อคข้อสอบ -->
+                    <div style="border-bottom: 1px dashed #cbd5e1; padding-bottom: 15px; margin-bottom: 15px;">
+                        <h4 style="margin:0 0 10px 0; color:#be185d;"><i class="fa-solid fa-lock"></i> ระบบควบคุมข้อสอบ (Pre-Clinic)</h4>
+                        <div class="form-group">
+                            <label>สถานะการเข้าทำข้อสอบ</label>
+                            <select id="set-exam-status" class="form-control" style="font-weight:600; color:#be185d;">
+                                <option value="LOCKED">🔒 ปิดล็อค (นักเรียนเข้าสอบไม่ได้)</option>
+                                <option value="UNLOCKED">✅ เปิดให้ทำข้อสอบ (นักเรียนเข้าสอบได้)</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div style="border-bottom: 1px dashed #cbd5e1; padding-bottom: 15px; margin-bottom: 15px;">
                         <h4 style="margin:0 0 10px 0; color:#475569;"><i class="fa-solid fa-scale-balanced"></i> น้ำหนักคะแนน (เปอร์เซ็นต์ %) และตัวคูณ</h4>
                         <div class="flex-row" style="margin-bottom:10px;">
@@ -387,10 +397,9 @@
     let sortOrderScore = -1; 
     let sortOrderAtt = -1;
 
-    // 🌟 ตัวแปรสำหรับ Dashboard
     let barChart = null;
     let doughnutChart = null;
-    let dashRawData = null; // เก็บข้อมูลดึงจากหลังบ้าน
+    let dashRawData = null; 
 
     function normalizeId(id) {
         if (id === null || id === undefined) return "";
@@ -450,9 +459,6 @@
         element.classList.add('active');
     }
 
-    // ==========================================
-    // 🗄️ ระบบโหลดและจัดการฐานข้อมูล (CMS)
-    // ==========================================
     function loadGroupsAndSettings() {
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminGetMasterData" }) })
         .then(res => res.json()).then(data => {
@@ -465,7 +471,7 @@
                 
                 let selectExport = document.getElementById("groupFilter");
                 let selectAdmin = document.getElementById("adminGroupFilter");
-                let selectDash = document.getElementById("dashGroupFilter"); // 🌟 ฟิลเตอร์หน้ากราฟ
+                let selectDash = document.getElementById("dashGroupFilter"); 
                 
                 let options = '<option value="All">ดูทั้งหมดทุกกลุ่ม</option>';
                 Array.from(groups).sort((a, b) => a - b).forEach(g => { let label = (!isNaN(g) && g !== "") ? "กลุ่ม " + g : g; options += `<option value="${g}">${label}</option>`; });
@@ -476,7 +482,7 @@
                 
                 globalAdminStudents = dbStudents; 
                 renderAdminStudentList();
-                loadDashboardData(); // โหลดกราฟตอนเริ่ม
+                loadDashboardData(); 
             }
         });
     }
@@ -520,6 +526,8 @@
     }
 
     function fillSettingsForm() {
+        document.getElementById('set-exam-status').value = dbSettings['EXAM_PRECLINIC_STATUS'] || "LOCKED";
+        
         document.getElementById('set-w-beh').value = dbSettings['WEIGHT_BEHAVIOR'] || "35";
         document.getElementById('set-w-prac').value = dbSettings['WEIGHT_PRACTICE'] || "25";
         document.getElementById('set-w-ass').value = dbSettings['WEIGHT_ASSIGNMENT'] || "5";
@@ -530,9 +538,11 @@
         document.getElementById('set-w-bw').value = dbSettings['WEIGHT_EXAM_BW'] || "5";
         document.getElementById('set-w-pre').value = dbSettings['WEIGHT_EXAM_PRE'] || "5";
         document.getElementById('set-w-eval').value = dbSettings['WEIGHT_EXAM_EVAL'] || "5";
+        
         document.getElementById('set-m1').value = dbSettings['MUL_ATTEMPT_1'] !== undefined ? dbSettings['MUL_ATTEMPT_1'] : "5";
         document.getElementById('set-m2').value = dbSettings['MUL_ATTEMPT_2'] !== undefined ? dbSettings['MUL_ATTEMPT_2'] : "4";
         document.getElementById('set-m3').value = dbSettings['MUL_ATTEMPT_3'] !== undefined ? dbSettings['MUL_ATTEMPT_3'] : "0";
+        
         document.getElementById('set-pwd').value = dbSettings['ADMIN_PASSWORD'] || "admin";
         document.getElementById('set-year').value = dbSettings['ACADEMIC_YEAR'] || "2568";
         document.getElementById('set-period').value = dbSettings['REPORT_PERIOD'] || "8 - 29 พ.ค. 69";
@@ -547,6 +557,8 @@
         let payload = {
             action: "adminSaveSettings",
             settings: {
+                "EXAM_PRECLINIC_STATUS": document.getElementById('set-exam-status').value, // 🌟 ล็อคข้อสอบ
+                
                 "WEIGHT_BEHAVIOR": document.getElementById('set-w-beh').value,
                 "WEIGHT_PRACTICE": document.getElementById('set-w-prac').value,
                 "WEIGHT_ASSIGNMENT": document.getElementById('set-w-ass').value,
@@ -557,9 +569,11 @@
                 "WEIGHT_EXAM_BW": document.getElementById('set-w-bw').value,
                 "WEIGHT_EXAM_PRE": document.getElementById('set-w-pre').value,
                 "WEIGHT_EXAM_EVAL": document.getElementById('set-w-eval').value,
+                
                 "MUL_ATTEMPT_1": document.getElementById('set-m1').value,
                 "MUL_ATTEMPT_2": document.getElementById('set-m2').value,
                 "MUL_ATTEMPT_3": document.getElementById('set-m3').value,
+                
                 "ADMIN_PASSWORD": document.getElementById('set-pwd').value,
                 "ACADEMIC_YEAR": document.getElementById('set-year').value,
                 "REPORT_PERIOD": document.getElementById('set-period').value,
@@ -627,14 +641,12 @@
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminGetDashboardStats", groupFilter: filter }) })
         .then(res => res.json()).then(data => {
             if (data.status === "success") {
-                dashRawData = data.data; // เก็บไว้ใช้ตอนคลิก
+                dashRawData = data.data; 
                 
-                // อัปเดตตัวเลขในการ์ดสรุปผล
                 document.getElementById("dashTotalStudents").innerText = dashRawData.totalStudents;
                 document.getElementById("dashTotalLates").innerText = dashRawData.attStats.late;
                 document.getElementById("dashTotalLeaves").innerText = dashRawData.attStats.leave;
 
-                // อัปเดต Bar Chart (คะแนนสอบเฉลี่ย)
                 if (barChart) barChart.destroy();
                 let ctxBar = document.getElementById('scoreBarChart').getContext('2d');
                 barChart = new Chart(ctxBar, {
@@ -653,7 +665,7 @@
                     options: {
                         responsive: true, maintainAspectRatio: false,
                         plugins: { legend: { display: false } },
-                        scales: { y: { beginAtZero: true, max: 30 } }, // สมมติว่าคะแนนดิบเต็มประมาณ 30
+                        scales: { y: { beginAtZero: true, max: 30 } }, 
                         onClick: (e, elements) => {
                             if (elements.length > 0) {
                                 let index = elements[0].index;
@@ -665,7 +677,6 @@
                     }
                 });
 
-                // อัปเดต Doughnut Chart (สถิติเข้างาน)
                 if (doughnutChart) doughnutChart.destroy();
                 let ctxDoughnut = document.getElementById('attDoughnutChart').getContext('2d');
                 doughnutChart = new Chart(ctxDoughnut, {
@@ -687,7 +698,6 @@
                                 let label = doughnutChart.data.labels[index];
                                 if (label === 'มาสาย') showLateRankingPopup();
                                 else if (label === 'ลางาน') showLeavePopup();
-                                // ถ้ากด 'ตรงเวลา' จะไม่แสดงตารางเพื่อความรวดเร็ว
                             }
                         },
                         onHover: (e, elements) => { e.native.target.style.cursor = elements[0] ? 'pointer' : 'default'; }
@@ -697,7 +707,6 @@
         });
     }
 
-    // 🌟 ฟังก์ชันแสดง Popup เวลากดที่ Widget หรือกราฟ
     function showStudentListPopup() {
         if (!globalAdminStudents) return;
         let filter = document.getElementById("dashGroupFilter").value;
@@ -731,12 +740,12 @@
     function showScoreDetailPopup(subTitle) {
         if(!dashRawData || !dashRawData.chartData.rawScoreData[subTitle]) return;
         let list = dashRawData.chartData.rawScoreData[subTitle].rawList;
-        list.sort((a, b) => b.score - a.score); // เรียงจากคะแนนมากไปน้อย
+        list.sort((a, b) => b.score - a.score); 
         
         let html = '<div style="max-height:300px; overflow-y:auto; text-align:left;"><table style="width:100%; font-size:13px; border-collapse:collapse;">';
         html += '<tr style="background:#f1f5f9; position:sticky; top:0;"><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>คะแนนดิบที่ได้</th></tr>';
         list.forEach(s => { 
-            let color = s.score < 15 ? "#ef4444" : "#10b981"; // ไฮไลต์สีแดงถ้าคะแนนดิบน้อยกว่า 15 (สมมติเต็ม 30)
+            let color = s.score < 15 ? "#ef4444" : "#10b981"; 
             html += `<tr style="border-bottom:1px dashed #e2e8f0;"><td>${s.id}</td><td>${s.name}</td><td style="color:${color}; font-weight:bold; text-align:center;">${s.score}</td></tr>`; 
         });
         html += '</table></div>';
