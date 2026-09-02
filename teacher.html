@@ -121,21 +121,22 @@
 
 <script>
     // 🚨 1. ใส่ LIFF ID หน้าประเมินครูตรงนี้
-    const LIFF_ID = "2011162626-dON8ee2c"; 
+    const LIFF_ID = "YOUR_TEACHER_LIFF_ID_HERE"; 
+    
     // 🚨 2. ใส่ API URL
-    const API_URL = "https://script.google.com/macros/s/AKfycbzPyR4k6rVOrBFIB4QiBYBO9ntaY0mWpo7mck4RTzeV-rWpWLa-mRviLfuyG8lH62s/exec"; 
+    const API_URL = "YOUR_API_URL_HERE"; 
 
     let currentTeacherId = "";
     let pendingRequests = [];
     let currentSelectedIndex = -1; 
-    let globalTeachers = []; // 🌟 เก็บรายชื่อครูทั้งหมดสำหรับระบบ "ส่งต่อ"
+    let globalTeachers = []; 
 
     window.onload = function() {
         liff.init({ liffId: LIFF_ID }).then(() => {
             if (liff.isLoggedIn()) {
                 liff.getProfile().then(p => { 
                     fetchPendingRequests(p.userId); 
-                    fetchTeachersList(); // โหลดรายชื่อครู
+                    fetchTeachersList(); 
                 });
             } else {
                 liff.login();
@@ -180,7 +181,7 @@
             
             let html = "";
             pendingRequests.forEach((req, idx) => {
-                let detailHtml = req.detail ? `<div class="task-detail"><i class="fa-solid fa-bars-staggered"></i> รายละเอียด: ${req.detail}</div>` : "";
+                let detailHtml = req.detail && req.detail !== "-" ? `<div class="task-detail"><i class="fa-solid fa-bars-staggered"></i> รายละเอียด: ${req.detail}</div>` : "";
                 
                 html += `
                 <div class="task-card" onclick="openEvaluationForm(${idx})">
@@ -211,23 +212,17 @@
                 <div class="student-avatar"><i class="fa-solid fa-user-graduate"></i></div>
                 <div>
                     <div class="student-name-display">${req.studentName}</div>
-                    <div class="student-task-display">${req.category} - ${req.subCategory} ${req.detail ? '('+req.detail+')' : ''}</div>
+                    <div class="student-task-display">${req.category} - ${req.subCategory} ${req.detail && req.detail !== '-' ? '('+req.detail+')' : ''}</div>
                 </div>
             </div>
         `;
 
         let html = '';
         if (req.category === "ประเมินรายวัน") {
-            html += `<div class="rubric-box">
-                <h4><i class="fa-solid fa-star" style="color: #eab308;"></i> พฤติกรรม (เต็ม 40)</h4>
-                <div class="rubric-row"><label>ซื่อสัตย์ ตรงต่อเวลา</label><input type="number" class="b-score" placeholder="0-10" max="10"></div>
-                <div class="rubric-row"><label>รับผิดชอบ กระตือรือร้น</label><input type="number" class="b-score" placeholder="0-10" max="10"></div>
-                <div class="rubric-row"><label>ทำงานเป็นทีม เอื้อเฟื้อ</label><input type="number" class="b-score" placeholder="0-10" max="10"></div>
-                <div class="rubric-row"><label>ปฏิภาณไหวพริบ คล่องแคล่ว</label><input type="number" class="b-score" placeholder="0-5" max="5"></div>
-                <div class="rubric-row"><label>กิริยามารยาท แต่งกาย</label><input type="number" class="b-score" placeholder="0-5" max="5"></div>
-            </div>
-            <div class="rubric-box">
-                <h4><i class="fa-solid fa-wrench" style="color: #3b82f6;"></i> ทักษะปฏิบัติงาน (เต็ม 20)</h4>
+            // 🌟 ตัดช่องพฤติกรรมออก เหลือแค่ทักษะปฏิบัติ 4 ช่อง
+            html += `
+            <div class="rubric-box" style="background:#f0fdf4; border-color:#bbf7d0;">
+                <h4 style="color:#15803d;"><i class="fa-solid fa-wrench"></i> ทักษะปฏิบัติงาน (เต็ม 20)</h4>
                 <div class="rubric-row"><label>เตรียมเครื่อง/ห้อง</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
                 <div class="rubric-row"><label>เตรียมผู้ป่วย</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
                 <div class="rubric-row"><label>ถ่ายและประเมินภาพ</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
@@ -282,7 +277,6 @@
 
         let optionsHtml = '<option value="" disabled selected>-- เลือกคุณครูท่านใหม่ --</option>';
         globalTeachers.forEach(t => {
-            // ป้องกันไม่ให้เลือกส่งต่อหาตัวเอง
             if (t.id !== currentTeacherId) {
                 optionsHtml += `<option value="${t.id}">ครู${t.name}</option>`;
             }
@@ -300,18 +294,10 @@
                     ${optionsHtml}
                 </select>
             `,
-            showCancelButton: true,
-            confirmButtonText: 'ยืนยันการส่งต่อ',
-            cancelButtonText: 'ยกเลิก',
-            confirmButtonColor: '#3b82f6',
-            cancelButtonColor: '#94a3b8',
-            customClass: { popup: 'swal-wide' },
+            showCancelButton: true, confirmButtonText: 'ยืนยันการส่งต่อ', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#3b82f6', cancelButtonColor: '#94a3b8', customClass: { popup: 'swal-wide' },
             preConfirm: () => {
                 let tid = document.getElementById('swal-new-teacher').value;
-                if (!tid) {
-                    Swal.showValidationMessage('กรุณาเลือกคุณครูปลายทางด้วยครับ');
-                    return false;
-                }
+                if (!tid) { Swal.showValidationMessage('กรุณาเลือกคุณครูปลายทางด้วยครับ'); return false; }
                 return tid;
             }
         }).then((result) => {
@@ -335,7 +321,6 @@
         if(currentSelectedIndex === -1) return;
         
         let req = pendingRequests[currentSelectedIndex];
-        let sumB = 0, sumS = 0, sumRaw = 0;
         let subScoresList = []; 
         let isInvalid = false;
         let invalidMsg = "";
@@ -352,11 +337,7 @@
                 invalidMsg = `คะแนนหัวข้อ "${label}" ไม่ถูกต้อง!\n(กรุณาระบุตัวเลขระหว่าง 0 ถึง ${maxVal} เท่านั้นครับ)`;
                 break;
             }
-
             subScoresList.push(val); 
-            if(inp.classList.contains('b-score')) sumB += val;
-            if(inp.classList.contains('s-score')) sumS += val;
-            if(inp.classList.contains('raw-score')) sumRaw += val;
         }
 
         if (isInvalid) return Swal.fire('ข้อมูลไม่ถูกต้อง', invalidMsg, 'error');
@@ -365,19 +346,14 @@
             title: 'ยืนยันการให้คะแนน?',
             text: "ระบบจะบันทึกคะแนนลงในฐานข้อมูลทันที",
             icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#f97316',
-            cancelButtonColor: '#9ca3af',
-            confirmButtonText: 'ยืนยันบันทึก',
-            cancelButtonText: 'ยกเลิก'
+            showCancelButton: true, confirmButtonColor: '#f97316', cancelButtonColor: '#9ca3af', confirmButtonText: 'ยืนยันบันทึก', cancelButtonText: 'ยกเลิก'
         }).then((result) => {
             if (result.isConfirmed) {
                 let payload = {
-                    action: "submitScore", teacherId: currentTeacherId,
+                    action: "submitScore", teacherId: currentTeacherId || "คุณครู",
                     logId: req.logId, studentId: req.studentId, studentName: req.studentName,
                     category: req.category, subCategory: req.subCategory, detail: req.detail,
-                    behaviorScore: sumB, skillScore: sumS, rawScore: sumRaw,
-                    subScoresList: subScoresList,
+                    subScoresList: subScoresList, // 🌟 ส่งอาร์เรย์ทักษะ 4 ค่าตรงๆ
                     remark: document.getElementById("remark1").value
                 };
 
@@ -387,9 +363,7 @@
                 .then(res => res.json()).then(data => {
                     if(data.status === "success") {
                         Swal.fire('สำเร็จ!', 'บันทึกคะแนนเรียบร้อย', 'success').then(() => window.location.reload());
-                    } else {
-                        Swal.fire('ผิดพลาด', data.message, 'error');
-                    }
+                    } else { Swal.fire('ผิดพลาด', data.message, 'error'); }
                 }).catch(() => Swal.fire('ผิดพลาด', 'ไม่สามารถติดต่อ Server ได้', 'error'));
             }
         });
@@ -404,12 +378,7 @@
             text: "ระบบจะแจ้งเตือนให้นักเรียนทราบ กรุณาระบุเหตุผล",
             input: 'text',
             icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#9ca3af',
-            confirmButtonText: 'ยืนยันปฏิเสธ',
-            cancelButtonText: 'ยกเลิก',
-            inputPlaceholder: 'เช่น ภาพไม่ชัด, ส่งผิดหัวข้อ...',
+            showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#9ca3af', confirmButtonText: 'ยืนยันปฏิเสธ', cancelButtonText: 'ยกเลิก', inputPlaceholder: 'เช่น ภาพไม่ชัด, ส่งผิดหัวข้อ...',
             inputValidator: (value) => {
                 if (!value) return 'กรุณาระบุเหตุผลด้วยครับ!'
             }
@@ -418,12 +387,7 @@
                 Swal.fire({ title: 'กำลังดำเนินการ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 
                 let payload = {
-                    action: "rejectRequest",
-                    logId: req.logId,
-                    studentId: req.studentId,
-                    category: req.category,
-                    subCategory: req.subCategory,
-                    reason: result.value
+                    action: "rejectRequest", logId: req.logId, studentId: req.studentId, category: req.category, subCategory: req.subCategory, reason: result.value
                 };
 
                 fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
