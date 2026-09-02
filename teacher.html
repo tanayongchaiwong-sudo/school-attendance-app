@@ -120,11 +120,8 @@
 </div>
 
 <script>
-    // 🚨 1. ใส่ LIFF ID หน้าประเมินครูตรงนี้
-    const LIFF_ID = "YOUR_TEACHER_LIFF_ID_HERE"; 
-    
-    // 🚨 2. ใส่ API URL
-    const API_URL = "YOUR_API_URL_HERE"; 
+    const LIFF_ID = "2011162626-dON8ee2c"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbzPyR4k6rVOrBFIB4QiBYBO9ntaY0mWpo7mck4RTzeV-rWpWLa-mRviLfuyG8lH62s/exec"; 
 
     let currentTeacherId = "";
     let pendingRequests = [];
@@ -219,7 +216,6 @@
 
         let html = '';
         if (req.category === "ประเมินรายวัน") {
-            // 🌟 ตัดช่องพฤติกรรมออก เหลือแค่ทักษะปฏิบัติ 4 ช่อง
             html += `
             <div class="rubric-box" style="background:#f0fdf4; border-color:#bbf7d0;">
                 <h4 style="color:#15803d;"><i class="fa-solid fa-wrench"></i> ทักษะปฏิบัติงาน (เต็ม 20)</h4>
@@ -270,7 +266,6 @@
         document.getElementById("step1List").classList.remove("hidden");
     }
 
-    // 🌟 ระบบส่งต่อคำขอให้ครูท่านอื่น (Reassign)
     function reassignRequest() {
         if(currentSelectedIndex === -1) return;
         let req = pendingRequests[currentSelectedIndex];
@@ -353,7 +348,7 @@
                     action: "submitScore", teacherId: currentTeacherId || "คุณครู",
                     logId: req.logId, studentId: req.studentId, studentName: req.studentName,
                     category: req.category, subCategory: req.subCategory, detail: req.detail,
-                    subScoresList: subScoresList, // 🌟 ส่งอาร์เรย์ทักษะ 4 ค่าตรงๆ
+                    subScoresList: subScoresList,
                     remark: document.getElementById("remark1").value
                 };
 
