@@ -22,17 +22,14 @@
 
         /* สไตล์การ์ดงาน (Task Card) */
         .task-list { display: flex; flex-direction: column; gap: 12px; }
-        .task-card { background: #ffffff; border: 1px solid var(--border); border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); position: relative; overflow: hidden;}
-        .task-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--primary); }
-        .task-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(249, 115, 22, 0.1); border-color: #fdba74; }
+        .task-card { background: #ffffff; border: 1px solid var(--border); border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); overflow: hidden;}
+        .task-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.08); }
         .task-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;}
-        .task-name { font-size: 15px; font-weight: 600; color: #1f2937; }
+        .task-name { font-size: 15px; font-weight: 600; color: #1f2937; display: flex; align-items: center; gap: 6px;}
         .task-time { font-size: 11px; color: #9ca3af; }
         .task-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;}
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-        .b-cat { background: #e0e7ff; color: #4338ca; }
-        .b-sub { background: #fef3c7; color: #d97706; }
-        .task-detail { font-size: 12px; color: #6b7280; }
+        .task-detail { font-size: 12px; color: #6b7280; margin-top: 8px; border-top: 1px dashed #e5e7eb; padding-top: 8px;}
 
         /* สไตล์ฟอร์มประเมิน */
         .btn-back { background: none; border: none; font-size: 15px; color: #6b7280; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: 20px; padding: 0; font-family: 'Prompt'; font-weight: 500; transition: 0.2s;}
@@ -120,7 +117,10 @@
 </div>
 
 <script>
+    // 🚨 1. ใส่ LIFF ID หน้าประเมินครูตรงนี้
     const LIFF_ID = "2011162626-dON8ee2c"; 
+    
+    // 🚨 2. ใส่ API URL
     const API_URL = "https://script.google.com/macros/s/AKfycbzPyR4k6rVOrBFIB4QiBYBO9ntaY0mWpo7mck4RTzeV-rWpWLa-mRviLfuyG8lH62s/exec"; 
 
     let currentTeacherId = "";
@@ -178,17 +178,45 @@
             
             let html = "";
             pendingRequests.forEach((req, idx) => {
-                let detailHtml = req.detail && req.detail !== "-" ? `<div class="task-detail"><i class="fa-solid fa-bars-staggered"></i> รายละเอียด: ${req.detail}</div>` : "";
+                let detailHtml = req.detail && req.detail !== "-" ? `<div class="task-detail"><i class="fa-solid fa-bars-staggered" style="color:#94a3b8;"></i> รายละเอียด: ${req.detail}</div>` : "";
                 
+                // 🌟 กำหนดชุดสีตามประเภทของงาน
+                let themeColor = "#f97316"; // สีส้ม (Default)
+                let bgBadge = "#ffedd5";
+                let textBadge = "#c2410c";
+                let icon = "fa-clipboard";
+
+                if (req.category === "ประเมินรายวัน") {
+                    themeColor = "#10b981"; // สีเขียว
+                    bgBadge = "#d1fae5";
+                    textBadge = "#047857";
+                    icon = "fa-wrench";
+                } else if (req.category === "ส่งใบงาน") {
+                    themeColor = "#3b82f6"; // สีน้ำเงิน
+                    bgBadge = "#dbeafe";
+                    textBadge = "#1d4ed8";
+                    icon = "fa-file-arrow-up";
+                } else if (req.category === "สอบปฏิบัติ") {
+                    themeColor = "#ec4899"; // สีชมพู
+                    bgBadge = "#fce7f3";
+                    textBadge = "#be185d";
+                    icon = "fa-stethoscope";
+                } else if (req.category === "สอบประเมินภาพ") {
+                    themeColor = "#8b5cf6"; // สีม่วง
+                    bgBadge = "#ede9fe";
+                    textBadge = "#6d28d9";
+                    icon = "fa-magnifying-glass";
+                }
+
                 html += `
-                <div class="task-card" onclick="openEvaluationForm(${idx})">
+                <div class="task-card" onclick="openEvaluationForm(${idx})" style="border-left: 5px solid ${themeColor};">
                     <div class="task-header">
-                        <div class="task-name">${req.studentName}</div>
-                        <div class="task-time">${req.date}</div>
+                        <div class="task-name" style="color: ${themeColor};"><i class="fa-solid ${icon}"></i> ${req.studentName}</div>
+                        <div class="task-time"><i class="fa-regular fa-clock"></i> ${req.date.split(" ")[1]}</div>
                     </div>
                     <div class="task-badges">
-                        <span class="badge b-cat">${req.category}</span>
-                        <span class="badge b-sub">${req.subCategory}</span>
+                        <span class="badge" style="background: ${bgBadge}; color: ${textBadge}; border: 1px solid ${themeColor}40;">${req.category}</span>
+                        <span class="badge" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;">${req.subCategory}</span>
                     </div>
                     ${detailHtml}
                 </div>`;
@@ -204,12 +232,22 @@
         document.getElementById("step1List").classList.add("hidden");
         document.getElementById("step2Form").classList.remove("hidden");
 
+        // 🌟 ปรับสีกล่องด้านบนของฟอร์มประเมินให้เข้ากับสีงานด้วย
+        let themeColor = "#f97316"; 
+        let bgBox = "#fff7ed"; 
+        let borderBox = "#ffedd5";
+        
+        if (req.category === "ประเมินรายวัน") { themeColor = "#10b981"; bgBox = "#f0fdf4"; borderBox = "#d1fae5"; } 
+        else if (req.category === "ส่งใบงาน") { themeColor = "#3b82f6"; bgBox = "#eff6ff"; borderBox = "#dbeafe"; } 
+        else if (req.category === "สอบปฏิบัติ") { themeColor = "#ec4899"; bgBox = "#fdf2f8"; borderBox = "#fce7f3"; } 
+        else if (req.category === "สอบประเมินภาพ") { themeColor = "#8b5cf6"; bgBox = "#f5f3ff"; borderBox = "#ede9fe"; }
+
         document.getElementById("studentInfoArea").innerHTML = `
-            <div class="student-info-box">
-                <div class="student-avatar"><i class="fa-solid fa-user-graduate"></i></div>
+            <div class="student-info-box" style="background: ${bgBox}; border-color: ${borderBox};">
+                <div class="student-avatar" style="background: ${themeColor};"><i class="fa-solid fa-user-graduate"></i></div>
                 <div>
-                    <div class="student-name-display">${req.studentName}</div>
-                    <div class="student-task-display">${req.category} - ${req.subCategory} ${req.detail && req.detail !== '-' ? '('+req.detail+')' : ''}</div>
+                    <div class="student-name-display" style="color: ${themeColor};">${req.studentName}</div>
+                    <div class="student-task-display" style="color: #4b5563;">${req.category} - ${req.subCategory} ${req.detail && req.detail !== '-' ? '('+req.detail+')' : ''}</div>
                 </div>
             </div>
         `;
@@ -228,7 +266,7 @@
         else if (req.category === "ส่งใบงาน") {
             let maxRaw = req.detail.includes("ที่ 1") ? 1 : 2; 
             html += `<div class="rubric-box">
-                <h4><i class="fa-solid fa-file-pen" style="color: #8b5cf6;"></i> ประเมินใบงาน</h4>
+                <h4><i class="fa-solid fa-file-pen" style="color: #3b82f6;"></i> ประเมินใบงาน</h4>
                 <div class="rubric-row"><label>คะแนนที่ได้</label><input type="number" class="raw-score" placeholder="0-${maxRaw}" max="${maxRaw}"></div>
             </div>`;
         }
@@ -251,7 +289,7 @@
             }
         }
         else if (req.category === "สอบประเมินภาพ") {
-            html += `<div class="rubric-box"><h4><i class="fa-solid fa-magnifying-glass" style="color: #14b8a6;"></i> สอบประเมินภาพ</h4>
+            html += `<div class="rubric-box"><h4><i class="fa-solid fa-magnifying-glass" style="color: #8b5cf6;"></i> สอบประเมินภาพ</h4>
                 <div class="rubric-row"><label>วิเคราะห์ในช่องปาก</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div>
                 <div class="rubric-row"><label>วิเคราะห์นอกช่องปาก</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div></div>`;
         }
