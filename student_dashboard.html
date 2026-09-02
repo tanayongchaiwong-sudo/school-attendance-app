@@ -170,8 +170,9 @@
 
 <script>
     // 🚨 1. ใส่ LIFF ID หน้า Dashboard นักเรียน 🚨
-    const LIFF_ID = "2011162626-3ElMqLDI";
-    const API_URL = "https://script.google.com/macros/s/AKfycbzPyR4k6rVOrBFIB4QiBYBO9ntaY0mWpo7mck4RTzeV-rWpWLa-mRviLfuyG8lH62s/exec";
+    const LIFF_ID = "YOUR_STUDENT_DASHBOARD_LIFF_ID";
+    // 🚨 2. ใส่ API URL 🚨
+    const API_URL = "YOUR_API_URL_HERE";
 
     let currentProfile = { id: "", name: "", group: "" };
     let globalAttendance = []; 
@@ -198,10 +199,28 @@
     const ASSIGN_LIST_FULL = ["ในช่องปาก (ใบงานที่ 1)", "ในช่องปาก (ใบงานที่ 2)", "ในช่องปาก (ใบงานที่ 3)", "นอกช่องปาก (ใบงานที่ 1)", "นอกช่องปาก (ใบงานที่ 2)", "นอกช่องปาก (ใบงานที่ 3)"];
 
     window.onload = () => { 
+        // 🌟 1. ดึง Cache เก่าขึ้นมาโชว์ก่อนทันที (Fast Load)
+        let cachedData = localStorage.getItem("studentDashboardCache");
+        let cachedImage = localStorage.getItem("studentProfileImage");
+        
+        if (cachedData) {
+            try {
+                let d = JSON.parse(cachedData);
+                if (cachedImage) document.getElementById("userImg").src = cachedImage;
+                renderDashboardData(d); // แสดงข้อมูลเก่าทันที
+                document.getElementById("loadingDiv").style.display = "none";
+                document.getElementById("mainDiv").style.display = "block";
+            } catch(e) { }
+        }
+
+        // 🌟 2. เริ่มเชื่อมต่อ LIFF และดึงข้อมูลใหม่แบบเบื้องหลัง (Background Fetch)
         liff.init({ liffId: LIFF_ID }).then(() => { 
             if(liff.isLoggedIn()) {
                 liff.getProfile().then(p => { 
-                    document.getElementById("userImg").src = p.pictureUrl || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"; 
+                    let profileImg = p.pictureUrl || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+                    document.getElementById("userImg").src = profileImg; 
+                    localStorage.setItem("studentProfileImage", profileImg);
+                    
                     fetchDashboard(p.userId); 
                 });
             } else { liff.login(); }
@@ -212,92 +231,111 @@
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentDashboard", studentUid: uid }) })
         .then(res => res.json()).then(data => {
             if(data.status === "success") {
-                let d = data.data;
-                currentProfile.id = d.studentId; 
-                currentProfile.name = d.studentName; 
-                currentProfile.group = d.studentGroup;
+                // 🌟 บันทึกข้อมูลใหม่ลง Cache
+                localStorage.setItem("studentDashboardCache", JSON.stringify(data.data));
                 
-                globalAttendance = d.attendanceLog || [];
-                globalAssignments = d.assignments || [];
-                globalExams = d.exams || [];
-                globalTeachers = d.teachersList || []; 
-
-                let displayGroup = (!isNaN(d.studentGroup) && d.studentGroup !== "") ? "กลุ่ม " + d.studentGroup : d.studentGroup;
-                document.getElementById("userName").innerText = d.studentName;
-                document.getElementById("userGroup").innerText = `รหัส: ${d.studentId} | ${displayGroup}`;
+                // 🌟 อัปเดตหน้าจอด้วยข้อมูลล่าสุด
+                renderDashboardData(data.data);
                 
-                document.getElementById("sHours").innerText = d.totalHours;
-                document.getElementById("sLate").innerText = d.lateCount;
-                document.getElementById("sCheckin").innerText = d.totalCheckIn;
-                
-                let assignCount = globalAssignments.filter(a => a.status === "Completed").length;
-                let examCount = globalExams.filter(e => e.status === "Completed").length;
-                document.getElementById("sAssign").innerText = assignCount;
-                document.getElementById("sExam").innerText = examCount;
-
-                let passedCount = 0;
-                let goalHtml = `<div class="goal-section-title">🌟 สิ่งที่ทำสำเร็จแล้ว (ส่งงาน / สอบ)</div><div class="goal-list">`;
-                
-                MASTER_GOALS.forEach(goal => {
-                    let isPassed = false;
-                    if(goal.type === "exam") isPassed = globalExams.some(e => e.name.includes(goal.key) && e.status === "Completed");
-                    else if (goal.type === "assign") isPassed = globalAssignments.some(a => a.name.includes(goal.key) && a.status === "Completed");
-
-                    if(isPassed) {
-                        passedCount++;
-                        let icon = goal.type === "exam" ? "fa-graduation-cap" : "fa-file-signature";
-                        goalHtml += `
-                            <div class="goal-item done">
-                                <div class="goal-item-title"><i class="fa-solid ${icon}"></i> ${goal.name}</div>
-                                <div class="goal-item-status"><i class="fa-solid fa-check"></i> สำเร็จ</div>
-                            </div>`;
-                    }
-                });
-                goalHtml += `</div>`;
-
-                if(passedCount === 0) goalHtml = `<div style="text-align:center; padding: 20px; color:#94a3b8; font-size:13px; background:#f8fafc; border-radius:12px; border:1px dashed #cbd5e1;">ยังไม่มีรายการที่ทำสำเร็จเลยครับ เริ่มลุยเก็บเป้าหมายกันเถอะ! 🚀</div>`;
-                document.getElementById("goalListArea").innerHTML = goalHtml;
-                
-                let pct = Math.round((passedCount / MASTER_GOALS.length) * 100);
-                setTimeout(() => { document.getElementById("progressBar").style.width = pct + "%"; }, 500); 
-                document.getElementById("progressText").innerText = `${pct}% (${passedCount}/${MASTER_GOALS.length})`;
-
-                let hList = document.getElementById("historyList");
-                if(d.recentHistory.length === 0) hList.innerHTML = `<div style="text-align:center; padding: 15px; color:#94a3b8; font-size:13px;">ยังไม่มีประวัติการส่งข้อมูลครับ</div>`;
-                else {
-                    let hHtml = "";
-                    d.recentHistory.forEach(h => {
-                        let stText = "เสร็จแล้ว", stClass = "status-Submitted", stIcon = "fa-check", reasonHtml = "";
-                        
-                        if(h.realStatus && h.realStatus.includes("Rejected")) { 
-                            stText = "ตีกลับ"; stClass = "status-Rejected"; stIcon = "fa-xmark";
-                            let reason = h.realStatus.replace("Rejected:", "").trim();
-                            reasonHtml = `
-                                <div class="h-reason-box">
-                                    <div class="h-reason-text"><i class="fa-solid fa-circle-exclamation"></i> <span><b>เหตุผลที่แก้ไข:</b> ${reason}</span></div>
-                                    <button class="btn-resubmit" onclick="resubmitTask('${h.logId}', '${h.category}', '${h.subCategory}')">
-                                        <i class="fa-solid fa-pen-to-square"></i> แก้ไขข้อมูลและส่งใหม่
-                                    </button>
-                                </div>`;
-                        }
-                        
-                        hHtml += `
-                            <div class="history-item" style="flex-direction: column;">
-                                <div style="display:flex; justify-content: space-between; width: 100%; align-items: flex-start;">
-                                    <div>
-                                        <div class="h-title"><i class="fa-solid fa-file-lines" style="color:#94a3b8;"></i> ${h.title}</div>
-                                        <div class="h-date"><i class="fa-regular fa-clock"></i> ${h.date}</div>
-                                    </div>
-                                    <span class="status-badge ${stClass}"><i class="fa-solid ${stIcon}"></i> ${stText}</span>
-                                </div>
-                                ${reasonHtml}
-                            </div>`;
-                    });
-                    hList.innerHTML = hHtml;
+                document.getElementById("loadingDiv").style.display = "none";
+                document.getElementById("mainDiv").style.display = "block";
+            } else {
+                if(!localStorage.getItem("studentDashboardCache")) {
+                    Swal.fire('ยังไม่ลงทะเบียน', 'ระบบยังไม่พบข้อมูลของคุณ กรุณาลงทะเบียนก่อนครับ', 'warning');
                 }
-                document.getElementById("loadingDiv").style.display = "none"; document.getElementById("mainDiv").style.display = "block";
-            } else Swal.fire('ผิดพลาด', data.message, 'error');
-        }).catch(err => Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error'));
+            }
+        }).catch(() => {
+            // ถ้าระบบออฟไลน์ และมี Cache อยู่แล้ว หน้าจอจะไม่หมุนค้าง
+        });
+    }
+
+    // 🌟 แยกฟังก์ชันการแสดงผลหน้าจอออกมา เพื่อให้ใช้งานร่วมกับระบบ Cache ได้
+    function renderDashboardData(d) {
+        currentProfile.id = d.studentId; 
+        currentProfile.name = d.studentName; 
+        currentProfile.group = d.studentGroup;
+        
+        globalAttendance = d.attendanceLog || [];
+        globalAssignments = d.assignments || [];
+        globalExams = d.exams || [];
+        globalTeachers = d.teachersList || []; 
+
+        let displayGroup = (!isNaN(d.studentGroup) && d.studentGroup !== "") ? "กลุ่ม " + d.studentGroup : d.studentGroup;
+        document.getElementById("userName").innerText = d.studentName;
+        document.getElementById("userGroup").innerText = `รหัส: ${d.studentId} | ${displayGroup}`;
+        
+        document.getElementById("sHours").innerText = d.totalHours;
+        document.getElementById("sLate").innerText = d.lateCount; // ค่ามาสายถูกนับจาก Code.gs (08:15) มาแล้ว
+        document.getElementById("sCheckin").innerText = d.totalCheckIn;
+        
+        let assignCount = globalAssignments.filter(a => a.status === "Completed").length;
+        let examCount = globalExams.filter(e => e.status === "Completed").length;
+        document.getElementById("sAssign").innerText = assignCount;
+        document.getElementById("sExam").innerText = examCount;
+
+        let passedCount = 0;
+        let goalHtml = `<div class="goal-section-title">🌟 สิ่งที่ทำสำเร็จแล้ว (ส่งงาน / สอบ)</div><div class="goal-list">`;
+        
+        MASTER_GOALS.forEach(goal => {
+            let isPassed = false;
+            if(goal.type === "exam") isPassed = globalExams.some(e => e.name.includes(goal.key) && e.status === "Completed");
+            else if (goal.type === "assign") isPassed = globalAssignments.some(a => a.name.includes(goal.key) && a.status === "Completed");
+
+            if(isPassed) {
+                passedCount++;
+                let icon = goal.type === "exam" ? "fa-graduation-cap" : "fa-file-signature";
+                goalHtml += `
+                    <div class="goal-item done">
+                        <div class="goal-item-title"><i class="fa-solid ${icon}"></i> ${goal.name}</div>
+                        <div class="goal-item-status"><i class="fa-solid fa-check"></i> สำเร็จ</div>
+                    </div>`;
+            }
+        });
+        goalHtml += `</div>`;
+
+        if(passedCount === 0) goalHtml = `<div style="text-align:center; padding: 20px; color:#94a3b8; font-size:13px; background:#f8fafc; border-radius:12px; border:1px dashed #cbd5e1;">ยังไม่มีรายการที่ทำสำเร็จเลยครับ เริ่มลุยเก็บเป้าหมายกันเถอะ! 🚀</div>`;
+        document.getElementById("goalListArea").innerHTML = goalHtml;
+        
+        let pct = Math.round((passedCount / MASTER_GOALS.length) * 100);
+        setTimeout(() => { document.getElementById("progressBar").style.width = pct + "%"; }, 50); 
+        document.getElementById("progressText").innerText = `${pct}% (${passedCount}/${MASTER_GOALS.length})`;
+
+        let hList = document.getElementById("historyList");
+        if(d.recentHistory.length === 0) hList.innerHTML = `<div style="text-align:center; padding: 15px; color:#94a3b8; font-size:13px;">ยังไม่มีประวัติการส่งข้อมูลครับ</div>`;
+        else {
+            let hHtml = "";
+            d.recentHistory.forEach(h => {
+                let stText = "เสร็จแล้ว", stClass = "status-Submitted", stIcon = "fa-check", reasonHtml = "";
+                
+                if(h.realStatus && h.realStatus.includes("Rejected")) { 
+                    stText = "ตีกลับ"; stClass = "status-Rejected"; stIcon = "fa-xmark";
+                    let reason = h.realStatus.replace("Rejected:", "").trim();
+                    reasonHtml = `
+                        <div class="h-reason-box">
+                            <div class="h-reason-text"><i class="fa-solid fa-circle-exclamation"></i> <span><b>เหตุผลที่แก้ไข:</b> ${reason}</span></div>
+                            <button class="btn-resubmit" onclick="resubmitTask('${h.logId}', '${h.category}', '${h.subCategory}')">
+                                <i class="fa-solid fa-pen-to-square"></i> แก้ไขข้อมูลและส่งใหม่
+                            </button>
+                        </div>`;
+                }
+                else if(h.status === "Pending") {
+                    stText = "รอตรวจ"; stClass = "status-Pending"; stIcon = "fa-clock";
+                }
+                
+                hHtml += `
+                    <div class="history-item" style="flex-direction: column;">
+                        <div style="display:flex; justify-content: space-between; width: 100%; align-items: flex-start;">
+                            <div>
+                                <div class="h-title"><i class="fa-solid fa-file-lines" style="color:#94a3b8;"></i> ${h.title}</div>
+                                <div class="h-date"><i class="fa-regular fa-clock"></i> ${h.date}</div>
+                            </div>
+                            <span class="status-badge ${stClass}"><i class="fa-solid ${stIcon}"></i> ${stText}</span>
+                        </div>
+                        ${reasonHtml}
+                    </div>`;
+            });
+            hList.innerHTML = hHtml;
+        }
     }
 
     function resubmitTask(logId, cat, sub) {
@@ -327,8 +365,11 @@
                 Swal.fire({title: 'กำลังส่งคำขอใหม่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
                 fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'resubmitRequest', logId: logId, newTeacherId: result.value }) })
                 .then(r => r.json()).then(data => {
-                    if(data.status === 'success') Swal.fire('สำเร็จ', data.message, 'success').then(() => window.location.reload());
-                    else Swal.fire('ผิดพลาด', data.message, 'error');
+                    if(data.status === 'success') {
+                        // 🌟 เคลียร์ Cache เพื่อให้ดึงข้อมูลใหม่ทันที
+                        localStorage.removeItem("studentDashboardCache");
+                        Swal.fire('สำเร็จ', data.message, 'success').then(() => window.location.reload());
+                    } else { Swal.fire('ผิดพลาด', data.message, 'error'); }
                 });
             }
         });
@@ -341,7 +382,8 @@
             <thead><tr><th>วันที่</th><th>เข้า</th><th>ออก</th><th>ชม.</th><th>หมายเหตุ</th></tr></thead><tbody>`;
         globalAttendance.forEach(r => {
             let rem = r.remark;
-            if(rem.includes("สาย") || rem.includes("ขาด")) rem = `<span style="color:#ef4444; font-weight:600; background:#fef2f2; padding:2px 6px; border-radius:6px;">${rem}</span>`;
+            // 🌟 รองรับไฮไลต์กรณีขัดข้องฉุกเฉินด้วย
+            if(rem.includes("สาย") || rem.includes("ขาด") || rem.includes("ขัดข้อง")) rem = `<span style="color:#ef4444; font-weight:600; background:#fef2f2; padding:2px 6px; border-radius:6px;">${rem}</span>`;
             else if(rem.includes("ลา")) rem = `<span style="color:#d97706; font-weight:600; background:#fffbeb; padding:2px 6px; border-radius:6px;">${rem}</span>`;
             html += `<tr><td style="white-space: nowrap;">${r.date}</td><td class="att-time in">${r.in}</td><td class="att-time out">${r.out}</td><td><span class="att-hours">${r.hours}</span></td><td style="font-size:11px;">${rem||'-'}</td></tr>`;
         });
@@ -398,7 +440,12 @@
                 Swal.fire({title:'กำลังบันทึก...', allowOutsideClick: false, didOpen:()=>Swal.showLoading()});
                 liff.getProfile().then(profile => {
                     fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateProfile', role: 'student', userId: profile.userId, inputId: p.id, fullName: p.name, groupName: p.group }) })
-                    .then(r=>r.json()).then(data=>{ if(data.status==='success') Swal.fire('สำเร็จ', data.message, 'success').then(()=>window.location.reload()); });
+                    .then(r=>r.json()).then(data=>{ 
+                        if(data.status==='success') {
+                            localStorage.removeItem("studentDashboardCache"); // เคลียร์ Cache ให้รีโหลดชื่อใหม่
+                            Swal.fire('สำเร็จ', data.message, 'success').then(()=>window.location.reload()); 
+                        }
+                    });
                 });
             }
         });
