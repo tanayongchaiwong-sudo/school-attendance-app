@@ -46,6 +46,7 @@
         .gps-box { background: #eff6ff; padding: 10px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #bfdbfe; font-size: 12px; }
         .gps-btn { width: 100%; padding: 8px; font-family: 'Prompt'; background: white; border: 1px solid var(--primary); color: var(--primary); border-radius: 8px; cursor: pointer; margin-top: 5px; transition: 0.2s;}
         .gps-btn:active { transform: scale(0.98); }
+        .swal-wide { width: 95% !important; max-width: 450px !important; border-radius: 16px; }
     </style>
 </head>
 <body>
@@ -137,7 +138,6 @@
             <button class="gps-btn" onclick="verifyLocation()">ตรวจสอบพิกัดเป้าหมาย</button>
             <div id="locationStatus" style="margin-top: 5px; font-weight: 600;"></div>
             
-            <!-- 🌟 ปุ่มฉุกเฉิน กรณีดึงพิกัดไม่ได้ -->
             <button class="gps-btn" style="background:#fee2e2; color:#b91c1c; border-color:#fca5a5; margin-top:10px; font-size:12px;" onclick="useEmergencyLocation()">
                 <i class="fa-solid fa-triangle-exclamation"></i> ดึงพิกัดไม่ได้ / ระบบขัดข้อง?
             </button>
@@ -162,14 +162,13 @@
     // 🚨 1. ใส่ LIFF ID (ของหน้าศูนย์บริการนักเรียน)
     const LIFF_ID = "2011162626-lcdf4ybN"; 
     // 🚨 2. ใส่ API URL
-    const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbzPyR4k6rVOrBFIB4QiBYBO9ntaY0mWpo7mck4RTzeV-rWpWLa-mRviLfuyG8lH62s/exec"; 
 
     let studentCompletedExams = [];
     let studentSubmittedTasks = []; 
     let typingTimer; 
     let globalExamStatus = "LOCKED"; 
     
-    // 🌟 ตัวแปรเก็บสถานะการลงเวลาฉุกเฉิน
     let isEmergency = false;
     let emergencyReasonText = "";
 
@@ -204,15 +203,14 @@
             },
             subLabel: "เลือกหัวข้อที่ต้องการสอบ", detailLabel: "",
             links: {
-                "Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก": "https://liff.line.me/2011162626-TL70LvNp?part=Part 1",
-                "Part 2: ขั้นตอนการถ่ายภาพรังสีชนิดในช่องปาก": "https://liff.line.me/2011162626-TL70LvNp?part=Part 2",
-                "Part 3: ขั้นตอนการถ่ายภาพรังสีชนิดนอกช่องปาก": "https://liff.line.me/2011162626-TL70LvNp?part=Part 3"
+                "Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก": "https://liff.line.me/YOUR_EXAM_LIFF_ID?part=Part 1",
+                "Part 2: ขั้นตอนการถ่ายภาพรังสีชนิดในช่องปาก": "https://liff.line.me/YOUR_EXAM_LIFF_ID?part=Part 2",
+                "Part 3: ขั้นตอนการถ่ายภาพรังสีชนิดนอกช่องปาก": "https://liff.line.me/YOUR_EXAM_LIFF_ID?part=Part 3"
             }
         }
     };
 
     window.onload = function() {
-        // 🌟 1. ดึงข้อมูลจาก LocalStorage (เพื่อความรวดเร็ว)
         let savedId = localStorage.getItem("studentId");
         let savedName = localStorage.getItem("studentName");
         
@@ -221,13 +219,12 @@
             document.getElementById("fullName").value = savedName;
             document.getElementById("nameIcon").className = "fa-solid fa-circle-check";
             document.getElementById("nameIcon").style.color = "#10b981";
-            // สั่งโหลดข้อมูลเบื้องหลังโดยไม่ต้องบล็อกหน้าจอ
             fetchStudentDataBackground(savedId); 
         }
 
         liff.init({ liffId: LIFF_ID }).then(() => {
             if (liff.isLoggedIn()) {
-                if(!savedId) { // ถ้าไม่มีข้อมูลในเครื่อง ค่อยไปดึงผ่าน LINE Profile
+                if(!savedId) {
                     liff.getProfile().then(p => {
                         document.getElementById("fullName").placeholder = "กำลังดึงข้อมูลส่วนตัว... ⏳";
                         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentDashboard", studentUid: p.userId }) })
@@ -249,12 +246,11 @@
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 p => document.getElementById("location").value = p.coords.latitude + "," + p.coords.longitude,
-                e => document.getElementById("location").value = "ไม่สามารถดึงพิกัดได้"
+                e => document.getElementById("location").value = "ไม่สามารถดึงพิกัดได้ (เปิด GPS หรือยัง?)"
             );
         }
     };
 
-    // 🌟 ฟังก์ชันโหลดข้อมูลเบื้องหลัง (ไม่รบกวนหน้าจอเด็ก)
     function fetchStudentDataBackground(sid) {
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentName", studentId: sid }) })
         .then(res => res.json()).then(data => {
@@ -282,7 +278,6 @@
         document.getElementById("divDetail").classList.add("hidden");
         document.getElementById("divPreClinicButtons").classList.add("hidden");
         
-        // รีเซ็ตสถานะฉุกเฉิน
         isEmergency = false;
         emergencyReasonText = "";
         document.getElementById("locationStatus").innerText = "";
@@ -340,7 +335,6 @@
                 nameIcon.className = "fa-solid fa-circle-check";
                 nameIcon.style.color = "#10b981";
                 
-                // 🌟 บันทึก LocalStorage
                 localStorage.setItem("studentId", sid);
                 localStorage.setItem("studentName", data.fullName);
 
@@ -542,7 +536,6 @@
         });
     }
 
-    // 🌟 ฟังก์ชันระบบฉุกเฉิน กรณี GPS ล่ม
     function useEmergencyLocation() {
         Swal.fire({
             title: 'ระบบขัดข้อง/ดึงพิกัดไม่ได้?',
@@ -587,18 +580,31 @@
                 let timeStr = h.toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0');
                 Swal.fire({
                     title: 'แจ้งเตือนเวลาเข้างาน',
-                    html: `ขณะนี้เวลา <b>${timeStr} น.</b> (เกินเวลา 08:15 น.)<br><br>ระบบจะบันทึกสถานะการเข้างานของท่านเป็น <span style="color:#ef4444; font-weight:bold;">"มาสาย"</span> นะครับ`,
+                    html: `ขณะนี้เวลา <b>${timeStr} น.</b> (เกิน 08:15 น.)<br><span style="color:#ef4444; font-weight:bold;">คุณมาสาย กรุณาระบุเหตุผลครับ</span>`,
+                    input: 'text',
+                    inputPlaceholder: 'เช่น รถติด, ตื่นสาย, ฝนตกหนัก',
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonText: 'รับทราบและลงเวลา',
+                    confirmButtonText: '<i class="fa-solid fa-clock"></i> บันทึกเวลาเข้างาน',
                     cancelButtonText: 'ยกเลิก',
-                    confirmButtonColor: '#f59e0b'
+                    confirmButtonColor: '#ef4444',
+                    customClass: { popup: 'swal-wide' },
+                    inputValidator: (value) => {
+                        if (!value) return 'กรุณาระบุเหตุผลการมาสายด้วยครับ!';
+                    }
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        // 🌟 นำเหตุผลที่พิมพ์ไปต่อท้ายหมายเหตุเดิม (ถ้ามี)
+                        let currentRemark = document.getElementById("remark").value;
+                        if(currentRemark) {
+                             document.getElementById("remark").value = result.value + " (" + currentRemark + ")";
+                        } else {
+                             document.getElementById("remark").value = result.value;
+                        }
                         submitForm(); 
                     }
                 });
-                return; 
+                return; // หยุดการรันชั่วคราวรอเด็กพิมพ์เหตุผล
             }
         }
         
