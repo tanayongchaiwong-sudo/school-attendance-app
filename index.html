@@ -44,7 +44,8 @@
 
         .hidden { display: none !important; }
         .gps-box { background: #eff6ff; padding: 10px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #bfdbfe; font-size: 12px; }
-        .gps-btn { width: 100%; padding: 8px; font-family: 'Prompt'; background: white; border: 1px solid var(--primary); color: var(--primary); border-radius: 8px; cursor: pointer; margin-top: 5px; }
+        .gps-btn { width: 100%; padding: 8px; font-family: 'Prompt'; background: white; border: 1px solid var(--primary); color: var(--primary); border-radius: 8px; cursor: pointer; margin-top: 5px; transition: 0.2s;}
+        .gps-btn:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
@@ -132,9 +133,14 @@
 
         <div class="gps-box hidden" id="divGps">
             <label style="margin-bottom: 2px;"><i class="fa-solid fa-location-dot"></i> พิกัด GPS (บังคับ)</label>
-            <input type="text" id="location" readonly placeholder="กำลังค้นหาพิกัด..." style="margin-bottom: 5px; border:none; padding:5px 10px; background: transparent; width:100%;">
+            <input type="text" id="location" readonly placeholder="กำลังค้นหาพิกัด..." style="margin-bottom: 5px; border:none; padding:5px 10px; background: transparent; width:100%; font-weight:500;">
             <button class="gps-btn" onclick="verifyLocation()">ตรวจสอบพิกัดเป้าหมาย</button>
             <div id="locationStatus" style="margin-top: 5px; font-weight: 600;"></div>
+            
+            <!-- 🌟 ปุ่มฉุกเฉิน กรณีดึงพิกัดไม่ได้ -->
+            <button class="gps-btn" style="background:#fee2e2; color:#b91c1c; border-color:#fca5a5; margin-top:10px; font-size:12px;" onclick="useEmergencyLocation()">
+                <i class="fa-solid fa-triangle-exclamation"></i> ดึงพิกัดไม่ได้ / ระบบขัดข้อง?
+            </button>
         </div>
 
         <div class="form-group" id="divRemark">
@@ -145,7 +151,7 @@
             </div>
         </div>
 
-        <button class="btn-primary" id="btnSubmit" onclick="submitForm()">
+        <button class="btn-primary" id="btnSubmit" onclick="checkLateAndSubmit()">
             <i id="btnSubmitIcon" class="fa-solid fa-paper-plane"></i> 
             <span id="btnSubmitText">ยืนยันการส่งข้อมูล</span>
         </button>
@@ -155,14 +161,17 @@
 <script>
     // 🚨 1. ใส่ LIFF ID (ของหน้าศูนย์บริการนักเรียน)
     const LIFF_ID = "2011162626-lcdf4ybN"; 
-    
-    // 🚨 2. ใส่ API URL (อันใหม่ที่ได้จากการ Deploy ล่าสุด)
-    const API_URL = "https://script.google.com/macros/s/AKfycbzPyR4k6rVOrBFIB4QiBYBO9ntaY0mWpo7mck4RTzeV-rWpWLa-mRviLfuyG8lH62s/exec"; 
+    // 🚨 2. ใส่ API URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbxZ_QTWpnCGkwMO85TQOysJyR0L9LNggOpK3cAhH4udynOR4yHIJBPf0KjlmaI8tpx-/exec"; 
 
     let studentCompletedExams = [];
     let studentSubmittedTasks = []; 
     let typingTimer; 
-    let globalExamStatus = "LOCKED"; // 🌟 เก็บสถานะกุญแจล็อคข้อสอบ
+    let globalExamStatus = "LOCKED"; 
+    
+    // 🌟 ตัวแปรเก็บสถานะการลงเวลาฉุกเฉิน
+    let isEmergency = false;
+    let emergencyReasonText = "";
 
     const formData = {
         "ลงเวลาเข้า-ออก": {
@@ -195,7 +204,6 @@
             },
             subLabel: "เลือกหัวข้อที่ต้องการสอบ", detailLabel: "",
             links: {
-                // 🚨 3. นำลิงก์หน้าข้อสอบ (exam.html) มาใส่ตรงนี้นะครับ
                 "Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก": "https://liff.line.me/2011162626-TL70LvNp?part=Part 1",
                 "Part 2: ขั้นตอนการถ่ายภาพรังสีชนิดในช่องปาก": "https://liff.line.me/2011162626-TL70LvNp?part=Part 2",
                 "Part 3: ขั้นตอนการถ่ายภาพรังสีชนิดนอกช่องปาก": "https://liff.line.me/2011162626-TL70LvNp?part=Part 3"
@@ -204,30 +212,40 @@
     };
 
     window.onload = function() {
+        // 🌟 1. ดึงข้อมูลจาก LocalStorage (เพื่อความรวดเร็ว)
+        let savedId = localStorage.getItem("studentId");
+        let savedName = localStorage.getItem("studentName");
+        
+        if (savedId && savedName) {
+            document.getElementById("studentId").value = savedId;
+            document.getElementById("fullName").value = savedName;
+            document.getElementById("nameIcon").className = "fa-solid fa-circle-check";
+            document.getElementById("nameIcon").style.color = "#10b981";
+            // สั่งโหลดข้อมูลเบื้องหลังโดยไม่ต้องบล็อกหน้าจอ
+            fetchStudentDataBackground(savedId); 
+        }
+
         liff.init({ liffId: LIFF_ID }).then(() => {
             if (liff.isLoggedIn()) {
-                liff.getProfile().then(p => {
-                    let nameInput = document.getElementById("fullName");
-                    let nameIcon = document.getElementById("nameIcon");
-                    nameInput.placeholder = "กำลังดึงข้อมูลส่วนตัว... ⏳";
-                    nameIcon.className = "fa-solid fa-spinner fa-spin";
-                    nameIcon.style.color = "#3b82f6";
-
-                    fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentDashboard", studentUid: p.userId }) })
-                    .then(res => res.json()).then(data => {
-                        if(data.status === "success") {
-                            document.getElementById("studentId").value = data.data.studentId;
-                            checkName(); 
-                        } else {
-                            resetNameStatus();
-                        }
+                if(!savedId) { // ถ้าไม่มีข้อมูลในเครื่อง ค่อยไปดึงผ่าน LINE Profile
+                    liff.getProfile().then(p => {
+                        document.getElementById("fullName").placeholder = "กำลังดึงข้อมูลส่วนตัว... ⏳";
+                        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentDashboard", studentUid: p.userId }) })
+                        .then(res => res.json()).then(data => {
+                            if(data.status === "success") {
+                                document.getElementById("studentId").value = data.data.studentId;
+                                checkName(); 
+                            }
+                        });
                     });
-                });
+                }
             } else {
                 liff.login();
             }
         });
+
         fetchTeachersList();
+        
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 p => document.getElementById("location").value = p.coords.latitude + "," + p.coords.longitude,
@@ -235,6 +253,18 @@
             );
         }
     };
+
+    // 🌟 ฟังก์ชันโหลดข้อมูลเบื้องหลัง (ไม่รบกวนหน้าจอเด็ก)
+    function fetchStudentDataBackground(sid) {
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentName", studentId: sid }) })
+        .then(res => res.json()).then(data => {
+            if(data.status === "success") {
+                studentCompletedExams = data.completedExams || []; 
+                studentSubmittedTasks = data.submittedTasks || []; 
+                globalExamStatus = data.examStatus || "LOCKED";
+            }
+        });
+    }
 
     function selectCategory(cat) {
         document.getElementById("category").value = cat;
@@ -251,6 +281,11 @@
         document.getElementById("detail").innerHTML = "";
         document.getElementById("divDetail").classList.add("hidden");
         document.getElementById("divPreClinicButtons").classList.add("hidden");
+        
+        // รีเซ็ตสถานะฉุกเฉิน
+        isEmergency = false;
+        emergencyReasonText = "";
+        document.getElementById("locationStatus").innerText = "";
     }
 
     function fetchTeachersList() {
@@ -305,10 +340,12 @@
                 nameIcon.className = "fa-solid fa-circle-check";
                 nameIcon.style.color = "#10b981";
                 
+                // 🌟 บันทึก LocalStorage
+                localStorage.setItem("studentId", sid);
+                localStorage.setItem("studentName", data.fullName);
+
                 studentCompletedExams = data.completedExams || []; 
                 studentSubmittedTasks = data.submittedTasks || []; 
-                
-                // 🌟 รับสถานะกุญแจข้อสอบจาก Admin
                 globalExamStatus = data.examStatus || "LOCKED"; 
 
                 let hasP1 = studentCompletedExams.includes("Part 1") || studentCompletedExams.includes("Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก");
@@ -385,7 +422,6 @@
             btnContainer.classList.remove("hidden");
             btnContainer.innerHTML = '<label style="margin-bottom: 5px;">เลือกหัวข้อที่ต้องการสอบ</label>';
 
-            // 🌟 เช็คสวิตช์กุญแจแอดมินก่อน
             if (globalExamStatus === "LOCKED") {
                 btnContainer.innerHTML += '<div style="text-align:center; padding:15px; background:#fef2f2; color:#ef4444; border-radius:10px; font-weight:600;"><i class="fa-solid fa-lock"></i> 🔒 คุณครูยังไม่เปิดระบบให้ทำข้อสอบครับ</div>';
             } 
@@ -493,6 +529,10 @@
 
     function verifyLocation() {
         let loc = document.getElementById("location").value;
+        if(isEmergency || loc.includes("ฉุกเฉิน") || loc.includes("ขัดข้อง")) {
+            return Swal.fire('แจ้งเตือน', 'คุณกำลังใช้งานโหมดฉุกเฉิน ระบบจะข้ามการตรวจพิกัดและส่งให้แอดมินพิจารณาครับ', 'info');
+        }
+
         let stat = document.getElementById("locationStatus");
         stat.style.color = "#4f46e5"; stat.innerText = "กำลังตรวจสอบ...";
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "checkLocation", location: loc }) })
@@ -502,13 +542,74 @@
         });
     }
 
-    function submitForm() {
+    // 🌟 ฟังก์ชันระบบฉุกเฉิน กรณี GPS ล่ม
+    function useEmergencyLocation() {
+        Swal.fire({
+            title: 'ระบบขัดข้อง/ดึงพิกัดไม่ได้?',
+            text: 'กรุณาระบุสาเหตุที่แท้จริง (เช่น สัญญาณเน็ตหาย, แอปค้าง) ระบบจะบันทึกเป็นกรณีฉุกเฉินให้แอดมินตรวจสอบครับ',
+            input: 'text',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'ใช้โหมดฉุกเฉิน',
+            cancelButtonText: 'ยกเลิก',
+            confirmButtonColor: '#b91c1c',
+            inputValidator: (value) => {
+                if (!value) return 'กรุณาระบุสาเหตุด้วยครับ!';
+            }
+        }).then((res) => {
+            if(res.isConfirmed) {
+                isEmergency = true;
+                emergencyReasonText = res.value;
+                document.getElementById("location").value = "บันทึกฉุกเฉิน: " + res.value;
+                document.getElementById("locationStatus").style.color = "#b91c1c";
+                document.getElementById("locationStatus").innerText = "ใช้งานโหมดฉุกเฉิน (รอแอดมินประเมิน)";
+            }
+        });
+    }
+
+    // 🌟 ดักเช็คเวลาสายก่อน Submit
+    function checkLateAndSubmit() {
         let cat = document.getElementById("category").value;
         let sub = document.getElementById("subCategory").value;
         let sId = document.getElementById("studentId").value;
         let fullName = document.getElementById("fullName").value;
 
         if(!sId || !fullName || fullName.includes("ไม่พบ")) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสนักเรียนให้ถูกต้องก่อนครับ', 'warning');
+
+        // ถ้าเป็นการ "เข้างาน" ให้เช็คเวลาในมือถือเด็ก
+        if (cat === "ลงเวลาเข้า-ออก" && sub === "เข้างาน") {
+            let now = new Date();
+            let h = now.getHours();
+            let m = now.getMinutes();
+
+            // เงื่อนไข: เกิน 08:15
+            if (h > 8 || (h === 8 && m > 15)) {
+                let timeStr = h.toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0');
+                Swal.fire({
+                    title: 'แจ้งเตือนเวลาเข้างาน',
+                    html: `ขณะนี้เวลา <b>${timeStr} น.</b> (เกินเวลา 08:15 น.)<br><br>ระบบจะบันทึกสถานะการเข้างานของท่านเป็น <span style="color:#ef4444; font-weight:bold;">"มาสาย"</span> นะครับ`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'รับทราบและลงเวลา',
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonColor: '#f59e0b'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        submitForm(); 
+                    }
+                });
+                return; 
+            }
+        }
+        
+        submitForm();
+    }
+
+    function submitForm() {
+        let cat = document.getElementById("category").value;
+        let sub = document.getElementById("subCategory").value;
+        let sId = document.getElementById("studentId").value;
+        let fullName = document.getElementById("fullName").value;
 
         if (cat === "ลงเวลาเข้า-ออก" && sub === "ลา") {
             Swal.fire({
@@ -536,13 +637,14 @@
             let payload = {
                 action: "submitStudentRequest", studentId: sId, category: cat, subCategory: sub,
                 detail: document.getElementById("detail").value, teacherId: document.getElementById("teacherId").value,
-                location: document.getElementById("location").value, remark: document.getElementById("remark").value, submitterUid: ""
+                location: document.getElementById("location").value, remark: document.getElementById("remark").value, submitterUid: "",
+                isEmergencyLocation: isEmergency, emergencyReason: emergencyReasonText 
             };
 
             if(!payload.category || !payload.subCategory) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกหมวดหมู่ให้ครบถ้วนครับ', 'warning');
             if(!document.getElementById("divDetail").classList.contains("hidden") && !payload.detail) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกรายละเอียดเพิ่มเติมครับ', 'warning');
             if(!document.getElementById("divTeacher").classList.contains("hidden") && !payload.teacherId) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกคุณครูผู้ประเมินครับ', 'warning');
-            if(!document.getElementById("divGps").classList.contains("hidden") && (!payload.location || payload.location === "กำลังค้นหาพิกัด...")) return Swal.fire('แจ้งเตือน', 'กรุณารอระบบตรวจสอบพิกัด GPS ก่อนครับ', 'warning');
+            if(!document.getElementById("divGps").classList.contains("hidden") && !isEmergency && (!payload.location || payload.location.includes("กำลังค้นหา"))) return Swal.fire('แจ้งเตือน', 'กรุณารอระบบดึงพิกัด หรือใช้งานปุ่มฉุกเฉินครับ', 'warning');
 
             executeSubmit(payload);
         }
