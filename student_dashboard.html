@@ -27,6 +27,10 @@
         .sec-box span { font-weight: 600; color: #334155; font-size: 15px;}
         .sec-box.warning span { color: #ef4444; }
 
+        /* 🌟 CSS เพิ่มเติมสำหรับปุ่มกดกล่องมาสาย */
+        .clickable-sec-box { cursor: pointer; transition: 0.3s; position: relative; }
+        .clickable-sec-box:hover, .clickable-sec-box:active { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(239, 68, 68, 0.15); border-color: #fca5a5; background: #fff5f5; }
+
         .primary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 25px; }
         .action-card { background: white; padding: 18px 10px; border-radius: 16px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.04); cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #f1f5f9; display: flex; flex-direction: column; align-items: center;}
         .action-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
@@ -74,6 +78,7 @@
         .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;}
         .status-Submitted { background: #d1fae5; color: #047857; } 
         .status-Rejected { background: #fee2e2; color: #b91c1c; }
+        .status-Pending { background: #fef08a; color: #b45309; }
         
         .h-reason-box { margin-top: 8px; background: #fff1f2; padding: 10px; border-radius: 8px; border-left: 3px solid #ef4444; width: 100%; box-sizing: border-box;}
         .h-reason-text { font-size: 12px; color: #991b1b; font-weight: 500; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 6px;}
@@ -126,7 +131,10 @@
     
     <div class="secondary-stats">
         <div class="sec-box"><i class="fa-solid fa-hourglass-half"></i> สะสม: <span id="sHours">0</span> ชม.</div>
-        <div class="sec-box warning"><i class="fa-solid fa-triangle-exclamation"></i> มาสาย: <span id="sLate">0</span> ครั้ง</div>
+        <!-- 🌟 เพิ่มคลาส clickable-sec-box และฟังก์ชัน onclick ตรงนี้ -->
+        <div class="sec-box warning clickable-sec-box" onclick="showLateDetails()" title="คลิกเพื่อดูประวัติการมาสาย">
+            <i class="fa-solid fa-triangle-exclamation"></i> มาสาย: <span id="sLate">0</span> ครั้ง
+        </div>
     </div>
 
     <div class="primary-grid">
@@ -375,6 +383,36 @@
         });
     }
 
+    // 🌟 ฟังก์ชันโชว์รายละเอียดการมาสาย (ทำงานเมื่อกดที่กล่องมาสาย)
+    function showLateDetails() {
+        // คัดกรองเฉพาะ log ที่มีคำว่าสายอยู่ในหมายเหตุ
+        let lateLogs = globalAttendance.filter(r => r.remark && r.remark.includes("สาย"));
+        
+        if(lateLogs.length === 0) {
+            return Swal.fire('ข้อมูล', 'ยอดเยี่ยมมากครับ! คุณไม่เคยมาสายเลย 🎉', 'success');
+        }
+        
+        let html = `<div style="max-height: 50vh; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 12px; margin-top: 10px; text-align: left;">
+            <table class="att-table">
+            <thead><tr><th>วันที่</th><th>เวลาเข้า</th><th>หมายเหตุ</th></tr></thead><tbody>`;
+            
+        lateLogs.forEach(r => {
+            let rem = r.remark;
+            rem = `<span style="color:#ef4444; font-weight:600; background:#fef2f2; padding:2px 6px; border-radius:6px;">${rem}</span>`;
+            html += `<tr><td style="white-space: nowrap;">${r.date}</td><td class="att-time out" style="color:#ef4444;">${r.in}</td><td style="font-size:11px;">${rem}</td></tr>`;
+        });
+        
+        html += `</tbody></table></div>`;
+        
+        Swal.fire({ 
+            title: '<i class="fa-solid fa-person-running" style="color:#ef4444;"></i> ประวัติการมาสาย', 
+            html: html, 
+            customClass: { popup: 'swal-wide', title: 'swal-title-custom' }, 
+            confirmButtonText: 'ปิดหน้าต่าง', 
+            confirmButtonColor: '#64748b' 
+        });
+    }
+
     function showAttendanceDetails() {
         if(globalAttendance.length === 0) return Swal.fire('ไม่มีข้อมูล', 'ยังไม่มีประวัติลงเวลาเลยครับ', 'info');
         let html = `<div style="max-height: 50vh; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 12px; margin-top: 10px;">
@@ -382,7 +420,6 @@
             <thead><tr><th>วันที่</th><th>เข้า</th><th>ออก</th><th>ชม.</th><th>หมายเหตุ</th></tr></thead><tbody>`;
         globalAttendance.forEach(r => {
             let rem = r.remark;
-            // 🌟 รองรับไฮไลต์กรณีขัดข้องฉุกเฉินด้วย
             if(rem.includes("สาย") || rem.includes("ขาด") || rem.includes("ขัดข้อง")) rem = `<span style="color:#ef4444; font-weight:600; background:#fef2f2; padding:2px 6px; border-radius:6px;">${rem}</span>`;
             else if(rem.includes("ลา")) rem = `<span style="color:#d97706; font-weight:600; background:#fffbeb; padding:2px 6px; border-radius:6px;">${rem}</span>`;
             html += `<tr><td style="white-space: nowrap;">${r.date}</td><td class="att-time in">${r.in}</td><td class="att-time out">${r.out}</td><td><span class="att-hours">${r.hours}</span></td><td style="font-size:11px;">${rem||'-'}</td></tr>`;
