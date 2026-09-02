@@ -70,7 +70,6 @@
         td { padding: 12px 15px; border-bottom: 1px dashed #f1f5f9; color: #334155; }
         tr:hover td { background: #f8fafc; }
         
-        /* 🌟 CSS สำหรับกล่องแก้ไขข้อมูลในตารางพรีวิว */
         .edit-cell { transition: 0.2s; border: 1px dashed transparent; }
         .edit-cell:hover { background: #fef08a; cursor: text; border-color: #eab308; }
         .edit-cell:focus { background: #fff; outline: 2px solid #0f766e; }
@@ -123,7 +122,6 @@
                 </div>
             </div>
             <ul class="nav-menu">
-                <!-- 🌟 แก้ไข: ถอดฟังก์ชันโหลดข้อมูลออก เพื่อให้สลับเมนูได้ทันที -->
                 <li class="nav-item"><a class="nav-link active" onclick="switchTab('dashboard', this);"><i class="fa-solid fa-chart-pie"></i> สถิติภาพรวม</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchTab('export', this);"><i class="fa-solid fa-file-pdf"></i> ออกเอกสาร & พรีวิว</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchTab('student', this);"><i class="fa-solid fa-user-graduate"></i> ข้อมูลนักเรียนเจาะลึก</a></li>
@@ -151,7 +149,6 @@
                             <option value="All">ดูทั้งหมดทุกกลุ่ม</option>
                         </select>
                     </div>
-                    <!-- เพิ่มปุ่มโหลดข้อมูลซ้ำกรณีต้องการอัปเดตแบบสดๆ -->
                     <button class="btn btn-outline" onclick="loadGroupsAndSettings()"><i class="fa-solid fa-rotate-right"></i> รีเฟรชข้อมูลล่าสุด</button>
                 </div>
 
@@ -383,7 +380,7 @@
     </div>
 
 <script>
-    // 🚨 นำ API_URL มาวางตรงนี้
+    // 🚨 1. นำ API_URL มาวางตรงนี้
     const API_URL = "https://script.google.com/macros/s/AKfycbzPyR4k6rVOrBFIB4QiBYBO9ntaY0mWpo7mck4RTzeV-rWpWLa-mRviLfuyG8lH62s/exec";
 
     let currentReportData = [], currentReportType = "", globalAdminStudents = [];
@@ -436,7 +433,7 @@
             }
         }).catch(err => {
             Swal.close();
-            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่ครับ', 'error');
+            Swal.fire('ข้อผิดพลาดจากเครือข่าย', err.toString(), 'error');
         });
     }
 
@@ -478,11 +475,14 @@
                 
                 globalAdminStudents = dbStudents; 
                 renderAdminStudentList();
-                loadDashboardData(); // โหลดกราฟต่อเมื่อข้อมูลพื้นฐานเสร็จ
+                loadDashboardData(); 
+            } else {
+                Swal.close();
+                Swal.fire('ข้อผิดพลาดจากระบบ', data.message, 'error');
             }
         }).catch(err => {
             Swal.close();
-            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+            Swal.fire('ข้อผิดพลาดที่หน้าเว็บ', err.toString(), 'error');
         });
     }
 
@@ -494,10 +494,12 @@
             if(data.status === "success") {
                 dbStudents = data.data.students; dbTeachers = data.data.teachers; dbSettings = data.data.settings;
                 renderDbStudents(); renderDbTeachers(); fillSettingsForm();
+            } else {
+                Swal.fire('ข้อผิดพลาด', data.message, 'error');
             }
         }).catch(err => {
             Swal.close();
-            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+            Swal.fire('ข้อผิดพลาด', err.toString(), 'error');
         });
     }
 
@@ -539,7 +541,6 @@
         });
     }
 
-    // 🌟 เพิ่มฟังก์ชันสำหรับกดกล่อง Widget Dashboard
     function showStudentListPopup() {
         if(!dashRawData) return;
         let html = `<div style="max-height: 50vh; overflow-y: auto; text-align: left;">`;
@@ -594,7 +595,7 @@
             if(data.status === "success") { currentReportData = data.data; currentReportType = rType; renderTable(); } 
         }).catch(err => {
             Swal.close();
-            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+            Swal.fire('ข้อผิดพลาด', err.toString(), 'error');
         });
     }
 
@@ -744,11 +745,13 @@
 
     // --- ส่วนจัดการประวัตินักเรียนเจาะลึก ---
     function renderAdminStudentList() {
-        let filter = document.getElementById("adminGroupFilter").value, search = document.getElementById("adminSearchInput").value.trim().toLowerCase();
+        let filter = document.getElementById("adminGroupFilter").value;
+        let search = document.getElementById("adminSearchInput").value.trim().toLowerCase();
         let filtered = globalAdminStudents.filter(s => {
             let matchGroup = (filter === "All" || s.group == filter);
             let sIdStr = String(s.id).toLowerCase();
-            return matchGroup && (s.name.toLowerCase().includes(search) || sIdStr.includes(search));
+            let sNameStr = String(s.name || "").toLowerCase();
+            return matchGroup && (sNameStr.includes(search) || sIdStr.includes(search));
         });
         let html = "";
         filtered.forEach(s => { html += `<div class="student-list-item" onclick="viewStudentDetail('${s.id}')"><div><div class="s-name">${s.name} <span class="s-group-badge">กลุ่ม ${s.group}</span></div><div class="s-id">รหัสประจำตัว: ${s.id}</div></div><i class="fa-solid fa-chevron-right" style="color:#cbd5e1;"></i></div>`; });
@@ -771,12 +774,17 @@
                 
                 currentDeepDiveScores = data.data.scores;
                 currentDeepDiveAtt = data.data.attendance;
+                sortOrderScore = -1; sortOrderAtt = -1; 
+                
+                document.getElementById("btnSortScore").innerHTML = `<i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า`;
+                document.getElementById("btnSortAtt").innerHTML = `<i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า`;
+                
                 renderDeepDiveScores();
                 renderDeepDiveAtt();
             }
         }).catch(err => {
             Swal.close();
-            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+            Swal.fire('ข้อผิดพลาด', err.toString(), 'error');
         });
     }
 
@@ -890,7 +898,7 @@
                     else Swal.fire('ผิดพลาด', data.message, 'error');
                 }).catch(err => {
                     Swal.close();
-                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+                    Swal.fire('ข้อผิดพลาด', err.toString(), 'error');
                 });
             }
         });
@@ -907,7 +915,7 @@
                     else Swal.fire('ผิดพลาด', data.message, 'error');
                 }).catch(err => {
                     Swal.close();
-                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+                    Swal.fire('ข้อผิดพลาด', err.toString(), 'error');
                 });
             }
         });
@@ -977,7 +985,7 @@
                     } else Swal.fire('ผิดพลาด', data.message, 'error');
                 }).catch(err => {
                     Swal.close();
-                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+                    Swal.fire('ข้อผิดพลาด', err.toString(), 'error');
                 });
             }
         });
@@ -1042,7 +1050,7 @@
         fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
         .then(res=>res.json()).then(data => { if(data.status==="success") { Swal.fire('สำเร็จ', data.message, 'success'); loadGroupsAndSettings(); } }).catch(err => {
             Swal.close();
-            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+            Swal.fire('ข้อผิดพลาด', err.toString(), 'error');
         });
     }
 
@@ -1070,7 +1078,7 @@
                 fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminSaveStudent", ...res.value }) })
                 .then(r=>r.json()).then(data => { if(data.status==="success") { Swal.fire('สำเร็จ', data.message, 'success'); loadGroupsAndSettings(); } else Swal.fire('ผิดพลาด', data.message, 'error'); }).catch(err => {
                     Swal.close();
-                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+                    Swal.fire('ข้อผิดพลาด', err.toString(), 'error');
                 });
             }
         });
@@ -1088,7 +1096,7 @@
                 fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminSaveTeacher", ...res.value }) })
                 .then(r=>r.json()).then(data => { if(data.status==="success") { Swal.fire('สำเร็จ', data.message, 'success'); loadGroupsAndSettings(); } }).catch(err => {
                     Swal.close();
-                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+                    Swal.fire('ข้อผิดพลาด', err.toString(), 'error');
                 });
             }
         });
@@ -1103,7 +1111,7 @@
                 fetch(API_URL, { method: "POST", body: JSON.stringify({ action: action, id: id }) })
                 .then(r=>r.json()).then(data => { if(data.status==="success") { Swal.fire('ลบสำเร็จ', '', 'success'); loadGroupsAndSettings(); } }).catch(err => {
                     Swal.close();
-                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+                    Swal.fire('ข้อผิดพลาด', err.toString(), 'error');
                 });
             }
         });
@@ -1129,7 +1137,7 @@
                     } 
                 }).catch(err => {
                     Swal.close();
-                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+                    Swal.fire('ข้อผิดพลาด', err.toString(), 'error');
                 });
             }
         });
