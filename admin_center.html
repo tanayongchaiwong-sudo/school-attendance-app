@@ -280,7 +280,6 @@
                     <button class="db-tab-btn" onclick="switchDbTab('db-settings', this)"><i class="fa-solid fa-gear"></i> ตั้งค่าระบบ</button>
                 </div>
 
-                <!-- 🌟 เพิ่มคอลัมน์พฤติกรรมในตารางนักเรียน -->
                 <div id="db-student" class="card">
                     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h3 style="margin:0; color:#0f766e;">รายชื่อนักเรียนในระบบ</h3>
@@ -304,6 +303,16 @@
                 <div id="db-settings" class="card" style="display:none;">
                     <h3 style="margin:0 0 15px 0; color:#0f766e;">ตั้งค่าระบบและฟอร์มเอกสาร</h3>
 
+                    <!-- 🌟 ส่วนจัดการกลุ่มที่จบการศึกษา -->
+                    <div style="border-bottom: 1px dashed #cbd5e1; padding-bottom: 15px; margin-bottom: 15px;">
+                        <h4 style="margin:0 0 10px 0; color:#4f46e5;"><i class="fa-solid fa-user-graduate"></i> จัดการสิทธิ์การใช้งาน</h4>
+                        <div class="form-group">
+                            <label>กลุ่มที่ฝึกงานจบแล้ว (ห้ามส่งงาน/ลงเวลาเพิ่ม)</label>
+                            <input type="text" id="set-archived-groups" class="form-control" placeholder="ใส่เลขกลุ่มคั่นด้วยลูกน้ำ เช่น 1,2,3">
+                            <p style="font-size: 11px; color: #64748b; margin-top: 5px;">นักเรียนในกลุ่มเหล่านี้จะเข้าได้แค่หน้า Dashboard และคลังความรู้</p>
+                        </div>
+                    </div>
+
                     <div style="border-bottom: 1px dashed #cbd5e1; padding-bottom: 15px; margin-bottom: 15px;">
                         <h4 style="margin:0 0 10px 0; color:#be185d;"><i class="fa-solid fa-lock"></i> ระบบควบคุมข้อสอบ (Pre-Clinic)</h4>
                         <div class="form-group">
@@ -318,7 +327,6 @@
                     <div style="border-bottom: 1px dashed #cbd5e1; padding-bottom: 15px; margin-bottom: 15px;">
                         <h4 style="margin:0 0 10px 0; color:#475569;"><i class="fa-solid fa-scale-balanced"></i> น้ำหนักคะแนน (เปอร์เซ็นต์ %) และตัวคูณ</h4>
                         <div class="flex-row" style="margin-bottom:10px;">
-                            <!-- 🌟 ซ่อนช่องพฤติกรรม และปรับช่องปฏิบัติเป็น 20 -->
                             <div class="form-group"><label>ปฏิบัติ (รายวัน)</label><input type="number" id="set-w-prac" class="form-control" placeholder="20"></div>
                             <div class="form-group"><label>ส่งใบงาน</label><input type="number" id="set-w-ass" class="form-control" placeholder="5"></div>
                             <div class="form-group"><label>สอบ OPG</label><input type="number" id="set-w-opg" class="form-control" placeholder="5"></div>
@@ -499,7 +507,6 @@
         let tbody = document.getElementById("dbStudentBody"), html = "";
         dbStudents.forEach(s => {
             let lineStatus = s.line ? '<span style="color:#10b981; font-weight:600;"><i class="fa-brands fa-line"></i> ผูกแล้ว</span>' : '<span style="color:#94a3b8;">ยังไม่ผูก</span>';
-            // 🌟 นำคะแนนพฤติกรรมมาแสดงในตาราง
             html += `<tr><td>${s.id}</td><td style="font-weight:500;">${s.name}</td><td>${s.group}</td>
                      <td><span style="color:#0f766e; font-weight:bold;">${s.behScore}</span> / 40</td><td>${lineStatus}</td>
                      <td>
@@ -524,6 +531,9 @@
     }
 
     function fillSettingsForm() {
+        // 🌟 ดึงข้อมูลกลุ่มที่จบการศึกษามาแสดง
+        document.getElementById('set-archived-groups').value = dbSettings['ARCHIVED_GROUPS'] || "";
+        
         document.getElementById('set-exam-status').value = dbSettings['EXAM_PRECLINIC_STATUS'] || "LOCKED";
         document.getElementById('set-w-prac').value = dbSettings['WEIGHT_PRACTICE'] || "20"; 
         document.getElementById('set-w-ass').value = dbSettings['WEIGHT_ASSIGNMENT'] || "5";
@@ -553,6 +563,7 @@
         let payload = {
             action: "adminSaveSettings",
             settings: {
+                "ARCHIVED_GROUPS": document.getElementById('set-archived-groups').value, // 🌟 ส่งข้อมูลไปบันทึก
                 "EXAM_PRECLINIC_STATUS": document.getElementById('set-exam-status').value,
                 "WEIGHT_PRACTICE": document.getElementById('set-w-prac').value,
                 "WEIGHT_ASSIGNMENT": document.getElementById('set-w-ass').value,
@@ -581,7 +592,6 @@
         .then(res=>res.json()).then(data => { if(data.status==="success") { Swal.fire('สำเร็จ', data.message, 'success'); loadGroupsAndSettings(); } });
     }
 
-    // 🌟 เพิ่มช่องกรอกคะแนนพฤติกรรมใน Modal
     function openStudentModal(isEdit, id='', name='', group='', behScore='0') {
         Swal.fire({
             title: isEdit ? 'แก้ไขข้อมูลนักเรียน' : 'เพิ่มนักเรียนใหม่',
@@ -908,7 +918,6 @@
         document.getElementById("btnSortAtt").innerHTML = sortOrderAtt === -1 ? `<i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า` : `<i class="fa-solid fa-arrow-up-wide-short"></i> เรียง: เก่าไปใหม่`;
     }
 
-    // 🌟 ระบบแก้ไขคะแนนแบบใหม่ (ตัดช่องพฤติกรรมออกไป เหลือแต่ทักษะ 4 ข้อ)
     function openEditScoreModal(logId) {
         let sc = currentDeepDiveScores.find(s => s.logId === logId);
         if(!sc) return;
@@ -921,7 +930,6 @@
             inputsHtml += `<h4 style="margin:15px 0 5px 0; font-size:13px; text-align:left; color:#475569;">ปฏิบัติ (เต็ม 5)</h4>`;
             let sLabels = ["เตรียมเครื่อง", "เตรียมผู้ป่วย", "ถ่ายภาพ", "ดูแลอุปกรณ์"];
             for(let i=0; i<4; i++) {
-                // 🌟 ชี้เป้าไปที่ Index 5-8 ของ Array เก่า (กรณีครูเคยประเมินแบบมีพฤติกรรมมาแล้ว)
                 inputsHtml += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><label style="font-size:13px;">${sLabels[i]}</label> <input type="number" id="es-${i}" class="swal2-input edit-sub-score" style="width:80px; height:35px; margin:0; text-align:center;" value="${ss[i+5]||0}" max="5" min="0"></div>`;
             }
         } else if (sc.category === "ส่งใบงาน") {
