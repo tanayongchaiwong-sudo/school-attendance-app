@@ -26,7 +26,7 @@
         .task-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.08); }
         .task-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;}
         .task-name { font-size: 15px; font-weight: 600; color: #1f2937; display: flex; align-items: center; gap: 6px;}
-        .task-time { font-size: 11px; color: #9ca3af; }
+        .task-time { font-size: 11px; color: #64748b; font-weight: 500; display: flex; align-items: center; gap: 4px; background: #f8fafc; padding: 3px 8px; border-radius: 12px; border: 1px solid #e2e8f0; }
         .task-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;}
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
         .task-detail { font-size: 12px; color: #6b7280; margin-top: 8px; border-top: 1px dashed #e5e7eb; padding-top: 8px;}
@@ -181,38 +181,39 @@
                 let detailHtml = req.detail && req.detail !== "-" ? `<div class="task-detail"><i class="fa-solid fa-bars-staggered" style="color:#94a3b8;"></i> รายละเอียด: ${req.detail}</div>` : "";
                 
                 // 🌟 กำหนดชุดสีตามประเภทของงาน
-                let themeColor = "#f97316"; // สีส้ม (Default)
+                let themeColor = "#f97316"; 
                 let bgBadge = "#ffedd5";
                 let textBadge = "#c2410c";
                 let icon = "fa-clipboard";
 
                 if (req.category === "ประเมินรายวัน") {
-                    themeColor = "#10b981"; // สีเขียว
+                    themeColor = "#10b981"; // เขียว
                     bgBadge = "#d1fae5";
                     textBadge = "#047857";
                     icon = "fa-wrench";
                 } else if (req.category === "ส่งใบงาน") {
-                    themeColor = "#3b82f6"; // สีน้ำเงิน
+                    themeColor = "#3b82f6"; // น้ำเงิน
                     bgBadge = "#dbeafe";
                     textBadge = "#1d4ed8";
                     icon = "fa-file-arrow-up";
                 } else if (req.category === "สอบปฏิบัติ") {
-                    themeColor = "#ec4899"; // สีชมพู
+                    themeColor = "#ec4899"; // ชมพู
                     bgBadge = "#fce7f3";
                     textBadge = "#be185d";
                     icon = "fa-stethoscope";
                 } else if (req.category === "สอบประเมินภาพ") {
-                    themeColor = "#8b5cf6"; // สีม่วง
+                    themeColor = "#8b5cf6"; // ม่วง
                     bgBadge = "#ede9fe";
                     textBadge = "#6d28d9";
                     icon = "fa-magnifying-glass";
                 }
 
+                // 🌟 ปรับปรุงการแสดงผลให้โชว์วันที่แบบเต็ม (req.date ดึงมาทั้งวัน/เดือน/ปี และเวลา)
                 html += `
                 <div class="task-card" onclick="openEvaluationForm(${idx})" style="border-left: 5px solid ${themeColor};">
                     <div class="task-header">
                         <div class="task-name" style="color: ${themeColor};"><i class="fa-solid ${icon}"></i> ${req.studentName}</div>
-                        <div class="task-time"><i class="fa-regular fa-clock"></i> ${req.date.split(" ")[1]}</div>
+                        <div class="task-time"><i class="fa-regular fa-calendar-days" style="color:#94a3b8;"></i> ${req.date}</div>
                     </div>
                     <div class="task-badges">
                         <span class="badge" style="background: ${bgBadge}; color: ${textBadge}; border: 1px solid ${themeColor}40;">${req.category}</span>
