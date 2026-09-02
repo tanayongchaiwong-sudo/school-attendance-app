@@ -303,6 +303,7 @@
                 </div>
                 <div id="db-settings" class="card" style="display:none;">
                     <h3 style="margin:0 0 15px 0; color:#0f766e;">ตั้งค่าระบบและฟอร์มเอกสาร</h3>
+                    
                     <div style="border-bottom: 1px dashed #cbd5e1; padding-bottom: 15px; margin-bottom: 15px;">
                         <h4 style="margin:0 0 10px 0; color:#4f46e5;"><i class="fa-solid fa-user-graduate"></i> จัดการสิทธิ์การใช้งาน</h4>
                         <div class="form-group">
@@ -430,7 +431,7 @@
             } else {
                 Swal.fire({ icon: 'error', title: 'รหัสผ่านไม่ถูกต้อง!' });
             }
-        });
+        }).catch(err => Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่ครับ', 'error'));
     }
 
     function logout() { sessionStorage.removeItem("adminLoggedIn"); location.reload(); }
@@ -566,7 +567,7 @@
                     <td contenteditable="true" class="edit-cell">${r.personal}</td>
                     <td contenteditable="true" class="edit-cell">${r.absent}</td>
                     <td contenteditable="true" class="edit-cell">${r.late}</td>
-                    <td contenteditable="true" class="edit-cell" style="font-size:11px;">${r.remark}</td>
+                    <td contenteditable="true" class="edit-cell">${r.remark}</td>
                 </tr>`; 
             });
         } else if (currentReportType === "3") {
@@ -708,6 +709,11 @@
                 
                 currentDeepDiveScores = data.data.scores;
                 currentDeepDiveAtt = data.data.attendance;
+                sortOrderScore = -1; sortOrderAtt = -1; 
+                
+                document.getElementById("btnSortScore").innerHTML = `<i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า`;
+                document.getElementById("btnSortAtt").innerHTML = `<i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า`;
+                
                 renderDeepDiveScores();
                 renderDeepDiveAtt();
             }
@@ -906,7 +912,6 @@
         });
     }
 
-    // --- CMS (ตั้งค่าระบบ) ---
     function fillSettingsForm() {
         document.getElementById('set-archived-groups').value = dbSettings['ARCHIVED_GROUPS'] || "";
         document.getElementById('set-exam-status').value = dbSettings['EXAM_PRECLINIC_STATUS'] || "LOCKED";
@@ -1021,7 +1026,33 @@
         });
     }
 
-    function backToStudentList() { document.getElementById("studentDetailSection").style.display = "none"; document.getElementById("studentListView").style.display = "block"; }
+    function archiveYearData() {
+        Swal.fire({ 
+            title: 'ยืนยันการปิดจบปีการศึกษา?', 
+            text: "ข้อมูลคะแนน, วันเข้างาน, และคำขอทั้งหมดจะถูกล้าง! (ระบบจะสร้างไฟล์สำรองให้ใน Google Drive)", 
+            icon: 'warning', 
+            showCancelButton: true, 
+            confirmButtonColor: '#b91c1c', 
+            confirmButtonText: 'ยืนยันล้างข้อมูล', 
+            cancelButtonText: 'ยกเลิก' 
+        })
+        .then(res => {
+            if(res.isConfirmed) {
+                Swal.fire({title: 'กำลังสำรองและล้างข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+                fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminArchiveData" }) })
+                .then(r=>r.json()).then(data => { 
+                    if(data.status==="success") { 
+                        Swal.fire('สำเร็จ', data.message, 'success').then(() => window.open(data.url, '_blank')); 
+                    } 
+                });
+            }
+        });
+    }
+
+    function backToStudentList() { 
+        document.getElementById("studentDetailSection").style.display = "none"; 
+        document.getElementById("studentListView").style.display = "block"; 
+    }
 
 </script>
 </body>
