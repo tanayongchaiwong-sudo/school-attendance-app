@@ -103,6 +103,21 @@
 
         <hr style="border: 0; border-top: 1px dashed #e5e7eb; margin: 20px 0;">
 
+        <!-- 🌟 โซนสำหรับกลุ่มที่จบการศึกษาแล้ว (ปิดล็อกการส่งงาน) -->
+        <div id="divGraduated" class="hidden" style="text-align: center; padding: 20px; background: #f0fdf4; border: 1px dashed #10b981; border-radius: 12px; margin-bottom: 20px;">
+            <i class="fa-solid fa-graduation-cap" style="font-size: 40px; color: #10b981; margin-bottom: 10px;"></i>
+            <h3 style="color: #047857; margin: 0 0 5px 0;">ยินดีด้วย! คุณผ่านการฝึกปฏิบัติงานแล้ว 🎉</h3>
+            <p style="font-size: 13px; color: #065f46; margin: 0 0 15px 0;">สิ้นสุดช่วงฝึกปฏิบัติงาน ระบบได้ปิดการส่งข้อมูลใหม่สำหรับกลุ่มของคุณแล้ว</p>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-primary" style="margin-top: 0; background: #3b82f6; font-size: 13px;" onclick="window.location.href=STUDENT_DASHBOARD_URL">
+                    <i class="fa-solid fa-chart-pie"></i> Dashboard
+                </button>
+                <button class="btn-primary" style="margin-top: 0; background: #8b5cf6; font-size: 13px;" onclick="window.location.href=KNOWLEDGE_BASE_URL">
+                    <i class="fa-solid fa-book"></i> คลังความรู้
+                </button>
+            </div>
+        </div>
+
         <div id="divPreClinicButtons" class="hidden" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
         </div>
 
@@ -159,15 +174,19 @@
 </div>
 
 <script>
-    // 🚨 1. ใส่ LIFF ID (ของหน้าศูนย์บริการนักเรียน)
+    // 🚨 ตั้งค่า LINE LIFF และ API
     const LIFF_ID = "2011162626-lcdf4ybN"; 
-    // 🚨 2. ใส่ API URL
     const API_URL = "https://script.google.com/macros/s/AKfycbzPyR4k6rVOrBFIB4QiBYBO9ntaY0mWpo7mck4RTzeV-rWpWLa-mRviLfuyG8lH62s/exec"; 
+    
+    // 🚨 ตั้งค่าปุ่มทางลัดสำหรับกลุ่มที่เรียนจบแล้ว (ใส่ URL ให้ถูกต้อง)
+    const STUDENT_DASHBOARD_URL = "https://liff.line.me/2011162626-3ElMqLDI";
+    const KNOWLEDGE_BASE_URL = "https://sites.google.com/view/your-knowledge-site";
 
     let studentCompletedExams = [];
     let studentSubmittedTasks = []; 
     let typingTimer; 
     let globalExamStatus = "LOCKED"; 
+    let globalIsGraduated = false; // 🌟 ตัวแปรเก็บสถานะว่าจบการฝึกงานหรือยัง
     
     let isEmergency = false;
     let emergencyReasonText = "";
@@ -203,9 +222,9 @@
             },
             subLabel: "เลือกหัวข้อที่ต้องการสอบ", detailLabel: "",
             links: {
-                "Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก": "https://liff.line.me/YOUR_EXAM_LIFF_ID?part=Part 1",
-                "Part 2: ขั้นตอนการถ่ายภาพรังสีชนิดในช่องปาก": "https://liff.line.me/YOUR_EXAM_LIFF_ID?part=Part 2",
-                "Part 3: ขั้นตอนการถ่ายภาพรังสีชนิดนอกช่องปาก": "https://liff.line.me/YOUR_EXAM_LIFF_ID?part=Part 3"
+                "Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก": "https://liff.line.me/2011162626-TL70LvNp?part=Part 1",
+                "Part 2: ขั้นตอนการถ่ายภาพรังสีชนิดในช่องปาก": "https://liff.line.me/2011162626-TL70LvNp?part=Part 2",
+                "Part 3: ขั้นตอนการถ่ายภาพรังสีชนิดนอกช่องปาก": "https://liff.line.me/2011162626-TL70LvNp?part=Part 3"
             }
         }
     };
@@ -224,7 +243,7 @@
 
         liff.init({ liffId: LIFF_ID }).then(() => {
             if (liff.isLoggedIn()) {
-                if(!savedId) {
+                if(!savedId) { 
                     liff.getProfile().then(p => {
                         document.getElementById("fullName").placeholder = "กำลังดึงข้อมูลส่วนตัว... ⏳";
                         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentDashboard", studentUid: p.userId }) })
@@ -258,6 +277,7 @@
                 studentCompletedExams = data.completedExams || []; 
                 studentSubmittedTasks = data.submittedTasks || []; 
                 globalExamStatus = data.examStatus || "LOCKED";
+                globalIsGraduated = data.isGraduated || false; // 🌟 เก็บสถานะจบการศึกษา
             }
         });
     }
@@ -311,6 +331,8 @@
         nameIcon.className = "fa-solid fa-triangle-exclamation";
         nameIcon.style.color = "#f59e0b";
         globalExamStatus = "LOCKED";
+        globalIsGraduated = false;
+        updateForm(); // อัปเดตฟอร์มเพื่อเคลียร์สถานะจบ
     }
 
     function checkName() {
@@ -341,6 +363,7 @@
                 studentCompletedExams = data.completedExams || []; 
                 studentSubmittedTasks = data.submittedTasks || []; 
                 globalExamStatus = data.examStatus || "LOCKED"; 
+                globalIsGraduated = data.isGraduated || false; // 🌟 เก็บสถานะว่าจบหรือยัง
 
                 let hasP1 = studentCompletedExams.includes("Part 1") || studentCompletedExams.includes("Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก");
                 let hasP2 = studentCompletedExams.includes("Part 2") || studentCompletedExams.includes("Part 2: ขั้นตอนการถ่ายภาพรังสีชนิดในช่องปาก");
@@ -361,15 +384,19 @@
                 studentCompletedExams = [];
                 studentSubmittedTasks = [];
                 globalExamStatus = "LOCKED";
+                globalIsGraduated = false;
                 
                 let btnPreClinic = document.getElementById("btnPreClinic");
                 if (btnPreClinic) btnPreClinic.classList.remove("hidden");
+                updateForm();
             }
         }).catch(() => {
             nameInput.placeholder = "ระบบขัดข้อง ลองพิมพ์ใหม่อีกครั้ง";
             nameIcon.className = "fa-solid fa-triangle-exclamation";
             nameIcon.style.color = "#ef4444";
             globalExamStatus = "LOCKED";
+            globalIsGraduated = false;
+            updateForm();
         });
     }
 
@@ -378,6 +405,24 @@
         let subSelect = document.getElementById("subCategory");
         let btnSubmit = document.getElementById("btnSubmit");
         
+        // 🌟 1. ถ้าเด็กคนนี้อยู่กลุ่มที่เรียนจบแล้ว ให้ซ่อนฟอร์มทั้งหมดแล้วโชว์ข้อความยินดี
+        if (globalIsGraduated) {
+            document.getElementById("divGraduated").classList.remove("hidden");
+            
+            document.getElementById("divSubCategory").classList.add("hidden");
+            document.getElementById("divDetail").classList.add("hidden");
+            document.getElementById("divPreClinicButtons").classList.add("hidden");
+            document.getElementById("divTeacher").classList.add("hidden");
+            document.getElementById("divGps").classList.add("hidden");
+            document.getElementById("divRemark").classList.add("hidden");
+            btnSubmit.classList.add("hidden");
+            return; // หยุดการโหลดฟอร์มอื่นๆ ทันที
+        } else {
+            // ปิดข้อความยินดีถ้ายังเรียนไม่จบ
+            document.getElementById("divGraduated").classList.add("hidden");
+        }
+
+        // 🌟 2. ถ้ายังไม่จบ ก็แสดงฟอร์มตามปกติ
         btnSubmit.classList.remove("hidden");
         document.getElementById("divPreClinicButtons").classList.add("hidden");
         document.getElementById("btnSubmitText").innerText = "ยืนยันการส่งข้อมูล";
@@ -560,7 +605,6 @@
         });
     }
 
-    // 🌟 ดักเช็คเวลาสายก่อน Submit
     function checkLateAndSubmit() {
         let cat = document.getElementById("category").value;
         let sub = document.getElementById("subCategory").value;
@@ -569,13 +613,11 @@
 
         if(!sId || !fullName || fullName.includes("ไม่พบ")) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสนักเรียนให้ถูกต้องก่อนครับ', 'warning');
 
-        // ถ้าเป็นการ "เข้างาน" ให้เช็คเวลาในมือถือเด็ก
         if (cat === "ลงเวลาเข้า-ออก" && sub === "เข้างาน") {
             let now = new Date();
             let h = now.getHours();
             let m = now.getMinutes();
 
-            // เงื่อนไข: เกิน 08:15
             if (h > 8 || (h === 8 && m > 15)) {
                 let timeStr = h.toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0');
                 Swal.fire({
@@ -594,7 +636,6 @@
                     }
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // 🌟 นำเหตุผลที่พิมพ์ไปต่อท้ายหมายเหตุเดิม (ถ้ามี)
                         let currentRemark = document.getElementById("remark").value;
                         if(currentRemark) {
                              document.getElementById("remark").value = result.value + " (" + currentRemark + ")";
@@ -604,7 +645,7 @@
                         submitForm(); 
                     }
                 });
-                return; // หยุดการรันชั่วคราวรอเด็กพิมพ์เหตุผล
+                return; 
             }
         }
         
