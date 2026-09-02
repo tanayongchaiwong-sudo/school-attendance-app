@@ -70,7 +70,7 @@
         td { padding: 12px 15px; border-bottom: 1px dashed #f1f5f9; color: #334155; }
         tr:hover td { background: #f8fafc; }
         
-        /* 🌟 CSS สำหรับกล่องแก้ไขข้อมูลในตาราง */
+        /* 🌟 CSS สำหรับกล่องแก้ไขข้อมูลในตารางพรีวิว */
         .edit-cell { transition: 0.2s; border: 1px dashed transparent; }
         .edit-cell:hover { background: #fef08a; cursor: text; border-color: #eab308; }
         .edit-cell:focus { background: #fff; outline: 2px solid #0f766e; }
@@ -123,10 +123,11 @@
                 </div>
             </div>
             <ul class="nav-menu">
-                <li class="nav-item"><a class="nav-link active" onclick="switchTab('dashboard', this); loadDashboardData();"><i class="fa-solid fa-chart-pie"></i> สถิติภาพรวม</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="switchTab('export', this)"><i class="fa-solid fa-file-pdf"></i> ออกเอกสาร & พรีวิว</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="switchTab('student', this)"><i class="fa-solid fa-user-graduate"></i> ข้อมูลนักเรียนเจาะลึก</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="switchTab('database', this); loadMasterData();"><i class="fa-solid fa-database"></i> จัดการฐานข้อมูล (CMS)</a></li>
+                <!-- 🌟 แก้ไข: ถอดฟังก์ชันโหลดข้อมูลออก เพื่อให้สลับเมนูได้ทันที -->
+                <li class="nav-item"><a class="nav-link active" onclick="switchTab('dashboard', this);"><i class="fa-solid fa-chart-pie"></i> สถิติภาพรวม</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="switchTab('export', this);"><i class="fa-solid fa-file-pdf"></i> ออกเอกสาร & พรีวิว</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="switchTab('student', this);"><i class="fa-solid fa-user-graduate"></i> ข้อมูลนักเรียนเจาะลึก</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="switchTab('database', this);"><i class="fa-solid fa-database"></i> จัดการฐานข้อมูล (CMS)</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1U7x_0elVlm-FoGgY2un_u0p9k3gfPaVvQ4qyY0KfOVw', '_blank')"><i class="fa-solid fa-table-list"></i> ไปที่ชีตฐานข้อมูล <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px; margin-left: auto;"></i></a></li>
             </ul>
             <div style="margin-top: auto; padding: 20px; text-align: center;">
@@ -143,27 +144,29 @@
                     <p class="page-desc">วิเคราะห์ข้อมูลการเข้างานและคะแนนของนักเรียน</p>
                 </div>
                 
-                <div class="card" style="margin-bottom: 20px; padding: 15px 25px;">
+                <div class="card" style="margin-bottom: 20px; padding: 15px 25px; display: flex; align-items: center; justify-content: space-between;">
                     <div class="form-group" style="max-width: 300px; margin: 0;">
                         <label>กรองตามกลุ่มเรียน</label>
                         <select id="dashGroupFilter" class="form-control" onchange="loadDashboardData()">
                             <option value="All">ดูทั้งหมดทุกกลุ่ม</option>
                         </select>
                     </div>
+                    <!-- เพิ่มปุ่มโหลดข้อมูลซ้ำกรณีต้องการอัปเดตแบบสดๆ -->
+                    <button class="btn btn-outline" onclick="loadGroupsAndSettings()"><i class="fa-solid fa-rotate-right"></i> รีเฟรชข้อมูลล่าสุด</button>
                 </div>
 
                 <div class="flex-row" style="margin-bottom: 20px;">
-                    <div class="widget-card" style="flex:1;">
+                    <div class="widget-card" style="flex:1;" onclick="showStudentListPopup()">
                         <i class="fa-solid fa-users" style="font-size:35px; color:#3b82f6; margin-bottom:15px;"></i>
                         <h3 style="margin:0; font-size:32px; color:#1e293b;" id="dashTotalStudents">0</h3>
                         <p style="margin:5px 0 0 0; color:#64748b; font-size:14px;">นักเรียนทั้งหมด (คน)</p>
                     </div>
-                    <div class="widget-card" style="flex:1;">
+                    <div class="widget-card" style="flex:1;" onclick="showLateRankingPopup()">
                         <i class="fa-solid fa-person-running" style="font-size:35px; color:#f59e0b; margin-bottom:15px;"></i>
                         <h3 style="margin:0; font-size:32px; color:#1e293b;" id="dashTotalLates">0</h3>
                         <p style="margin:5px 0 0 0; color:#64748b; font-size:14px;">ยอดการมาสาย (ครั้ง)</p>
                     </div>
-                    <div class="widget-card" style="flex:1;">
+                    <div class="widget-card" style="flex:1;" onclick="showLeavePopup()">
                         <i class="fa-solid fa-bed" style="font-size:35px; color:#ef4444; margin-bottom:15px;"></i>
                         <h3 style="margin:0; font-size:32px; color:#1e293b;" id="dashTotalLeaves">0</h3>
                         <p style="margin:5px 0 0 0; color:#64748b; font-size:14px;">ยอดการลา (ครั้ง)</p>
@@ -380,7 +383,7 @@
     </div>
 
 <script>
-    // 🚨 1. นำ API_URL มาวางตรงนี้
+    // 🚨 นำ API_URL มาวางตรงนี้
     const API_URL = "https://script.google.com/macros/s/AKfycbzPyR4k6rVOrBFIB4QiBYBO9ntaY0mWpo7mck4RTzeV-rWpWLa-mRviLfuyG8lH62s/exec";
 
     let currentReportData = [], currentReportType = "", globalAdminStudents = [];
@@ -431,7 +434,10 @@
             } else {
                 Swal.fire({ icon: 'error', title: 'รหัสผ่านไม่ถูกต้อง!' });
             }
-        }).catch(err => Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่ครับ', 'error'));
+        }).catch(err => {
+            Swal.close();
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่ครับ', 'error');
+        });
     }
 
     function logout() { sessionStorage.removeItem("adminLoggedIn"); location.reload(); }
@@ -453,6 +459,7 @@
     }
 
     function loadGroupsAndSettings() {
+        Swal.fire({title: 'กำลังดึงข้อมูลพื้นฐาน...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminGetMasterData" }) })
         .then(res => res.json()).then(data => {
             if(data.status === "success") {
@@ -471,8 +478,11 @@
                 
                 globalAdminStudents = dbStudents; 
                 renderAdminStudentList();
-                loadDashboardData(); 
+                loadDashboardData(); // โหลดกราฟต่อเมื่อข้อมูลพื้นฐานเสร็จ
             }
+        }).catch(err => {
+            Swal.close();
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
         });
     }
 
@@ -485,6 +495,9 @@
                 dbStudents = data.data.students; dbTeachers = data.data.teachers; dbSettings = data.data.settings;
                 renderDbStudents(); renderDbTeachers(); fillSettingsForm();
             }
+        }).catch(err => {
+            Swal.close();
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
         });
     }
 
@@ -493,6 +506,7 @@
         let group = document.getElementById("dashGroupFilter").value;
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminGetDashboardStats", groupFilter: group }) })
         .then(res => res.json()).then(data => {
+            Swal.close();
             if(data.status === "success") {
                 let d = data.data;
                 document.getElementById("dashTotalStudents").innerText = d.totalStudents;
@@ -501,6 +515,8 @@
                 dashRawData = d;
                 renderCharts(d.chartData, d.attStats);
             }
+        }).catch(err => {
+            Swal.close();
         });
     }
 
@@ -523,6 +539,49 @@
         });
     }
 
+    // 🌟 เพิ่มฟังก์ชันสำหรับกดกล่อง Widget Dashboard
+    function showStudentListPopup() {
+        if(!dashRawData) return;
+        let html = `<div style="max-height: 50vh; overflow-y: auto; text-align: left;">`;
+        let filteredStudents = globalAdminStudents;
+        let currentFilter = document.getElementById("dashGroupFilter").value;
+        if(currentFilter !== "All") filteredStudents = globalAdminStudents.filter(s => s.group == currentFilter);
+
+        filteredStudents.forEach(s => {
+            html += `<div style="padding: 10px; border-bottom: 1px dashed #e2e8f0;"><b>${s.id}</b> ${s.name} (กลุ่ม ${s.group})</div>`;
+        });
+        html += `</div>`;
+        Swal.fire({ title: '<i class="fa-solid fa-users" style="color:#3b82f6;"></i> รายชื่อนักเรียน', html: html, confirmButtonText: 'ปิด', customClass: { popup: 'swal-wide' } });
+    }
+
+    function showLateRankingPopup() {
+        if(!dashRawData || !dashRawData.lateRanking) return;
+        let html = `<div style="max-height: 50vh; overflow-y: auto; text-align: left;">`;
+        dashRawData.lateRanking.forEach(r => {
+            html += `<div style="padding: 10px; border-bottom: 1px dashed #e2e8f0; display:flex; justify-content:space-between;">
+                        <span><b>${r.name}</b></span>
+                        <span style="color:#ef4444; font-weight:bold;">${r.count} ครั้ง</span>
+                     </div>`;
+        });
+        if(dashRawData.lateRanking.length === 0) html += `<div style="text-align:center; color:#10b981; padding:20px;">ไม่มีประวัติการมาสายเลยครับ 🎉</div>`;
+        html += `</div>`;
+        Swal.fire({ title: '<i class="fa-solid fa-person-running" style="color:#f59e0b;"></i> จัดอันดับการมาสาย', html: html, confirmButtonText: 'ปิด', customClass: { popup: 'swal-wide' } });
+    }
+
+    function showLeavePopup() {
+        if(!dashRawData || !dashRawData.rawLeaveList) return;
+        let html = `<div style="max-height: 50vh; overflow-y: auto; text-align: left;">`;
+        dashRawData.rawLeaveList.forEach(r => {
+            html += `<div style="padding: 10px; border-bottom: 1px dashed #e2e8f0;">
+                        <div style="font-weight:bold;">${r.name}</div>
+                        <div style="font-size:12px; color:#64748b;">${r.date} - <span style="color:#ef4444;">${r.remark}</span></div>
+                     </div>`;
+        });
+        if(dashRawData.rawLeaveList.length === 0) html += `<div style="text-align:center; color:#10b981; padding:20px;">ไม่มีประวัติการลาครับ</div>`;
+        html += `</div>`;
+        Swal.fire({ title: '<i class="fa-solid fa-bed" style="color:#ef4444;"></i> ประวัติการลา', html: html, confirmButtonText: 'ปิด', customClass: { popup: 'swal-wide' } });
+    }
+
     // --- พรีวิวและออกเอกสาร (แบบแก้ไขได้) ---
     function fetchReport() {
         let rType = document.getElementById("reportType").value, gFilter = document.getElementById("groupFilter").value;
@@ -533,6 +592,9 @@
         .then(res => res.json()).then(data => { 
             Swal.close(); 
             if(data.status === "success") { currentReportData = data.data; currentReportType = rType; renderTable(); } 
+        }).catch(err => {
+            Swal.close();
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
         });
     }
 
@@ -567,7 +629,7 @@
                     <td contenteditable="true" class="edit-cell">${r.personal}</td>
                     <td contenteditable="true" class="edit-cell">${r.absent}</td>
                     <td contenteditable="true" class="edit-cell">${r.late}</td>
-                    <td contenteditable="true" class="edit-cell">${r.remark}</td>
+                    <td contenteditable="true" class="edit-cell" style="font-size:11px;">${r.remark}</td>
                 </tr>`; 
             });
         } else if (currentReportType === "3") {
@@ -709,14 +771,12 @@
                 
                 currentDeepDiveScores = data.data.scores;
                 currentDeepDiveAtt = data.data.attendance;
-                sortOrderScore = -1; sortOrderAtt = -1; 
-                
-                document.getElementById("btnSortScore").innerHTML = `<i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า`;
-                document.getElementById("btnSortAtt").innerHTML = `<i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า`;
-                
                 renderDeepDiveScores();
                 renderDeepDiveAtt();
             }
+        }).catch(err => {
+            Swal.close();
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
         });
     }
 
@@ -759,6 +819,7 @@
                 
                 if (a.type === "เข้างาน") {
                     typeClass = "color:#10b981; font-weight:bold;";
+                    // แจ้งเตือนมาสาย 08:15
                     if(timeInputFormat > "08:15") lateBadge = `<span class="late-badge">สาย</span>`;
                 } else if (a.type === "ออกงาน" || a.type.includes("ออก")) {
                     typeClass = "color:#f59e0b; font-weight:bold;";
@@ -790,6 +851,7 @@
         document.getElementById("btnSortAtt").innerHTML = sortOrderAtt === -1 ? `<i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า` : `<i class="fa-solid fa-arrow-up-wide-short"></i> เรียง: เก่าไปใหม่`;
     }
 
+    // 🌟 ระบบเพิ่มและแก้ไขเวลา (เข้า/ออก/ลา) จากแอดมิน
     function openAttModal(isEdit = false, logId = '', oldDate = '', oldTime = '', oldType = 'เข้างาน', oldRemark = '') {
         if(oldType === "-" || oldType === "") oldType = oldRemark.includes("กิจ") ? "ลากิจ" : "ลาป่วย";
         let defaultTime = oldTime || "08:00";
@@ -826,6 +888,9 @@
                 .then(r => r.json()).then(data => {
                     if (data.status === "success") { Swal.fire('สำเร็จ!', '', 'success'); viewStudentDetail(currentViewStudentId); } 
                     else Swal.fire('ผิดพลาด', data.message, 'error');
+                }).catch(err => {
+                    Swal.close();
+                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
                 });
             }
         });
@@ -840,6 +905,9 @@
                 .then(r => r.json()).then(data => {
                     if (data.status === "success") { Swal.fire('ลบสำเร็จ!', '', 'success'); viewStudentDetail(currentViewStudentId); } 
                     else Swal.fire('ผิดพลาด', data.message, 'error');
+                }).catch(err => {
+                    Swal.close();
+                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
                 });
             }
         });
@@ -907,6 +975,9 @@
                         Swal.fire('บันทึกสำเร็จ!', 'เปอร์เซ็นต์น้ำหนักถูกคำนวณใหม่แล้ว', 'success');
                         viewStudentDetail(currentViewStudentId); 
                     } else Swal.fire('ผิดพลาด', data.message, 'error');
+                }).catch(err => {
+                    Swal.close();
+                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
                 });
             }
         });
@@ -969,7 +1040,10 @@
         };
         Swal.fire({title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
         fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
-        .then(res=>res.json()).then(data => { if(data.status==="success") { Swal.fire('สำเร็จ', data.message, 'success'); loadGroupsAndSettings(); } });
+        .then(res=>res.json()).then(data => { if(data.status==="success") { Swal.fire('สำเร็จ', data.message, 'success'); loadGroupsAndSettings(); } }).catch(err => {
+            Swal.close();
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+        });
     }
 
     function openStudentModal(isEdit, id='', name='', group='', behScore='0') {
@@ -994,7 +1068,10 @@
             if(res.isConfirmed) {
                 Swal.fire({title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
                 fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminSaveStudent", ...res.value }) })
-                .then(r=>r.json()).then(data => { if(data.status==="success") { Swal.fire('สำเร็จ', data.message, 'success'); loadGroupsAndSettings(); } else Swal.fire('ผิดพลาด', data.message, 'error'); });
+                .then(r=>r.json()).then(data => { if(data.status==="success") { Swal.fire('สำเร็จ', data.message, 'success'); loadGroupsAndSettings(); } else Swal.fire('ผิดพลาด', data.message, 'error'); }).catch(err => {
+                    Swal.close();
+                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+                });
             }
         });
     }
@@ -1009,7 +1086,10 @@
             if(res.isConfirmed) {
                 Swal.fire({title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
                 fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminSaveTeacher", ...res.value }) })
-                .then(r=>r.json()).then(data => { if(data.status==="success") { Swal.fire('สำเร็จ', data.message, 'success'); loadGroupsAndSettings(); } });
+                .then(r=>r.json()).then(data => { if(data.status==="success") { Swal.fire('สำเร็จ', data.message, 'success'); loadGroupsAndSettings(); } }).catch(err => {
+                    Swal.close();
+                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+                });
             }
         });
     }
@@ -1021,7 +1101,10 @@
                 let action = type === 'student' ? 'adminDeleteStudent' : 'adminDeleteTeacher';
                 Swal.fire({title: 'กำลังลบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
                 fetch(API_URL, { method: "POST", body: JSON.stringify({ action: action, id: id }) })
-                .then(r=>r.json()).then(data => { if(data.status==="success") { Swal.fire('ลบสำเร็จ', '', 'success'); loadGroupsAndSettings(); } });
+                .then(r=>r.json()).then(data => { if(data.status==="success") { Swal.fire('ลบสำเร็จ', '', 'success'); loadGroupsAndSettings(); } }).catch(err => {
+                    Swal.close();
+                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+                });
             }
         });
     }
@@ -1044,15 +1127,15 @@
                     if(data.status==="success") { 
                         Swal.fire('สำเร็จ', data.message, 'success').then(() => window.open(data.url, '_blank')); 
                     } 
+                }).catch(err => {
+                    Swal.close();
+                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
                 });
             }
         });
     }
 
-    function backToStudentList() { 
-        document.getElementById("studentDetailSection").style.display = "none"; 
-        document.getElementById("studentListView").style.display = "block"; 
-    }
+    function backToStudentList() { document.getElementById("studentDetailSection").style.display = "none"; document.getElementById("studentListView").style.display = "block"; }
 
 </script>
 </body>
