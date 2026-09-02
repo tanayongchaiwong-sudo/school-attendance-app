@@ -3,17 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>สรุปข้อมูลนักเรียน (Teacher Dashboard)</title>
+    <title>ระบบประเมินคะแนน (คุณครู)</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
     <style>
-        :root { --primary: #f97316; --primary-hover: #ea580c; --bg: #f8fafc; --text: #1e293b; }
-        body { font-family: 'Prompt', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--text); }
-        .container { max-width: 500px; margin: 0 auto; padding-bottom: 30px;}
+        :root { --primary: #f97316; --primary-hover: #ea580c; --bg: #f3f4f6; --text: #1f2937; --border: #e5e7eb; }
+        body { font-family: 'Prompt', sans-serif; background-color: var(--bg); margin: 0; padding: 15px; color: var(--text); }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 25px 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         
+        .header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px dashed var(--border); position: relative;}
+        .header i { font-size: 35px; color: var(--primary); margin-bottom: 10px;}
+        .header h2 { margin: 0; font-size: 20px; font-weight: 600; color: #9a3412;}
+        .header p { margin: 5px 0 0; font-size: 13px; color: #6b7280; background: #ffedd5; display: inline-block; padding: 4px 12px; border-radius: 20px;}
+
+        /* สไตล์การ์ดงาน (Task Card) */
+        .task-list { display: flex; flex-direction: column; gap: 12px; }
+        .task-card { background: #ffffff; border: 1px solid var(--border); border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); position: relative; overflow: hidden;}
+        .task-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--primary); }
+        .task-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(249, 115, 22, 0.1); border-color: #fdba74; }
+        .task-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;}
+        .task-name { font-size: 15px; font-weight: 600; color: #1f2937; }
+        .task-time { font-size: 11px; color: #9ca3af; }
+        .task-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;}
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .b-cat { background: #e0e7ff; color: #4338ca; }
+        .b-sub { background: #fef3c7; color: #d97706; }
+        .task-detail { font-size: 12px; color: #6b7280; }
+
+        /* สไตล์ฟอร์มประเมิน */
+        .btn-back { background: none; border: none; font-size: 15px; color: #6b7280; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: 20px; padding: 0; font-family: 'Prompt'; font-weight: 500; transition: 0.2s;}
+        .btn-back:hover { color: var(--primary); }
+        
+        .student-info-box { background: #fff7ed; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #ffedd5; display: flex; align-items: center; gap: 15px;}
+        .student-avatar { width: 50px; height: 50px; background: #fdba74; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;}
+        .student-name-display { font-size: 16px; font-weight: 600; color: #9a3412; margin-bottom: 2px;}
+        .student-task-display { font-size: 12px; color: #c2410c; }
+
+        .rubric-box { background: #ffffff; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+        .rubric-box h4 { margin: 0 0 15px 0; color: #1f2937; font-size: 14px; display: flex; align-items: center; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--border);}
+        .rubric-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .rubric-row:last-child { margin-bottom: 0; }
+        .rubric-row label { margin: 0; font-weight: 500; flex: 1; font-size: 13px; color: #4b5563;}
+        .rubric-row input[type="number"] { width: 70px; text-align: center; padding: 8px; border: 2px solid #e5e7eb; border-radius: 8px; font-family: 'Prompt'; outline: none; font-size: 14px; background: #f9fafb; font-weight: 600; color: var(--primary); transition: 0.2s;}
+        .rubric-row input[type="number"]:focus { border-color: var(--primary); background: white; }
+
+        .form-group { margin-top: 20px; margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #4b5563; }
+        .form-group input[type="text"] { width: 100%; padding: 12px; font-family: 'Prompt'; font-size: 14px; border: 2px solid var(--border); border-radius: 10px; background-color: #f9fafb; box-sizing: border-box; transition: 0.3s;}
+        .form-group input:focus { outline: none; border-color: var(--primary); background: white; }
+
+        .btn-primary { padding: 12px 10px; font-family: 'Prompt'; font-weight: 600; font-size: 14px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 6px;}
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(249, 115, 22, 0.3);}
+        
+        .empty-state { text-align: center; padding: 40px 20px; color: #9ca3af; }
+        .empty-state i { font-size: 45px; margin-bottom: 15px; color: #d1d5db;}
+        
+        .hidden { display: none !important; }
+        .swal-wide { width: 95% !important; max-width: 500px !important; border-radius: 16px; }
+
+        /* Dashboard Styles */
         .profile-card { background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 25px 20px; border-radius: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 10px 25px rgba(234, 88, 12, 0.25); margin-bottom: 20px; position: relative; }
         .profile-card img { width: 65px; height: 65px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.8); object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .profile-info { flex: 1; }
@@ -44,7 +96,6 @@
         .group-filter { padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-family: 'Prompt'; font-size: 12px; outline: none; background: #f8fafc; color: #334155; font-weight: 500;}
         .group-filter:focus { border-color: #f97316; }
 
-        /* 🌟 ปรับรายชื่อนักเรียนให้กดได้ */
         .student-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px dashed #e2e8f0; cursor: pointer; transition: 0.2s; border-radius: 8px;}
         .student-item:hover { background: #f8fafc; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-color: transparent;}
         .student-item:last-child { border-bottom: none; }
@@ -54,7 +105,6 @@
         .s-id { font-size: 11px; color: #94a3b8; margin-top: 2px;}
         .s-stats { text-align: right; display: flex; flex-direction: column; gap: 4px; }
         
-        .badge { padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 4px;}
         .badge-hours { background: #ffedd5; color: #c2410c; }
         .badge-exams { background: #dcfce3; color: #15803d; }
 
@@ -68,21 +118,11 @@
         .btn-sm { font-family: 'Prompt'; font-size: 11px; padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;}
         .btn-edit { background: #e0e7ff; color: #4338ca; }
         .btn-revoke { background: #fee2e2; color: #b91c1c; }
-
-        .rubric-box { background: #fff7ed; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #ffedd5; text-align: left; }
-        .rubric-box h4 { margin: 0 0 10px 0; color: #c2410c; font-size: 14px; display: flex; align-items: center; gap: 8px; }
-        .rubric-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px dashed #fed7aa; padding-bottom: 8px; }
-        .rubric-row:last-child { border: none; margin-bottom: 0; padding-bottom: 0; }
-        .rubric-row label { margin: 0; font-weight: 500; flex: 1; font-size: 13px; text-align: left; color: #4b5563;}
-        .rubric-row input[type="number"] { width: 70px; text-align: center; padding: 6px; border: 1px solid #fed7aa; border-radius: 8px; font-family: 'Prompt'; outline: none; font-size:14px; background: white; font-weight: 600; color: #ea580c;}
-        .rubric-row input[type="number"]:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2); }
-        .swal-wide { width: 95% !important; max-width: 500px !important; border-radius: 20px;}
-        .swal-title-custom { font-family: 'Prompt'; font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 10px;}
         
+        .swal-title-custom { font-family: 'Prompt'; font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 10px;}
         .pending-list-popup { max-height: 50vh; overflow-y: auto; text-align: left; padding-right: 5px; display: flex; flex-direction: column; gap: 8px;}
         .pending-item-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 15px; border-left: 4px solid #f97316;}
         
-        /* 🌟 สไตล์กล่องโชว์งานของนักเรียนแต่ละคน */
         .detail-list { display: flex; flex-direction: column; gap: 8px; max-height: 55vh; overflow-y: auto; padding-right: 5px; text-align: left;}
         .detail-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;}
         .dc-header { display: flex; justify-content: space-between; align-items: flex-start;}
@@ -92,8 +132,6 @@
         .dc-status.done { background: #d1fae5; color: #047857; } 
         .dc-status.todo { background: #fef08a; color: #b45309; }
 
-        .hidden { display: none !important; }
-        
         ::-webkit-scrollbar { width: 6px; height: 6px;}
         ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -104,69 +142,101 @@
 
 <div class="container" id="loadingDiv" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh;">
     <i class="fa-solid fa-spinner fa-spin" style="font-size: 45px; color: #f97316; margin-bottom: 15px;"></i>
-    <div style="font-size: 14px; color: #64748b; font-weight: 500;">กำลังโหลดข้อมูลนักเรียน...</div>
+    <div style="font-size: 14px; color: #64748b; font-weight: 500;">กำลังโหลดข้อมูลคุณครู...</div>
 </div>
 
 <div class="container hidden" id="mainDiv">
     
-    <div class="profile-card">
-        <button class="edit-btn" onclick="openEditModal()"><i class="fa-solid fa-pen"></i></button>
-        <img id="userImg" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Teacher">
-        <div class="profile-info">
-            <h2 id="userName">กำลังโหลด...</h2>
-            <p>คุณครูผู้ประเมิน</p>
+    <!-- 🏠 ส่วนแสดง Dashboard ของคุณครู -->
+    <div id="teacherDashboard">
+        <div class="profile-card">
+            <button class="edit-btn" onclick="openEditModal()"><i class="fa-solid fa-pen"></i></button>
+            <img id="userImg" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Teacher">
+            <div class="profile-info">
+                <h2 id="userName">กำลังโหลด...</h2>
+                <p>คุณครูผู้ประเมิน</p>
+            </div>
+        </div>
+
+        <div class="stat-grid">
+            <div class="stat-box clickable-box" onclick="showPendingTasks()">
+                <div class="icon-circle"><i class="fa-solid fa-clipboard-question"></i></div>
+                <div class="stat-num" id="tPending">0</div>
+                <div class="stat-label">งานรอประเมิน</div>
+                <div class="action-hint"><i class="fa-solid fa-hand-pointer"></i> กดตรวจงาน</div>
+            </div>
+            <div class="stat-box">
+                <div class="icon-circle" style="background: #e0e7ff; color: #4f46e5;"><i class="fa-solid fa-users"></i></div>
+                <div class="stat-num" id="tStudents">0</div>
+                <div class="stat-label">นักเรียนที่แสดงอยู่</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" id="tabStud" onclick="switchTab('students')"><i class="fa-solid fa-users-viewfinder"></i> ภาพรวมนักเรียน</button>
+            <button class="tab-btn" id="tabHist" onclick="switchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติประเมิน</button>
+        </div>
+
+        <div class="list-card" id="viewStudents">
+            <div class="list-header">
+                <h3><i class="fa-solid fa-users"></i> ข้อมูลนักเรียน</h3>
+                <select id="groupFilter" class="group-filter" onchange="renderStudentList()">
+                    <option value="All">ดูทุกกลุ่ม</option>
+                </select>
+            </div>
+            <div id="studentListArea"></div>
+        </div>
+
+        <div class="list-card hidden" id="viewHistory">
+            <div class="list-header">
+                <h3><i class="fa-solid fa-clock-rotate-left"></i> ประวัติให้คะแนนล่าสุด</h3>
+            </div>
+            <div id="historyListArea"></div>
         </div>
     </div>
 
-    <div class="stat-grid">
-        <div class="stat-box clickable-box" onclick="showPendingTasks()">
-            <div class="icon-circle"><i class="fa-solid fa-clipboard-question"></i></div>
-            <div class="stat-num" id="tPending">0</div>
-            <div class="stat-label">งานรอประเมิน</div>
-            <div class="action-hint"><i class="fa-solid fa-hand-pointer"></i> กดดูรายการ</div>
-        </div>
-        <div class="stat-box">
-            <div class="icon-circle" style="background: #e0e7ff; color: #4f46e5;"><i class="fa-solid fa-users"></i></div>
-            <div class="stat-num" id="tStudents">0</div>
-            <div class="stat-label">นักเรียนที่แสดงอยู่</div>
-        </div>
-    </div>
+    <!-- 📝 ส่วนแสดงหน้าฟอร์มให้คะแนน (Evaluation Form) -->
+    <div id="step2Form" class="hidden">
+        <button class="btn-back" onclick="goBackToDashboard()"><i class="fa-solid fa-arrow-left"></i> กลับไปหน้าแรก</button>
+        
+        <div id="studentInfoArea"></div>
+        <div id="dynamicRubricArea"></div>
 
-    <div class="tabs">
-        <button class="tab-btn active" id="tabStud" onclick="switchTab('students')"><i class="fa-solid fa-users-viewfinder"></i> ภาพรวมนักเรียน</button>
-        <button class="tab-btn" id="tabHist" onclick="switchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติประเมิน</button>
-    </div>
-
-    <div class="list-card" id="viewStudents">
-        <div class="list-header">
-            <h3><i class="fa-solid fa-users"></i> ข้อมูลนักเรียน</h3>
-            <select id="groupFilter" class="group-filter" onchange="renderStudentList()">
-                <option value="All">ดูทุกกลุ่ม</option>
-            </select>
+        <div class="form-group">
+            <label><i class="fa-solid fa-comment-dots"></i> หมายเหตุ / ข้อเสนอแนะ (ถ้ามี)</label>
+            <input type="text" id="remark1" placeholder="พิมพ์คำติชมเพื่อการพัฒนา...">
         </div>
-        <div id="studentListArea"></div>
-    </div>
 
-    <div class="list-card hidden" id="viewHistory">
-        <div class="list-header">
-            <h3><i class="fa-solid fa-clock-rotate-left"></i> ประวัติให้คะแนนล่าสุด</h3>
+        <!-- 🌟 ปุ่ม 3 ปุ่ม: บันทึก | ส่งต่อ(สีฟ้า) | ปฏิเสธ(สีแดง) -->
+        <div style="display: flex; gap: 8px; margin-top: 25px;">
+            <button class="btn-primary" style="flex: 1.2;" onclick="submitPendingScore()">
+                <i class="fa-solid fa-floppy-disk"></i> บันทึก
+            </button>
+            <button class="btn-primary" style="background: #3b82f6; flex: 1;" onclick="reassignRequest()">
+                <i class="fa-solid fa-share"></i> ส่งต่อครูอื่น
+            </button>
+            <button class="btn-primary" style="background: #ef4444; flex: 0.8;" onclick="rejectRequest()">
+                <i class="fa-solid fa-xmark"></i> ปฏิเสธ
+            </button>
         </div>
-        <div id="historyListArea"></div>
     </div>
 
 </div>
 
 <script>
-    // 🚨 1. ใส่ LIFF ID (ของหน้า Teacher Dashboard นี้)
-    const LIFF_ID = "2011162626-V8r8boat";
-    // 🚨 2. ใส่ LIFF ID หน้าให้คะแนนครู (เพื่อเด้งไปตอนกดประเมิน)
-    const EVALUATION_LIFF_URL = "https://liff.line.me/2011162626-dON8ee2c";
-    const API_URL = "https://script.google.com/macros/s/AKfycbzPyR4k6rVOrBFIB4QiBYBO9ntaY0mWpo7mck4RTzeV-rWpWLa-mRviLfuyG8lH62s/exec";
+    // 🚨 1. ใส่ LIFF ID หน้าประเมินครูตรงนี้
+    const LIFF_ID = "YOUR_TEACHER_LIFF_ID_HERE"; 
+    
+    // 🚨 2. ใส่ API URL
+    const API_URL = "YOUR_API_URL_HERE"; 
 
+    let currentTeacherId = "";
     let currentTeacherName = "";
+    let pendingRequests = [];
+    let currentSelectedIndex = -1; 
+    let globalTeachers = []; 
     let gHistoryData = []; 
     let gStudentData = []; 
-    let gPendingList = []; 
 
     window.onload = () => { 
         liff.init({ liffId: LIFF_ID }).then(() => { 
@@ -174,10 +244,20 @@
                 liff.getProfile().then(p => { 
                     document.getElementById("userImg").src = p.pictureUrl || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"; 
                     fetchDashboard(p.userId); 
+                    fetchTeachersList();
                 }); 
             } else { liff.login(); }
+        }).catch(() => {
+            Swal.fire('ผิดพลาด', 'ไม่สามารถเชื่อมต่อ LINE LIFF ได้', 'error');
         }); 
     };
+
+    function fetchTeachersList() {
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getTeachersList" }) })
+        .then(res => res.json()).then(data => {
+            if(data.status === "success") globalTeachers = data.data;
+        });
+    }
 
     function switchTab(tab) {
         if(tab === 'students') {
@@ -194,12 +274,13 @@
         .then(res => res.json()).then(data => {
             if(data.status === "success") {
                 currentTeacherName = data.teacherName;
+                currentTeacherId = data.history.length > 0 ? data.history[0].teacherId : ""; 
                 gHistoryData = data.history;
                 gStudentData = data.students;
-                gPendingList = data.pendingList || [];
+                pendingRequests = data.pendingList || [];
 
                 document.getElementById("userName").innerText = "ครู" + data.teacherName;
-                document.getElementById("tPending").innerText = data.pendingCount;
+                document.getElementById("tPending").innerText = pendingRequests.length;
 
                 let filterDropdown = document.getElementById("groupFilter");
                 filterDropdown.innerHTML = '<option value="All">ดูทุกกลุ่ม</option>';
@@ -221,7 +302,7 @@
                                     <div class="h-header"><div class="h-title">${h.studentName}</div><div class="h-score">${h.rawScore}</div></div>
                                     <div class="h-detail"><b>${h.category}</b> - ${h.subCategory} ${h.detail ? '('+h.detail+')' : ''}<br><i class="fa-regular fa-clock"></i> ${h.date}</div>
                                     <div class="action-btns">
-                                        <button class="btn-sm btn-revoke" onclick="revokeScore('${h.logId}')"><i class="fa-solid fa-rotate-left"></i> ดึงงานกลับ/ยกเลิก</button>
+                                        <button class="btn-sm btn-revoke" onclick="revokeScore('${h.logId}')"><i class="fa-solid fa-rotate-left"></i> ยกเลิก/ดึงกลับ</button>
                                         <button class="btn-sm btn-edit" onclick="editScore(${idx})"><i class="fa-solid fa-pen"></i> แก้คะแนนแยกข้อ</button>
                                     </div>
                                  </div>`;
@@ -231,8 +312,14 @@
                 
                 document.getElementById("loadingDiv").style.display = "none";
                 document.getElementById("mainDiv").classList.remove("hidden");
+
+                // 🌟 หากมีงานค้าง ให้แสดง Popup ให้ครูทราบทันทีที่เปิดแอป
+                if (pendingRequests.length > 0) {
+                    showPendingTasks();
+                }
+
             } else { Swal.fire('ผิดพลาด', data.message, 'error'); }
-        });
+        }).catch(() => Swal.fire('ผิดพลาด', 'ไม่สามารถติดต่อ Server ได้', 'error'));
     }
 
     function renderStudentList() {
@@ -247,7 +334,6 @@
         } else {
             filteredStudents.forEach(s => { 
                 let displayGroup = (!isNaN(s.group) && s.group !== "") ? "กลุ่ม " + s.group : s.group;
-                // 🌟 เพิ่ม onclick ให้กดดูรายละเอียดเด็กคนนั้นๆ ได้
                 sHtml += `<div class="student-item" onclick="showStudentDetails('${s.id}')">
                             <div>
                                 <div class="s-name">${s.name} <span class="s-group-badge">${displayGroup}</span></div>
@@ -263,14 +349,12 @@
         document.getElementById("studentListArea").innerHTML = sHtml;
     }
 
-    // 🌟 ระบบดูงานค้าง/งานเสร็จ ของนักเรียนแบบเจาะจง
     function showStudentDetails(sId) {
         let s = gStudentData.find(x => x.id === sId);
         if(!s) return;
 
         let html = `<div class="detail-list">`;
         
-        // 1. โชว์งานที่ค้างรอตรวจ
         html += `<div style="font-weight: 600; color: #b45309; margin-bottom: 8px; margin-top: 5px; text-align: left;"><i class="fa-solid fa-hourglass-half"></i> งานที่ค้างอยู่ / รอตรวจ (${s.pendingTasks.length})</div>`;
         if(s.pendingTasks.length === 0) {
             html += `<div style="text-align:center; padding: 10px; background: #fffbeb; border-radius: 8px; color: #b45309; font-size: 12px;">ไม่มีงานค้างครับ 🎉</div>`;
@@ -285,7 +369,6 @@
             });
         }
 
-        // 2. โชว์งานที่ทำสำเร็จแล้ว
         html += `<div style="font-weight: 600; color: #047857; margin-top: 20px; margin-bottom: 8px; text-align: left;"><i class="fa-solid fa-circle-check"></i> งานที่ทำสำเร็จแล้ว (${s.completedTasks.length})</div>`;
         if(s.completedTasks.length === 0) {
             html += `<div style="text-align:center; padding: 10px; background: #ecfdf5; border-radius: 8px; color: #047857; font-size: 12px;">ยังไม่มีงานที่สำเร็จ</div>`;
@@ -310,12 +393,13 @@
         });
     }
 
+    // 🌟 แสดงรายการรอประเมิน และเปลี่ยนไปหน้า Form เมื่อกดเลือก
     function showPendingTasks() {
-        if(gPendingList.length === 0) return Swal.fire('ไม่มีงานค้าง', 'พักผ่อนได้เลยครับคุณครู! ไม่มีงานรอประเมินครับ 🎉', 'success');
+        if(pendingRequests.length === 0) return Swal.fire('ไม่มีงานค้าง', 'พักผ่อนได้เลยครับคุณครู! ไม่มีงานรอประเมินครับ 🎉', 'success');
         
         let html = `<div class="pending-list-popup">`;
-        gPendingList.forEach(t => {
-            html += `<div class="pending-item-card">
+        pendingRequests.forEach((t, idx) => {
+            html += `<div class="pending-item-card" style="cursor:pointer;" onclick="Swal.close(); openEvaluationForm(${idx})">
                         <div style="font-weight: 600; font-size: 14px; color: #1e293b;"><i class="fa-solid fa-user-graduate" style="color:#94a3b8; margin-right:5px;"></i> ${t.studentName}</div>
                         <div style="font-size: 12px; color: #ea580c; margin-top:4px;"><i class="fa-solid fa-circle-right" style="font-size:8px;"></i> ${t.category} - ${t.subCategory}</div>
                      </div>`;
@@ -323,26 +407,227 @@
         html += `</div>`;
         
         Swal.fire({
-            title: 'งานที่รอประเมิน',
+            title: 'งานที่รอประเมิน (คลิกเพื่อตรวจ)',
             html: html,
             showCancelButton: true,
-            confirmButtonText: '<i class="fa-solid fa-clipboard-check"></i> ไปหน้าให้คะแนน',
-            cancelButtonText: 'ปิด',
-            confirmButtonColor: '#ea580c',
+            showConfirmButton: false, // ปิดปุ่มตกลง ให้กดที่การ์ดแทน
+            cancelButtonText: 'ปิดหน้าต่าง',
             cancelButtonColor: '#94a3b8',
             customClass: { popup: 'swal-wide', title: 'swal-title-custom' }
-        }).then((result) => {
-            if (result.isConfirmed) { window.location.href = EVALUATION_LIFF_URL; }
         });
     }
 
+    // 🌟 ระบบแสดงฟอร์มประเมิน (ตัดหมวดพฤติกรรมออกแล้ว)
+    function openEvaluationForm(idx) {
+        currentSelectedIndex = idx;
+        let req = pendingRequests[idx];
+        
+        document.getElementById("teacherDashboard").classList.add("hidden");
+        document.getElementById("step2Form").classList.remove("hidden");
+
+        document.getElementById("studentInfoArea").innerHTML = `
+            <div class="student-info-box">
+                <div class="student-avatar"><i class="fa-solid fa-user-graduate"></i></div>
+                <div>
+                    <div class="student-name-display">${req.studentName}</div>
+                    <div class="student-task-display">${req.category} - ${req.subCategory} ${req.detail && req.detail !== '-' ? '('+req.detail+')' : ''}</div>
+                </div>
+            </div>
+        `;
+
+        let html = '';
+        if (req.category === "ประเมินรายวัน") {
+            // 🌟 เหลือแค่ทักษะปฏิบัติ 4 ข้อ
+            html += `<div class="rubric-box" style="background:#f0fdf4; border-color:#bbf7d0;">
+                <h4 style="color:#15803d;"><i class="fa-solid fa-wrench"></i> ทักษะปฏิบัติงาน (เต็ม 20)</h4>
+                <div class="rubric-row"><label>เตรียมเครื่อง/ห้อง</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>เตรียมผู้ป่วย</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>ถ่ายและประเมินภาพ</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>ดูแลอุปกรณ์หลังใช้</label><input type="number" class="s-score" placeholder="0-5" max="5"></div>
+            </div>`;
+        } 
+        else if (req.category === "ส่งใบงาน") {
+            let maxRaw = req.detail.includes("ที่ 1") ? 1 : 2; 
+            html += `<div class="rubric-box">
+                <h4><i class="fa-solid fa-file-pen" style="color: #8b5cf6;"></i> ประเมินใบงาน</h4>
+                <div class="rubric-row"><label>คะแนนที่ได้</label><input type="number" class="raw-score" placeholder="0-${maxRaw}" max="${maxRaw}"></div>
+            </div>`;
+        }
+        else if (req.category === "สอบปฏิบัติ") {
+            if (req.subCategory.includes("OPG")) {
+                html += `<div class="rubric-box"><h4><i class="fa-solid fa-stethoscope" style="color: #ec4899;"></i> สอบ OPG</h4>
+                <div class="rubric-row"><label>เตรียมเครื่องมือ/ผู้ป่วย</label><input type="number" class="raw-score" placeholder="0-2" max="2"></div>
+                <div class="rubric-row"><label>จัดท่าผู้ป่วย/ถ่ายภาพ</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>การดูภาพ/แก้ไขปัญหา</label><input type="number" class="raw-score" placeholder="0-3" max="3"></div></div>`;
+            } else if (req.subCategory.includes("เรียงภาพ FM")) {
+                html += `<div class="rubric-box"><h4><i class="fa-solid fa-images" style="color: #ec4899;"></i> สอบเรียงภาพ FM</h4>
+                <div class="rubric-row"><label>คะแนนสอบเรียงภาพ</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div></div>`;
+            } else {
+                html += `<div class="rubric-box"><h4><i class="fa-solid fa-tooth" style="color: #ec4899;"></i> สอบ ${req.subCategory}</h4>
+                <div class="rubric-row"><label>เตรียมเครื่องมือ</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>เตรียมผู้ป่วย</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>ถ่ายภาพรังสี</label><input type="number" class="raw-score" placeholder="0-10" max="10"></div>
+                <div class="rubric-row"><label>ดูแลเครื่องมือหลังใช้</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>ประเมิน/แก้ไขภาพ</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div></div>`;
+            }
+        }
+        else if (req.category === "สอบประเมินภาพ") {
+            html += `<div class="rubric-box"><h4><i class="fa-solid fa-magnifying-glass" style="color: #14b8a6;"></i> สอบประเมินภาพ</h4>
+                <div class="rubric-row"><label>วิเคราะห์ในช่องปาก</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div>
+                <div class="rubric-row"><label>วิเคราะห์นอกช่องปาก</label><input type="number" class="raw-score" placeholder="0-5" max="5"></div></div>`;
+        }
+
+        document.getElementById("dynamicRubricArea").innerHTML = html;
+        document.getElementById("remark1").value = ""; 
+    }
+
+    function goBackToDashboard() {
+        currentSelectedIndex = -1;
+        document.getElementById("step2Form").classList.add("hidden");
+        document.getElementById("teacherDashboard").classList.remove("hidden");
+    }
+
+    function reassignRequest() {
+        if(currentSelectedIndex === -1) return;
+        let req = pendingRequests[currentSelectedIndex];
+
+        let optionsHtml = '<option value="" disabled selected>-- เลือกคุณครูท่านใหม่ --</option>';
+        globalTeachers.forEach(t => {
+            // ไม่ให้ส่งต่อหาตัวเอง
+            if (t.name !== currentTeacherName) {
+                optionsHtml += `<option value="${t.id}">ครู${t.name}</option>`;
+            }
+        });
+
+        Swal.fire({
+            title: 'ส่งต่อให้คุณครูท่านอื่น',
+            html: `
+                <div style="font-size: 13px; color: #4b5563; margin-bottom: 15px; text-align:left; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <b>นักเรียน:</b> ${req.studentName}<br>
+                    <b>เรื่อง:</b> ${req.category} - ${req.subCategory}
+                </div>
+                <div style="text-align: left; font-size: 13px; font-weight: 500; margin-bottom: 8px; color: #1f2937;">เลือกคุณครูที่ต้องการส่งต่อ:</div>
+                <select id="swal-new-teacher" class="swal2-select" style="width: 100%; max-width: 100%; font-size: 14px; font-family: 'Prompt'; margin: 0 0 15px 0; display: block; border-radius: 8px; padding: 10px;">
+                    ${optionsHtml}
+                </select>
+            `,
+            showCancelButton: true, confirmButtonText: 'ยืนยันการส่งต่อ', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#3b82f6', cancelButtonColor: '#94a3b8', customClass: { popup: 'swal-wide' },
+            preConfirm: () => {
+                let tid = document.getElementById('swal-new-teacher').value;
+                if (!tid) { Swal.showValidationMessage('กรุณาเลือกคุณครูปลายทางด้วยครับ'); return false; }
+                return tid;
+            }
+        }).then((result) => {
+            if(result.isConfirmed) {
+                Swal.fire({title: 'กำลังส่งต่อ...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+                fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'resubmitRequest', logId: req.logId, newTeacherId: result.value })
+                }).then(r => r.json()).then(data => {
+                    if(data.status === 'success') {
+                        Swal.fire('สำเร็จ', 'ส่งต่อคำขอให้คุณครูท่านใหม่เรียบร้อยแล้ว!', 'success').then(() => window.location.reload());
+                    } else { Swal.fire('ผิดพลาด', data.message, 'error'); }
+                });
+            }
+        });
+    }
+
+    function submitPendingScore() {
+        if(currentSelectedIndex === -1) return;
+        
+        let req = pendingRequests[currentSelectedIndex];
+        let subScoresList = []; 
+        let isInvalid = false;
+        let invalidMsg = "";
+        
+        let inputs = document.querySelectorAll('.rubric-row input[type="number"]');
+        for (let i = 0; i < inputs.length; i++) {
+            let inp = inputs[i];
+            let label = inp.parentElement.querySelector('label').innerText;
+            let val = parseFloat(inp.value);
+            let maxVal = parseFloat(inp.getAttribute('max'));
+
+            if (isNaN(val) || val < 0 || val > maxVal) {
+                isInvalid = true;
+                invalidMsg = `คะแนนหัวข้อ "${label}" ไม่ถูกต้อง!\n(กรุณาระบุตัวเลขระหว่าง 0 ถึง ${maxVal} เท่านั้นครับ)`;
+                break;
+            }
+            subScoresList.push(val); 
+        }
+
+        if (isInvalid) return Swal.fire('ข้อมูลไม่ถูกต้อง', invalidMsg, 'error');
+
+        Swal.fire({
+            title: 'ยืนยันการให้คะแนน?',
+            text: "ระบบจะบันทึกคะแนนลงในฐานข้อมูลทันที",
+            icon: 'question',
+            showCancelButton: true, confirmButtonColor: '#f97316', cancelButtonColor: '#9ca3af', confirmButtonText: 'ยืนยันบันทึก', cancelButtonText: 'ยกเลิก'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                let payload = {
+                    action: "submitScore", teacherId: currentTeacherId || "คุณครู",
+                    logId: req.logId, studentId: req.studentId, studentName: req.studentName,
+                    category: req.category, subCategory: req.subCategory, detail: req.detail,
+                    subScoresList: subScoresList,
+                    remark: document.getElementById("remark1").value
+                };
+
+                Swal.fire({ title: 'กำลังประมวลผล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                
+                fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+                .then(res => res.json()).then(data => {
+                    if(data.status === "success") {
+                        Swal.fire('สำเร็จ!', 'บันทึกคะแนนเรียบร้อย', 'success').then(() => window.location.reload());
+                    } else { Swal.fire('ผิดพลาด', data.message, 'error'); }
+                }).catch(() => Swal.fire('ผิดพลาด', 'ไม่สามารถติดต่อ Server ได้', 'error'));
+            }
+        });
+    }
+
+    function rejectRequest() {
+        if(currentSelectedIndex === -1) return;
+        let req = pendingRequests[currentSelectedIndex];
+
+        Swal.fire({
+            title: 'ปฏิเสธคำขอนี้?',
+            text: "ระบบจะแจ้งเตือนให้นักเรียนทราบ กรุณาระบุเหตุผล",
+            input: 'text',
+            icon: 'warning',
+            showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#9ca3af', confirmButtonText: 'ยืนยันปฏิเสธ', cancelButtonText: 'ยกเลิก', inputPlaceholder: 'เช่น ภาพไม่ชัด, ส่งผิดหัวข้อ...',
+            inputValidator: (value) => { if (!value) return 'กรุณาระบุเหตุผลด้วยครับ!' }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({ title: 'กำลังดำเนินการ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                let payload = { action: "rejectRequest", logId: req.logId, studentId: req.studentId, category: req.category, subCategory: req.subCategory, reason: result.value };
+
+                fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+                .then(res => res.json()).then(data => {
+                    if(data.status === "success") { Swal.fire('สำเร็จ', data.message, 'success').then(() => window.location.reload()); } 
+                    else { Swal.fire('ผิดพลาด', data.message, 'error'); }
+                }).catch(() => Swal.fire('ผิดพลาด', 'ไม่สามารถติดต่อ Server ได้', 'error'));
+            }
+        });
+    }
+
+    // 🌟 ระบบแก้ไขคะแนนแบบใหม่ (ตัดช่องพฤติกรรมออกไป เหลือแต่ทักษะ 4 ข้อ)
     function editScore(idx) {
         let h = gHistoryData[idx];
         let sub = h.subScores || []; 
         let html = `<div style="font-size:13px; color:#64748b; margin-bottom:15px; text-align:left; background: #f8fafc; padding: 10px; border-radius: 8px;">นักเรียน: <b>${h.studentName}</b><br>งาน: ${h.category} - ${h.subCategory}</div>`;
         
+        let v0 = !isNaN(parseFloat(sub[5])) ? parseFloat(sub[5]) : '';
+        let v1 = !isNaN(parseFloat(sub[6])) ? parseFloat(sub[6]) : '';
+        let v2 = !isNaN(parseFloat(sub[7])) ? parseFloat(sub[7]) : '';
+        let v3 = !isNaN(parseFloat(sub[8])) ? parseFloat(sub[8]) : '';
+
         if (h.category === "ประเมินรายวัน") {
-            html += `<div class="rubric-box"><h4><i class="fa-solid fa-star"></i> พฤติกรรม (เต็ม 40)</h4><div class="rubric-row"><label>ซื่อสัตย์ ตรงต่อเวลา</label><input type="number" class="edit-sub-score" value="${sub[0]||''}" max="10"></div><div class="rubric-row"><label>รับผิดชอบ กระตือรือร้น</label><input type="number" class="edit-sub-score" value="${sub[1]||''}" max="10"></div><div class="rubric-row"><label>ทำงานเป็นทีม เอื้อเฟื้อ</label><input type="number" class="edit-sub-score" value="${sub[2]||''}" max="10"></div><div class="rubric-row"><label>ปฏิภาณไหวพริบ คล่องแคล่ว</label><input type="number" class="edit-sub-score" value="${sub[3]||''}" max="5"></div><div class="rubric-row"><label>กิริยามารยาท แต่งกาย</label><input type="number" class="edit-sub-score" value="${sub[4]||''}" max="5"></div></div><div class="rubric-box" style="background:#f0fdf4; border-color:#bbf7d0;"><h4 style="color:#15803d;"><i class="fa-solid fa-wrench"></i> ทักษะปฏิบัติงาน (เต็ม 20)</h4><div class="rubric-row"><label>เตรียมเครื่อง/ห้อง</label><input type="number" class="edit-sub-score" value="${sub[5]||''}" max="5"></div><div class="rubric-row"><label>เตรียมผู้ป่วย</label><input type="number" class="edit-sub-score" value="${sub[6]||''}" max="5"></div><div class="rubric-row"><label>ถ่ายและประเมินภาพ</label><input type="number" class="edit-sub-score" value="${sub[7]||''}" max="5"></div><div class="rubric-row"><label>ดูแลอุปกรณ์หลังใช้</label><input type="number" class="edit-sub-score" value="${sub[8]||''}" max="5"></div></div>`;
+            html += `<div class="rubric-box" style="background:#f0fdf4; border-color:#bbf7d0;">
+                        <h4 style="color:#15803d;"><i class="fa-solid fa-wrench"></i> ทักษะปฏิบัติงาน (เต็ม 20)</h4>
+                        <div class="rubric-row"><label>เตรียมเครื่อง/ห้อง</label><input type="number" class="edit-sub-score" value="${v0}" max="5"></div>
+                        <div class="rubric-row"><label>เตรียมผู้ป่วย</label><input type="number" class="edit-sub-score" value="${v1}" max="5"></div>
+                        <div class="rubric-row"><label>ถ่ายและประเมินภาพ</label><input type="number" class="edit-sub-score" value="${v2}" max="5"></div>
+                        <div class="rubric-row"><label>ดูแลอุปกรณ์หลังใช้</label><input type="number" class="edit-sub-score" value="${v3}" max="5"></div>
+                     </div>`;
         } 
         else if (h.category === "ส่งใบงาน" || h.category === "สอบประเมินภาพ") {
             let maxRaw = h.detail.includes("ที่ 1") ? 1 : (h.category === "สอบประเมินภาพ" ? 5 : 2); 
