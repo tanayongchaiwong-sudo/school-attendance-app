@@ -270,6 +270,7 @@
         }
     };
 
+    // 🌟 ฟังก์ชันโหลดข้อมูลเบื้องหลัง (อัปเดตความจำให้ใหม่เสมอ)
     function fetchStudentDataBackground(sid) {
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentName", studentId: sid }) })
         .then(res => res.json()).then(data => {
@@ -277,7 +278,20 @@
                 studentCompletedExams = data.completedExams || []; 
                 studentSubmittedTasks = data.submittedTasks || []; 
                 globalExamStatus = data.examStatus || "LOCKED";
-                globalIsGraduated = data.isGraduated || false; // 🌟 เก็บสถานะจบการศึกษา
+                globalIsGraduated = data.isGraduated || false;
+
+                // 🌟 1. เขียนทับชื่อบนหน้าจอให้เป็นข้อมูลล่าสุดจากฐานข้อมูลทันที
+                document.getElementById("fullName").value = data.fullName;
+                
+                // 🌟 2. อัปเดต Cache ในเครื่องให้เป็นชื่อล่าสุด (เผื่อแอดมินเปลี่ยนชื่อให้)
+                localStorage.setItem("studentName", data.fullName);
+
+                updateForm(); 
+            } else {
+                // 🌟 3. ถ้ารหัสโดนแอดมินลบ ให้ล้างความจำในเครื่องทิ้งทั้งหมด
+                localStorage.removeItem("studentId");
+                localStorage.removeItem("studentName");
+                resetNameStatus();
             }
         });
     }
@@ -708,6 +722,9 @@
         fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
         .then(res => res.json()).then(data => {
             if(data.status === "success") {
+                // 🌟 ล้างความจำของ Dashboard ทิ้ง! เพื่อให้หน้าสถิติโหลดคะแนน/งานใหม่เสมอ
+                localStorage.removeItem("studentDashboardCache");
+
                 Swal.fire({ icon: 'success', title: 'สำเร็จ', text: data.message }).then(() => {
                     if (typeof liff !== 'undefined' && liff.isInClient()) liff.closeWindow(); 
                     else window.location.reload();
