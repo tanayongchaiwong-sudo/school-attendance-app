@@ -18,7 +18,9 @@
         .profile-info { flex: 1; }
         .profile-info h2 { margin: 0 0 4px 0; font-size: 18px; font-weight: 600; line-height: 1.2;}
         .profile-info p { margin: 0; font-size: 13px; opacity: 0.9;}
-        .edit-btn { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); color: white; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        
+        .action-btn-group { position: absolute; top: 15px; right: 15px; display: flex; gap: 8px; }
+        .edit-btn { background: rgba(255,255,255,0.2); color: white; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
         .edit-btn:hover { background: rgba(255,255,255,0.3); transform: rotate(15deg); }
         
         .secondary-stats { display: flex; gap: 12px; margin-bottom: 20px; }
@@ -27,7 +29,6 @@
         .sec-box span { font-weight: 600; color: #334155; font-size: 15px;}
         .sec-box.warning span { color: #ef4444; }
 
-        /* 🌟 CSS เพิ่มเติมสำหรับปุ่มกดกล่องมาสาย */
         .clickable-sec-box { cursor: pointer; transition: 0.3s; position: relative; }
         .clickable-sec-box:hover, .clickable-sec-box:active { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(239, 68, 68, 0.15); border-color: #fca5a5; background: #fff5f5; }
 
@@ -121,7 +122,10 @@
 <div class="container" id="mainDiv" style="display:none;">
     
     <div class="profile-card">
-        <button class="edit-btn" onclick="openEditModal()"><i class="fa-solid fa-pen"></i></button>
+        <div class="action-btn-group">
+            <button class="edit-btn" onclick="forceRefresh()" title="ซิงค์ข้อมูลล่าสุดจากฐานข้อมูล"><i class="fa-solid fa-rotate-right"></i></button>
+            <button class="edit-btn" onclick="openEditModal()" title="แก้ไขประวัติ"><i class="fa-solid fa-pen"></i></button>
+        </div>
         <img id="userImg" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Profile">
         <div class="profile-info">
             <h2 id="userName">กำลังโหลด...</h2>
@@ -131,7 +135,6 @@
     
     <div class="secondary-stats">
         <div class="sec-box"><i class="fa-solid fa-hourglass-half"></i> สะสม: <span id="sHours">0</span> ชม.</div>
-        <!-- 🌟 เพิ่มคลาส clickable-sec-box และฟังก์ชัน onclick ตรงนี้ -->
         <div class="sec-box warning clickable-sec-box" onclick="showLateDetails()" title="คลิกเพื่อดูประวัติการมาสาย">
             <i class="fa-solid fa-triangle-exclamation"></i> มาสาย: <span id="sLate">0</span> ครั้ง
         </div>
@@ -188,7 +191,6 @@
     let globalExams = []; 
     let globalTeachers = []; 
 
-    // 11 รายการเป้าหมายหลัก
     const MASTER_GOALS = [
         { type: "exam", name: "Pre-Clinic Part 1", key: "Part 1" },
         { type: "exam", name: "Pre-Clinic Part 2", key: "Part 2" },
@@ -207,7 +209,6 @@
     const ASSIGN_LIST_FULL = ["ในช่องปาก (ใบงานที่ 1)", "ในช่องปาก (ใบงานที่ 2)", "ในช่องปาก (ใบงานที่ 3)", "นอกช่องปาก (ใบงานที่ 1)", "นอกช่องปาก (ใบงานที่ 2)", "นอกช่องปาก (ใบงานที่ 3)"];
 
     window.onload = () => { 
-        // 🌟 1. ดึง Cache เก่าขึ้นมาโชว์ก่อนทันที (Fast Load)
         let cachedData = localStorage.getItem("studentDashboardCache");
         let cachedImage = localStorage.getItem("studentProfileImage");
         
@@ -215,13 +216,12 @@
             try {
                 let d = JSON.parse(cachedData);
                 if (cachedImage) document.getElementById("userImg").src = cachedImage;
-                renderDashboardData(d); // แสดงข้อมูลเก่าทันที
+                renderDashboardData(d); 
                 document.getElementById("loadingDiv").style.display = "none";
                 document.getElementById("mainDiv").style.display = "block";
             } catch(e) { }
         }
 
-        // 🌟 2. เริ่มเชื่อมต่อ LIFF และดึงข้อมูลใหม่แบบเบื้องหลัง (Background Fetch)
         liff.init({ liffId: LIFF_ID }).then(() => { 
             if(liff.isLoggedIn()) {
                 liff.getProfile().then(p => { 
@@ -239,12 +239,8 @@
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentDashboard", studentUid: uid }) })
         .then(res => res.json()).then(data => {
             if(data.status === "success") {
-                // 🌟 บันทึกข้อมูลใหม่ลง Cache
                 localStorage.setItem("studentDashboardCache", JSON.stringify(data.data));
-                
-                // 🌟 อัปเดตหน้าจอด้วยข้อมูลล่าสุด
                 renderDashboardData(data.data);
-                
                 document.getElementById("loadingDiv").style.display = "none";
                 document.getElementById("mainDiv").style.display = "block";
             } else {
@@ -252,18 +248,33 @@
                     Swal.fire('ยังไม่ลงทะเบียน', 'ระบบยังไม่พบข้อมูลของคุณ กรุณาลงทะเบียนก่อนครับ', 'warning');
                 }
             }
-        }).catch(() => {
-            // ถ้าระบบออฟไลน์ และมี Cache อยู่แล้ว หน้าจอจะไม่หมุนค้าง
+        }).catch(err => {
+            console.error("Dashboard Fetch Error: ระบบยังดึงข้อมูลได้ปกติจาก Cache");
         });
     }
 
-    // 🌟 แยกฟังก์ชันการแสดงผลหน้าจอออกมา เพื่อให้ใช้งานร่วมกับระบบ Cache ได้
+    // 🌟 ฟังก์ชันเพื่อกดซิงค์ข้อมูลด้วยตัวเอง (Force Refresh)
+    function forceRefresh() {
+        Swal.fire({title: 'กำลังซิงค์ข้อมูลล่าสุด...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+        liff.getProfile().then(p => {
+            fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentDashboard", studentUid: p.userId }) })
+            .then(res => res.json()).then(data => {
+                if(data.status === "success") {
+                    localStorage.setItem("studentDashboardCache", JSON.stringify(data.data));
+                    renderDashboardData(data.data);
+                    Swal.fire({ icon: 'success', title: 'อัปเดตข้อมูลตรงกับฐานข้อมูลแล้ว', timer: 1500, showConfirmButton: false });
+                } else {
+                    Swal.fire('ข้อผิดพลาด', data.message, 'error');
+                }
+            }).catch(err => Swal.fire('เครือข่ายขัดข้อง', 'ไม่สามารถเชื่อมต่อ Server ได้', 'error'));
+        }).catch(() => Swal.fire('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูล LINE ได้', 'error'));
+    }
+
     function renderDashboardData(d) {
         currentProfile.id = d.studentId; 
         currentProfile.name = d.studentName; 
         currentProfile.group = d.studentGroup;
 
-        // 🌟 ซิงค์ความจำพื้นฐานให้ตรงกัน ป้องกันชื่อเก่าค้างเวลาข้ามหน้าเว็บ
         localStorage.setItem("studentId", d.studentId);
         localStorage.setItem("studentName", d.studentName);
         
@@ -277,7 +288,7 @@
         document.getElementById("userGroup").innerText = `รหัส: ${d.studentId} | ${displayGroup}`;
         
         document.getElementById("sHours").innerText = d.totalHours;
-        document.getElementById("sLate").innerText = d.lateCount; // ค่ามาสายถูกนับจาก Code.gs (08:15) มาแล้ว
+        document.getElementById("sLate").innerText = d.lateCount; 
         document.getElementById("sCheckin").innerText = d.totalCheckIn;
         
         let assignCount = globalAssignments.filter(a => a.status === "Completed").length;
@@ -378,7 +389,6 @@
                 fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'resubmitRequest', logId: logId, newTeacherId: result.value }) })
                 .then(r => r.json()).then(data => {
                     if(data.status === 'success') {
-                        // 🌟 เคลียร์ Cache เพื่อให้ดึงข้อมูลใหม่ทันที
                         localStorage.removeItem("studentDashboardCache");
                         Swal.fire('สำเร็จ', data.message, 'success').then(() => window.location.reload());
                     } else { Swal.fire('ผิดพลาด', data.message, 'error'); }
@@ -387,9 +397,7 @@
         });
     }
 
-    // 🌟 ฟังก์ชันโชว์รายละเอียดการมาสาย (ทำงานเมื่อกดที่กล่องมาสาย)
     function showLateDetails() {
-        // คัดกรองเฉพาะ log ที่มีคำว่าสายอยู่ในหมายเหตุ
         let lateLogs = globalAttendance.filter(r => r.remark && r.remark.includes("สาย"));
         
         if(lateLogs.length === 0) {
@@ -483,7 +491,7 @@
                     fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateProfile', role: 'student', userId: profile.userId, inputId: p.id, fullName: p.name, groupName: p.group }) })
                     .then(r=>r.json()).then(data=>{ 
                         if(data.status==='success') {
-                            localStorage.removeItem("studentDashboardCache"); // เคลียร์ Cache ให้รีโหลดชื่อใหม่
+                            localStorage.removeItem("studentDashboardCache"); 
                             Swal.fire('สำเร็จ', data.message, 'success').then(()=>window.location.reload()); 
                         }
                     });
