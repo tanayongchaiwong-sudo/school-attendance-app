@@ -262,6 +262,10 @@
         currentProfile.id = d.studentId; 
         currentProfile.name = d.studentName; 
         currentProfile.group = d.studentGroup;
+
+        // 🌟 ซิงค์ความจำพื้นฐานให้ตรงกัน ป้องกันชื่อเก่าค้างเวลาข้ามหน้าเว็บ
+        localStorage.setItem("studentId", d.studentId);
+        localStorage.setItem("studentName", d.studentName);
         
         globalAttendance = d.attendanceLog || [];
         globalAssignments = d.assignments || [];
