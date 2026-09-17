@@ -100,7 +100,6 @@
 </head>
 <body>
 
-    <!-- 🔒 Login Screen -->
     <div id="loginScreen">
         <div class="login-card">
             <i class="fa-solid fa-shield-halved"></i>
@@ -111,7 +110,6 @@
         </div>
     </div>
 
-    <!-- 🌟 Main Application -->
     <div id="adminApp">
         <div class="sidebar">
             <div class="sidebar-header">
@@ -135,7 +133,6 @@
 
         <div class="main-content">
             
-            <!-- 📊 Section 0: สถิติภาพรวม (Dashboard) -->
             <div id="sec-dashboard" class="section active">
                 <div class="page-header">
                     <h1 class="page-title">สถิติภาพรวม (Dashboard)</h1>
@@ -186,7 +183,6 @@
                 </div>
             </div>
 
-            <!-- 📑 Section 1: ออกเอกสาร -->
             <div id="sec-export" class="section">
                 <div class="page-header">
                     <h1 class="page-title">ระบบพรีวิวและออกเอกสาร</h1>
@@ -222,7 +218,6 @@
                 </div>
             </div>
 
-            <!-- 🎓 Section 2: ข้อมูลเจาะลึก -->
             <div id="sec-student" class="section">
                 <div class="page-header">
                     <h1 class="page-title">ระบบจัดการนักเรียนรายบุคคล</h1>
@@ -272,7 +267,6 @@
                 </div>
             </div>
 
-            <!-- 🗄️ Section 3: จัดการฐานข้อมูล (CMS) -->
             <div id="sec-database" class="section">
                 <div class="page-header">
                     <h1 class="page-title">จัดการฐานข้อมูล (CMS)</h1>
@@ -402,6 +396,7 @@
     function normalizeId(id) {
         if (id === null || id === undefined) return "";
         let str = String(id).trim();
+        if (str.endsWith(".0")) str = str.slice(0, -2);
         return (!isNaN(str) && str !== "") ? Number(str).toString() : str;
     }
 
@@ -506,7 +501,6 @@
         });
     }
 
-    // --- กู้คืน 2 ฟังก์ชันที่หายไป (สร้างตารางนักเรียน/ครู) ---
     function renderDbStudents() {
         let tbody = document.getElementById("dbStudentBody"), html = "";
         dbStudents.forEach(s => {
@@ -533,9 +527,7 @@
         });
         tbody.innerHTML = html;
     }
-    // ------------------------------------------------
 
-    // --- สถิติภาพรวม (Dashboard) ---
     function loadDashboardData() {
         let group = document.getElementById("dashGroupFilter").value;
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminGetDashboardStats", groupFilter: group }) })
@@ -615,7 +607,6 @@
         Swal.fire({ title: '<i class="fa-solid fa-bed" style="color:#ef4444;"></i> ประวัติการลา', html: html, confirmButtonText: 'ปิด', customClass: { popup: 'swal-wide' } });
     }
 
-    // --- พรีวิวและออกเอกสาร (แบบแก้ไขได้) ---
     function fetchReport() {
         let rType = document.getElementById("reportType").value, gFilter = document.getElementById("groupFilter").value;
         if(!gFilter) return Swal.fire('แจ้งเตือน', 'กรุณารอโหลดข้อมูลกลุ่มก่อนครับ', 'warning');
@@ -775,7 +766,6 @@
         printWindow.document.close();
     }
 
-    // --- ส่วนจัดการประวัตินักเรียนเจาะลึก ---
     function renderAdminStudentList() {
         let filter = document.getElementById("adminGroupFilter").value;
         let search = document.getElementById("adminSearchInput").value.trim().toLowerCase();
@@ -845,6 +835,7 @@
         document.getElementById("btnSortScore").innerHTML = sortOrderScore === -1 ? `<i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า` : `<i class="fa-solid fa-arrow-up-wide-short"></i> เรียง: เก่าไปใหม่`;
     }
 
+    // 🌟 ระบบเพิ่ม "ยกเว้นสาย" ในตารางแสดงผล
     function renderDeepDiveAtt() {
         let attHtml = ""; 
         if(currentDeepDiveAtt.length === 0) attHtml = "<tr><td colspan='5' style='text-align:center;'>ไม่มีประวัติการลงเวลา</td></tr>";
@@ -859,8 +850,13 @@
                 
                 if (a.type === "เข้างาน") {
                     typeClass = "color:#10b981; font-weight:bold;";
-                    // แจ้งเตือนมาสาย 08:15
-                    if(timeInputFormat > "08:15") lateBadge = `<span class="late-badge">สาย</span>`;
+                    if (timeInputFormat > "08:15") {
+                        if (a.remark.includes("[ยกเว้นสาย]")) {
+                            lateBadge = `<span class="late-badge" style="background:#ecfdf5; color:#059669; border:1px solid #10b981;">ยกเว้นสาย</span>`;
+                        } else {
+                            lateBadge = `<span class="late-badge">สาย</span>`;
+                        }
+                    }
                 } else if (a.type === "ออกงาน" || a.type.includes("ออก")) {
                     typeClass = "color:#f59e0b; font-weight:bold;";
                 } else {
@@ -868,12 +864,15 @@
                 }
                 
                 let trStyle = (a.type === "-" || a.type === "") ? "background-color: #fef2f2;" : "";
+                
+                // ลบคำว่ามาสาย/ยกเว้นสาย ออกก่อนโชว์ในหมายเหตุ
+                let displayRemark = a.remark.replace("[ยกเว้นสาย]", "").replace("[มาสาย]", "").trim();
 
                 attHtml += `<tr style="${trStyle}">
                     <td style="white-space:nowrap;">${a.date.split(' ')[0]} ${a.type !== '-' ? timeInputFormat : ''}</td>
                     <td style="${typeClass}">${a.type !== '-' ? a.type : 'ลา'} ${lateBadge}</td>
                     <td>${a.detail}</td>
-                    <td style="font-size: 11px;">${a.remark}</td>
+                    <td style="font-size: 11px;">${displayRemark}</td>
                     <td>
                         <button class="btn btn-outline btn-sm" onclick="openAttModal(true, '${a.logId}', '${dateInputFormat}', '${timeInputFormat}', '${a.type}', '${a.remark}')" title="แก้ไข"><i class="fa-solid fa-pen"></i></button>
                         <button class="btn btn-danger btn-sm" onclick="deleteAtt('${a.logId}')" title="ลบ"><i class="fa-solid fa-trash"></i></button>
@@ -891,10 +890,13 @@
         document.getElementById("btnSortAtt").innerHTML = sortOrderAtt === -1 ? `<i class="fa-solid fa-arrow-down-wide-short"></i> เรียง: ใหม่ไปเก่า` : `<i class="fa-solid fa-arrow-up-wide-short"></i> เรียง: เก่าไปใหม่`;
     }
 
-    // 🌟 ระบบเพิ่มและแก้ไขเวลา (เข้า/ออก/ลา) จากแอดมิน
+    // 🌟 หน้าต่างแก้ไขประวัติลงเวลา (เพิ่มปุ่ม Checkbox ยกเว้นมาสาย)
     function openAttModal(isEdit = false, logId = '', oldDate = '', oldTime = '', oldType = 'เข้างาน', oldRemark = '') {
         if(oldType === "-" || oldType === "") oldType = oldRemark.includes("กิจ") ? "ลากิจ" : "ลาป่วย";
         let defaultTime = oldTime || "08:00";
+        
+        let isExcused = oldRemark.includes("[ยกเว้นสาย]");
+        let cleanRemark = oldRemark.replace("[ยกเว้นสาย]", "").replace("[มาสาย]", "").trim();
         
         Swal.fire({
             title: isEdit ? 'แก้ไขประวัติลงเวลา' : 'เพิ่มประวัติลงเวลา',
@@ -911,15 +913,29 @@
                 <div style="text-align:left; font-size:13px; font-weight:600; margin-top:15px; margin-bottom:8px;">เวลา (เฉพาะเข้า/ออก)</div>
                 <input id="att-time" type="time" class="swal2-input" value="${defaultTime}" style="width: 85%;">
                 <div style="text-align:left; font-size:13px; font-weight:600; margin-top:15px; margin-bottom:8px;">หมายเหตุ</div>
-                <input id="att-remark" type="text" class="swal2-input" value="${oldRemark}" style="width: 85%;" placeholder="เช่น รถติด, ลาไปทำธุระ">
+                <input id="att-remark" type="text" class="swal2-input" value="${cleanRemark}" style="width: 85%;" placeholder="เช่น รถติด, ลาไปทำธุระ">
+                
+                <div style="text-align:left; margin-top:15px; margin-left: 7.5%;">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="att-excuse" ${isExcused ? 'checked' : ''} style="width:16px; height:16px; margin:0;">
+                        <span style="color:#059669; font-weight:600;">ยกเว้นการมาสาย (เวลาเกิน 08:15 แต่จะไม่ถูกนับว่าสาย)</span>
+                    </label>
+                </div>
             `,
             showCancelButton: true, confirmButtonText: 'บันทึกข้อมูล', confirmButtonColor: '#0f766e', customClass: { popup: 'swal-wide' },
             preConfirm: () => {
                 let type = document.getElementById('att-type').value;
                 let date = document.getElementById('att-date').value;
                 let time = document.getElementById('att-time').value;
+                let remarkText = document.getElementById('att-remark').value.trim();
+                let isExcusedChecked = document.getElementById('att-excuse').checked;
+                
+                if(isExcusedChecked && type === "เข้างาน") {
+                    remarkText = "[ยกเว้นสาย] " + remarkText;
+                }
+                
                 if (!date) { Swal.showValidationMessage('กรุณาเลือกวันที่ก่อนครับ'); return false; }
-                return { isEdit: isEdit, logId: logId, studentId: currentViewStudentId, attDate: date, attTime: time, attType: type, remark: document.getElementById('att-remark').value }
+                return { isEdit: isEdit, logId: logId, studentId: currentViewStudentId, attDate: date, attTime: time, attType: type, remark: remarkText }
             }
         }).then(res => {
             if (res.isConfirmed) {
@@ -965,7 +981,7 @@
             inputsHtml += `<h4 style="margin:15px 0 5px 0; font-size:13px; text-align:left; color:#475569;">ปฏิบัติ (เต็ม 5)</h4>`;
             let sLabels = ["เตรียมเครื่อง", "เตรียมผู้ป่วย", "ถ่ายภาพ", "ดูแลอุปกรณ์"];
             for(let i=0; i<4; i++) {
-                inputsHtml += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><label style="font-size:13px;">${sLabels[i]}</label> <input type="number" id="es-${i}" class="swal2-input edit-sub-score" style="width:80px; height:35px; margin:0; text-align:center;" value="${ss[i+5]||0}" max="5" min="0"></div>`;
+                inputsHtml += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><label style="font-size:13px;">${sLabels[i]}</label> <input type="number" id="es-${i}" class="swal2-input edit-sub-score" style="width:80px; height:35px; margin:0; text-align:center;" value="${ss[i]||0}" max="5" min="0"></div>`;
             }
         } else if (sc.category === "ส่งใบงาน") {
             inputsHtml += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><label style="font-size:13px;">คะแนนที่ได้</label> <input type="number" id="es-0" class="swal2-input edit-sub-score" style="width:80px; height:35px; margin:0; text-align:center;" value="${ss[0]||0}"></div>`;
