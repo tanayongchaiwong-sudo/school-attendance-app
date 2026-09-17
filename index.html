@@ -54,11 +54,10 @@
 <div class="container">
     <div id="step1">
         <div class="header">
-            <!-- 🌟 เพิ่มปุ่มซิงค์ตรงนี้ -->
+            <!-- 🌟 ปุ่มรีเฟรช สำหรับดึงข้อมูลล่าสุด (รวมถึงสถานะข้อสอบ) -->
             <button style="position: absolute; right: 0; top: 0; background: none; border: none; font-size: 20px; color: var(--primary); cursor: pointer; transition: 0.3s;" onclick="window.location.reload()" title="รีเฟรชหน้าจอ">
                 <i class="fa-solid fa-rotate-right"></i>
             </button>
-            
             <i class="fa-solid fa-graduation-cap"></i>
             <h2>ศูนย์บริการนักเรียน</h2>
             <p style="font-size: 14px; color: #6b7280; margin-top: 5px;">กรุณาเลือกรายการที่ต้องการทำ</p>
@@ -108,7 +107,6 @@
 
         <hr style="border: 0; border-top: 1px dashed #e5e7eb; margin: 20px 0;">
 
-        <!-- 🌟 โซนสำหรับกลุ่มที่จบการศึกษาแล้ว (ปิดล็อกการส่งงาน) -->
         <div id="divGraduated" class="hidden" style="text-align: center; padding: 20px; background: #f0fdf4; border: 1px dashed #10b981; border-radius: 12px; margin-bottom: 20px;">
             <i class="fa-solid fa-graduation-cap" style="font-size: 40px; color: #10b981; margin-bottom: 10px;"></i>
             <h3 style="color: #047857; margin: 0 0 5px 0;">ยินดีด้วย! คุณผ่านการฝึกปฏิบัติงานแล้ว 🎉</h3>
@@ -123,8 +121,7 @@
             </div>
         </div>
 
-        <div id="divPreClinicButtons" class="hidden" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
-        </div>
+        <div id="divPreClinicButtons" class="hidden" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;"></div>
 
         <div class="form-group" id="divSubCategory">
             <label id="lblSubCategory">เลือกหัวข้อ</label>
@@ -157,7 +154,6 @@
             <input type="text" id="location" readonly placeholder="กำลังค้นหาพิกัด..." style="margin-bottom: 5px; border:none; padding:5px 10px; background: transparent; width:100%; font-weight:500;">
             <button class="gps-btn" onclick="verifyLocation()">ตรวจสอบพิกัดเป้าหมาย</button>
             <div id="locationStatus" style="margin-top: 5px; font-weight: 600;"></div>
-            
             <button class="gps-btn" style="background:#fee2e2; color:#b91c1c; border-color:#fca5a5; margin-top:10px; font-size:12px;" onclick="useEmergencyLocation()">
                 <i class="fa-solid fa-triangle-exclamation"></i> ดึงพิกัดไม่ได้ / ระบบขัดข้อง?
             </button>
@@ -183,7 +179,6 @@
     const LIFF_ID = "2011162626-lcdf4ybN"; 
     const API_URL = "https://script.google.com/macros/s/AKfycbzPyR4k6rVOrBFIB4QiBYBO9ntaY0mWpo7mck4RTzeV-rWpWLa-mRviLfuyG8lH62s/exec"; 
     
-    // 🚨 ตั้งค่าปุ่มทางลัดสำหรับกลุ่มที่เรียนจบแล้ว (ใส่ URL ให้ถูกต้อง)
     const STUDENT_DASHBOARD_URL = "https://liff.line.me/2011162626-3ElMqLDI";
     const KNOWLEDGE_BASE_URL = "https://sites.google.com/view/your-knowledge-site";
 
@@ -191,8 +186,7 @@
     let studentSubmittedTasks = []; 
     let typingTimer; 
     let globalExamStatus = "LOCKED"; 
-    let globalIsGraduated = false; // 🌟 ตัวแปรเก็บสถานะว่าจบการฝึกงานหรือยัง
-    
+    let globalIsGraduated = false; 
     let isEmergency = false;
     let emergencyReasonText = "";
 
@@ -216,8 +210,7 @@
             subLabel: "เลือกหัวข้อการสอบ", detailLabel: "ครั้งที่สอบ"
         },
         "สอบประเมินภาพ": {
-            options: {}, 
-            subLabel: "", detailLabel: ""
+            options: {}, subLabel: "", detailLabel: ""
         },
         "สอบเข้าห้อง (Pre-Clinic)": {
             options: { 
@@ -260,9 +253,7 @@
                         });
                     });
                 }
-            } else {
-                liff.login();
-            }
+            } else { liff.login(); }
         });
 
         fetchTeachersList();
@@ -275,7 +266,6 @@
         }
     };
 
-    // 🌟 ฟังก์ชันโหลดข้อมูลเบื้องหลัง (อัปเดตความจำให้ใหม่เสมอ)
     function fetchStudentDataBackground(sid) {
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getStudentName", studentId: sid }) })
         .then(res => res.json()).then(data => {
@@ -285,15 +275,10 @@
                 globalExamStatus = data.examStatus || "LOCKED";
                 globalIsGraduated = data.isGraduated || false;
 
-                // 🌟 1. เขียนทับชื่อบนหน้าจอให้เป็นข้อมูลล่าสุดจากฐานข้อมูลทันที
                 document.getElementById("fullName").value = data.fullName;
-                
-                // 🌟 2. อัปเดต Cache ในเครื่องให้เป็นชื่อล่าสุด (เผื่อแอดมินเปลี่ยนชื่อให้)
                 localStorage.setItem("studentName", data.fullName);
-
                 updateForm(); 
             } else {
-                // 🌟 3. ถ้ารหัสโดนแอดมินลบ ให้ล้างความจำในเครื่องทิ้งทั้งหมด
                 localStorage.removeItem("studentId");
                 localStorage.removeItem("studentName");
                 resetNameStatus();
@@ -351,7 +336,7 @@
         nameIcon.style.color = "#f59e0b";
         globalExamStatus = "LOCKED";
         globalIsGraduated = false;
-        updateForm(); // อัปเดตฟอร์มเพื่อเคลียร์สถานะจบ
+        updateForm(); 
     }
 
     function checkName() {
@@ -359,10 +344,7 @@
         let nameInput = document.getElementById("fullName");
         let nameIcon = document.getElementById("nameIcon");
         
-        if(!sid) {
-            resetNameStatus();
-            return;
-        }
+        if(!sid) { resetNameStatus(); return; }
 
         nameInput.value = "";
         nameInput.placeholder = "กำลังค้นหาข้อมูล... ⏳";
@@ -382,18 +364,8 @@
                 studentCompletedExams = data.completedExams || []; 
                 studentSubmittedTasks = data.submittedTasks || []; 
                 globalExamStatus = data.examStatus || "LOCKED"; 
-                globalIsGraduated = data.isGraduated || false; // 🌟 เก็บสถานะว่าจบหรือยัง
+                globalIsGraduated = data.isGraduated || false;
 
-                let hasP1 = studentCompletedExams.includes("Part 1") || studentCompletedExams.includes("Part 1: การใช้เครื่องมือ-อุปกรณ์การถ่ายภาพรังสีในช่องปาก");
-                let hasP2 = studentCompletedExams.includes("Part 2") || studentCompletedExams.includes("Part 2: ขั้นตอนการถ่ายภาพรังสีชนิดในช่องปาก");
-                let hasP3 = studentCompletedExams.includes("Part 3") || studentCompletedExams.includes("Part 3: ขั้นตอนการถ่ายภาพรังสีชนิดนอกช่องปาก");
-                
-                let btnPreClinic = document.getElementById("btnPreClinic");
-                if (hasP1 && hasP2 && hasP3) {
-                    if (btnPreClinic) btnPreClinic.classList.add("hidden");
-                } else {
-                    if (btnPreClinic) btnPreClinic.classList.remove("hidden");
-                }
                 updateForm(); 
             } else {
                 nameInput.placeholder = "ไม่พบรหัสนี้ กรุณาแก้ไข ❌";
@@ -405,8 +377,6 @@
                 globalExamStatus = "LOCKED";
                 globalIsGraduated = false;
                 
-                let btnPreClinic = document.getElementById("btnPreClinic");
-                if (btnPreClinic) btnPreClinic.classList.remove("hidden");
                 updateForm();
             }
         }).catch(() => {
@@ -424,10 +394,8 @@
         let subSelect = document.getElementById("subCategory");
         let btnSubmit = document.getElementById("btnSubmit");
         
-        // 🌟 1. ถ้าเด็กคนนี้อยู่กลุ่มที่เรียนจบแล้ว ให้ซ่อนฟอร์มทั้งหมดแล้วโชว์ข้อความยินดี
         if (globalIsGraduated) {
             document.getElementById("divGraduated").classList.remove("hidden");
-            
             document.getElementById("divSubCategory").classList.add("hidden");
             document.getElementById("divDetail").classList.add("hidden");
             document.getElementById("divPreClinicButtons").classList.add("hidden");
@@ -435,13 +403,11 @@
             document.getElementById("divGps").classList.add("hidden");
             document.getElementById("divRemark").classList.add("hidden");
             btnSubmit.classList.add("hidden");
-            return; // หยุดการโหลดฟอร์มอื่นๆ ทันที
+            return; 
         } else {
-            // ปิดข้อความยินดีถ้ายังเรียนไม่จบ
             document.getElementById("divGraduated").classList.add("hidden");
         }
 
-        // 🌟 2. ถ้ายังไม่จบ ก็แสดงฟอร์มตามปกติ
         btnSubmit.classList.remove("hidden");
         document.getElementById("divPreClinicButtons").classList.add("hidden");
         document.getElementById("btnSubmitText").innerText = "ยืนยันการส่งข้อมูล";
@@ -452,7 +418,8 @@
             document.getElementById("divSubCategory").classList.add("hidden");
             document.getElementById("divDetail").classList.add("hidden");
             
-            let isSubmitted = studentSubmittedTasks.includes("สอบประเมินภาพ|สอบประเมินภาพ|");
+            // 🌟 เช็กว่าส่งสอบประเมินภาพไปแล้วหรือยัง (รองรับตอนแปลง detail)
+            let isSubmitted = studentSubmittedTasks.includes("สอบประเมินภาพ|สอบประเมินภาพ|-") || studentSubmittedTasks.includes("สอบประเมินภาพ|สอบประเมินภาพ|");
             if (isSubmitted) {
                 subSelect.innerHTML = '<option value="" disabled selected>✅ ส่งคำขอไปแล้ว (รอตรวจ/มีคะแนนแล้ว)</option>';
                 btnSubmit.classList.add("hidden");
@@ -484,6 +451,7 @@
                 btnContainer.innerHTML += '<div style="text-align:center; padding:15px; background:#fef2f2; color:#ef4444; border-radius:10px; font-weight:600;"><i class="fa-solid fa-lock"></i> 🔒 คุณครูยังไม่เปิดระบบให้ทำข้อสอบครับ</div>';
             } 
             else {
+                // 🌟 ซ่อนข้อสอบ Pre-Clinic ที่ทำผ่านแล้ว
                 let availableOptions = Object.keys(formData[cat].options).filter(opt => {
                     let shortOpt = opt.split(":")[0].trim();
                     return !studentCompletedExams.includes(shortOpt) && !studentCompletedExams.includes(opt);
@@ -517,7 +485,17 @@
             
             let hasAvailableOption = false;
             Object.keys(formData[cat].options).forEach(opt => {
-                if (cat === "สอบปฏิบัติ" && studentCompletedExams.includes(opt)) return; 
+                // 🌟 กรองซ่อน SubCategory หากส่ง Detail ย่อยครบหมดแล้ว
+                if (cat !== "ลงเวลาเข้า-ออก") {
+                    let detailsArr = formData[cat].options[opt];
+                    if (detailsArr && detailsArr.length > 0) {
+                        let available = detailsArr.filter(d => !studentSubmittedTasks.includes(`${cat}|${opt}|${d}`));
+                        if (available.length === 0) return; // ส่งครบทุกอันแล้ว ซ่อนหัวข้อนี้ไปเลย
+                    } else {
+                        if (studentCompletedExams.includes(opt)) return; 
+                    }
+                }
+                
                 subSelect.innerHTML += `<option value="${opt}">${opt}</option>`;
                 hasAvailableOption = true;
             });
@@ -576,8 +554,28 @@
         if(detailArr && detailArr.length > 0) {
             document.getElementById("lblDetail").innerText = formData[cat].detailLabel;
             detailSelect.innerHTML = '<option value="" disabled selected>-- เลือก --</option>';
-            detailArr.forEach(d => detailSelect.innerHTML += `<option value="${d}">${d}</option>`);
-            btnSubmit.classList.remove("hidden");
+            
+            // 🌟 ซ่อน Detail (ใบงานที่/ครั้งที่) ที่เคยส่งไปแล้ว
+            let hasAvailableDetail = false;
+            detailArr.forEach(d => {
+                if (cat !== "ลงเวลาเข้า-ออก") {
+                    if (!studentSubmittedTasks.includes(`${cat}|${sub}|${d}`)) {
+                        detailSelect.innerHTML += `<option value="${d}">${d}</option>`;
+                        hasAvailableDetail = true;
+                    }
+                } else {
+                    detailSelect.innerHTML += `<option value="${d}">${d}</option>`;
+                    hasAvailableDetail = true;
+                }
+            });
+
+            if(!hasAvailableDetail && cat !== "ลงเวลาเข้า-ออก") {
+                detailSelect.innerHTML = '<option value="" disabled selected>✅ ส่งใบงาน/สอบ นี้ครบแล้ว</option>';
+                btnSubmit.classList.add("hidden");
+            } else {
+                btnSubmit.classList.remove("hidden");
+            }
+            
             document.getElementById("divDetail").classList.remove("hidden");
         } else {
             detailSelect.innerHTML = "";
@@ -634,8 +632,7 @@
 
         if (cat === "ลงเวลาเข้า-ออก" && sub === "เข้างาน") {
             let now = new Date();
-            let h = now.getHours();
-            let m = now.getMinutes();
+            let h = now.getHours(), m = now.getMinutes();
 
             if (h > 8 || (h === 8 && m > 15)) {
                 let timeStr = h.toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0');
@@ -645,29 +642,19 @@
                     input: 'text',
                     inputPlaceholder: 'เช่น รถติด, ตื่นสาย, ฝนตกหนัก',
                     icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: '<i class="fa-solid fa-clock"></i> บันทึกเวลาเข้างาน',
-                    cancelButtonText: 'ยกเลิก',
-                    confirmButtonColor: '#ef4444',
-                    customClass: { popup: 'swal-wide' },
-                    inputValidator: (value) => {
-                        if (!value) return 'กรุณาระบุเหตุผลการมาสายด้วยครับ!';
-                    }
+                    showCancelButton: true, confirmButtonText: '<i class="fa-solid fa-clock"></i> บันทึกเวลาเข้างาน', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#ef4444', customClass: { popup: 'swal-wide' },
+                    inputValidator: (value) => { if (!value) return 'กรุณาระบุเหตุผลการมาสายด้วยครับ!'; }
                 }).then((result) => {
                     if (result.isConfirmed) {
                         let currentRemark = document.getElementById("remark").value;
-                        if(currentRemark) {
-                             document.getElementById("remark").value = result.value + " (" + currentRemark + ")";
-                        } else {
-                             document.getElementById("remark").value = result.value;
-                        }
+                        if(currentRemark) document.getElementById("remark").value = result.value + " (" + currentRemark + ")";
+                        else document.getElementById("remark").value = result.value;
                         submitForm(); 
                     }
                 });
                 return; 
             }
         }
-        
         submitForm();
     }
 
@@ -679,32 +666,18 @@
 
         if (cat === "ลงเวลาเข้า-ออก" && sub === "ลา") {
             Swal.fire({
-                title: 'ระบุเหตุผลการลา',
-                input: 'text',
-                inputPlaceholder: 'เช่น เป็นไข้, ธุระครอบครัว, ลากิจ',
-                showCancelButton: true,
-                confirmButtonText: '<i class="fa-solid fa-paper-plane"></i> ส่งข้อมูลวันลา',
-                cancelButtonText: 'ยกเลิก',
-                confirmButtonColor: '#ef4444',
-                inputValidator: (value) => {
-                    if (!value) return 'กรุณาระบุเหตุผลการลาด้วยครับ!';
-                }
+                title: 'ระบุเหตุผลการลา', input: 'text', inputPlaceholder: 'เช่น เป็นไข้, ธุระครอบครัว, ลากิจ', showCancelButton: true, confirmButtonText: '<i class="fa-solid fa-paper-plane"></i> ส่งข้อมูลวันลา', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#ef4444',
+                inputValidator: (value) => { if (!value) return 'กรุณาระบุเหตุผลการลาด้วยครับ!'; }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    let payload = {
-                        action: "submitStudentRequest", studentId: sId, category: cat, subCategory: sub,
-                        detail: "-", teacherId: "", location: "", remark: result.value, submitterUid: ""
-                    };
+                    let payload = { action: "submitStudentRequest", studentId: sId, category: cat, subCategory: sub, detail: "-", teacherId: "", location: "", remark: result.value, submitterUid: "" };
                     executeSubmit(payload);
                 }
             });
         } 
         else {
             let payload = {
-                action: "submitStudentRequest", studentId: sId, category: cat, subCategory: sub,
-                detail: document.getElementById("detail").value, teacherId: document.getElementById("teacherId").value,
-                location: document.getElementById("location").value, remark: document.getElementById("remark").value, submitterUid: "",
-                isEmergencyLocation: isEmergency, emergencyReason: emergencyReasonText 
+                action: "submitStudentRequest", studentId: sId, category: cat, subCategory: sub, detail: document.getElementById("detail").value, teacherId: document.getElementById("teacherId").value, location: document.getElementById("location").value, remark: document.getElementById("remark").value, submitterUid: "", isEmergencyLocation: isEmergency, emergencyReason: emergencyReasonText 
             };
 
             if(!payload.category || !payload.subCategory) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกหมวดหมู่ให้ครบถ้วนครับ', 'warning');
@@ -727,8 +700,7 @@
         fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
         .then(res => res.json()).then(data => {
             if(data.status === "success") {
-                // 🌟 ล้างความจำของ Dashboard ทิ้ง! เพื่อให้หน้าสถิติโหลดคะแนน/งานใหม่เสมอ
-                localStorage.removeItem("studentDashboardCache");
+                localStorage.removeItem("studentDashboardCache"); // 🌟 ล้าง Cache เพื่อให้รอบหน้าโหลดข้อมูลใหม่ล่าสุด
 
                 Swal.fire({ icon: 'success', title: 'สำเร็จ', text: data.message }).then(() => {
                     if (typeof liff !== 'undefined' && liff.isInClient()) liff.closeWindow(); 
