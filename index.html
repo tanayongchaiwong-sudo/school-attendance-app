@@ -54,7 +54,6 @@
 <div class="container">
     <div id="step1">
         <div class="header">
-            <!-- 🌟 ปุ่มรีเฟรช สำหรับดึงข้อมูลล่าสุด (รวมถึงสถานะข้อสอบ) -->
             <button style="position: absolute; right: 0; top: 0; background: none; border: none; font-size: 20px; color: var(--primary); cursor: pointer; transition: 0.3s;" onclick="window.location.reload()" title="รีเฟรชหน้าจอ">
                 <i class="fa-solid fa-rotate-right"></i>
             </button>
@@ -418,7 +417,7 @@
             document.getElementById("divSubCategory").classList.add("hidden");
             document.getElementById("divDetail").classList.add("hidden");
             
-            // 🌟 เช็กว่าส่งสอบประเมินภาพไปแล้วหรือยัง (รองรับตอนแปลง detail)
+            // เช็กการซ่อนตัวเลือก (ตัดช่องว่างออกเพื่อให้ตรงเป๊ะ)
             let isSubmitted = studentSubmittedTasks.includes("สอบประเมินภาพ|สอบประเมินภาพ|-") || studentSubmittedTasks.includes("สอบประเมินภาพ|สอบประเมินภาพ|");
             if (isSubmitted) {
                 subSelect.innerHTML = '<option value="" disabled selected>✅ ส่งคำขอไปแล้ว (รอตรวจ/มีคะแนนแล้ว)</option>';
@@ -451,7 +450,6 @@
                 btnContainer.innerHTML += '<div style="text-align:center; padding:15px; background:#fef2f2; color:#ef4444; border-radius:10px; font-weight:600;"><i class="fa-solid fa-lock"></i> 🔒 คุณครูยังไม่เปิดระบบให้ทำข้อสอบครับ</div>';
             } 
             else {
-                // 🌟 ซ่อนข้อสอบ Pre-Clinic ที่ทำผ่านแล้ว
                 let availableOptions = Object.keys(formData[cat].options).filter(opt => {
                     let shortOpt = opt.split(":")[0].trim();
                     return !studentCompletedExams.includes(shortOpt) && !studentCompletedExams.includes(opt);
@@ -485,14 +483,15 @@
             
             let hasAvailableOption = false;
             Object.keys(formData[cat].options).forEach(opt => {
-                // 🌟 กรองซ่อน SubCategory หากส่ง Detail ย่อยครบหมดแล้ว
+                // 🌟 ระบบซ่อนหัวข้อแบบสมบูรณ์ 100% (เช็ก Detail ย่อยให้ครบ)
                 if (cat !== "ลงเวลาเข้า-ออก") {
                     let detailsArr = formData[cat].options[opt];
                     if (detailsArr && detailsArr.length > 0) {
-                        let available = detailsArr.filter(d => !studentSubmittedTasks.includes(`${cat}|${opt}|${d}`));
-                        if (available.length === 0) return; // ส่งครบทุกอันแล้ว ซ่อนหัวข้อนี้ไปเลย
+                        // กรองหารายการที่ยังไม่ได้ส่ง
+                        let available = detailsArr.filter(d => !studentSubmittedTasks.includes(`${cat.trim()}|${opt.trim()}|${d.trim()}`));
+                        if (available.length === 0) return; // ข้ามการเพิ่ม Option ถ้าส่งครบทุกงานแล้ว
                     } else {
-                        if (studentCompletedExams.includes(opt)) return; 
+                        if (studentCompletedExams.includes(opt.trim())) return; 
                     }
                 }
                 
@@ -555,11 +554,11 @@
             document.getElementById("lblDetail").innerText = formData[cat].detailLabel;
             detailSelect.innerHTML = '<option value="" disabled selected>-- เลือก --</option>';
             
-            // 🌟 ซ่อน Detail (ใบงานที่/ครั้งที่) ที่เคยส่งไปแล้ว
+            // 🌟 ซ่อนรายการ Detail ย่อยแบบตรงเป๊ะ
             let hasAvailableDetail = false;
             detailArr.forEach(d => {
                 if (cat !== "ลงเวลาเข้า-ออก") {
-                    if (!studentSubmittedTasks.includes(`${cat}|${sub}|${d}`)) {
+                    if (!studentSubmittedTasks.includes(`${cat.trim()}|${sub.trim()}|${d.trim()}`)) {
                         detailSelect.innerHTML += `<option value="${d}">${d}</option>`;
                         hasAvailableDetail = true;
                     }
@@ -700,8 +699,7 @@
         fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
         .then(res => res.json()).then(data => {
             if(data.status === "success") {
-                localStorage.removeItem("studentDashboardCache"); // 🌟 ล้าง Cache เพื่อให้รอบหน้าโหลดข้อมูลใหม่ล่าสุด
-
+                localStorage.removeItem("studentDashboardCache"); 
                 Swal.fire({ icon: 'success', title: 'สำเร็จ', text: data.message }).then(() => {
                     if (typeof liff !== 'undefined' && liff.isInClient()) liff.closeWindow(); 
                     else window.location.reload();
