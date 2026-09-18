@@ -367,7 +367,7 @@
 
                 updateForm(); 
             } else {
-                nameInput.placeholder = "ไม่พบรหัสนี้ กรุณาแก้ไข ❌";
+                nameInput.placeholder = data.message || "ไม่พบรหัสนี้ กรุณาแก้ไข ❌";
                 nameIcon.className = "fa-solid fa-triangle-exclamation";
                 nameIcon.style.color = "#ef4444";
                 
@@ -379,7 +379,7 @@
                 updateForm();
             }
         }).catch(() => {
-            nameInput.placeholder = "ระบบขัดข้อง ลองพิมพ์ใหม่อีกครั้ง";
+            nameInput.placeholder = "ระบบขัดข้อง/คนใช้งานเยอะ ลองใหม่";
             nameIcon.className = "fa-solid fa-triangle-exclamation";
             nameIcon.style.color = "#ef4444";
             globalExamStatus = "LOCKED";
@@ -417,8 +417,8 @@
             document.getElementById("divSubCategory").classList.add("hidden");
             document.getElementById("divDetail").classList.add("hidden");
             
-            // เช็กการซ่อนตัวเลือก (ตัดช่องว่างออกเพื่อให้ตรงเป๊ะ)
-            let isSubmitted = studentSubmittedTasks.includes("สอบประเมินภาพ|สอบประเมินภาพ|-") || studentSubmittedTasks.includes("สอบประเมินภาพ|สอบประเมินภาพ|");
+            // 🌟 เช็กการซ่อนตัวเลือก
+            let isSubmitted = studentSubmittedTasks.includes("สอบประเมินภาพ|สอบประเมินภาพ|-");
             if (isSubmitted) {
                 subSelect.innerHTML = '<option value="" disabled selected>✅ ส่งคำขอไปแล้ว (รอตรวจ/มีคะแนนแล้ว)</option>';
                 btnSubmit.classList.add("hidden");
@@ -488,7 +488,10 @@
                     let detailsArr = formData[cat].options[opt];
                     if (detailsArr && detailsArr.length > 0) {
                         // กรองหารายการที่ยังไม่ได้ส่ง
-                        let available = detailsArr.filter(d => !studentSubmittedTasks.includes(`${cat.trim()}|${opt.trim()}|${d.trim()}`));
+                        let available = detailsArr.filter(d => {
+                            let checkStr = `${cat.trim()}|${opt.trim()}|${d.trim()}`;
+                            return !studentSubmittedTasks.includes(checkStr);
+                        });
                         if (available.length === 0) return; // ข้ามการเพิ่ม Option ถ้าส่งครบทุกงานแล้ว
                     } else {
                         if (studentCompletedExams.includes(opt.trim())) return; 
@@ -558,7 +561,8 @@
             let hasAvailableDetail = false;
             detailArr.forEach(d => {
                 if (cat !== "ลงเวลาเข้า-ออก") {
-                    if (!studentSubmittedTasks.includes(`${cat.trim()}|${sub.trim()}|${d.trim()}`)) {
+                    let checkStr = `${cat.trim()}|${sub.trim()}|${d.trim()}`;
+                    if (!studentSubmittedTasks.includes(checkStr)) {
                         detailSelect.innerHTML += `<option value="${d}">${d}</option>`;
                         hasAvailableDetail = true;
                     }
