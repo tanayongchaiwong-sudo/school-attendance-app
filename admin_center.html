@@ -739,7 +739,7 @@
                 let c = tr.querySelectorAll("td");
                 if(c.length >= 6) html += `<tr><td>${printTime}</td><td class="text-left" style="padding-left:10px;">${c[0].innerText}</td><td>${c[1].innerText}</td><td>${periodText}</td><td>${c[2].innerText}</td><td>${c[3].innerText}</td><td><b>${c[4].innerText}</b></td><td>${c[5].innerText}</td><td></td></tr>`;
             });
-            html += `</tbody></table><div class="signature-section"><div class="sign-box"></div><div class="sign-box">ผู้กรอกข้อมูล ..................................................ครูผู้สอน<br><br>(${teacherName})<br><br>หัวหน้าคลินิก ............................................................................<br><br>(สุธีกานต์ รินคำ)</div></div>`;
+            html += `</tbody></table><div class="signature-section"><div class="sign-box"></div><div class="sign-box">ผู้กรอกข้อมูล ..................................................ครูผู้สอน<br><br>(${teacherName})<br><br>หัวหน้าคลินิก ............................................................................<br><br>(น.ส.สุธีกานต์ รินคำ)</div></div>`;
         } 
         else if (type === "2") {
             html += `<div class="header-title text-center" style="line-height: 1.5; margin-bottom: 20px;">ใบสรุปการฝึกปฏิบัติงานทางคลินิก<br>คลินิกรังสีวิทยาช่องปากและแม็กซิลโลเฟเชียล<br>ระหว่างวันที่ ${periodText} (${groupText})</div>
@@ -748,7 +748,7 @@
                 let c = tr.querySelectorAll("td");
                 if(c.length >= 8) html += `<tr><td>${printTime}</td><td class="text-left">${c[1].innerText}</td><td>${c[0].innerText}</td><td><b>${c[2].innerText}</b></td><td>${c[3].innerText}</td><td>${c[4].innerText}</td><td>${c[5].innerText}</td><td>${c[6].innerText}</td><td class="text-left">${c[7].innerText}</td><td>${reviewerName}</td></tr>`;
             });
-            html += `</tbody></table><div class="signature-section"><div class="sign-box"></div><div class="sign-box">ผู้กรอกข้อมูล ..................................................ครูผู้สอน<br><br>(${teacherName})<br><br>หัวหน้าคลินิก ............................................................................<br><br>(สุธีกานต์ รินคำ)</div></div>`;
+            html += `</tbody></table><div class="signature-section"><div class="sign-box"></div><div class="sign-box">ผู้กรอกข้อมูล ..................................................ครูผู้สอน<br><br>(${teacherName})<br><br>หัวหน้าคลินิก ............................................................................<br><br>(น.ส.สุธีกานต์ รินคำ)</div></div>`;
         }
         else if (type === "3") {
             html += `<div class="header-title text-center" style="font-size: 16px;">การฝึกปฏิบัติงานทางคลินิก ประจำปีการศึกษา ${academicYear}<br>คลินิกรังสีวิทยาช่องปากและแม็กซิลโลเฟเชียล<br>ระหว่างวันที่ ${periodText} (${groupText})</div>
@@ -757,7 +757,7 @@
                 let c = tr.querySelectorAll("td");
                 if(c.length >= 6) html += `<tr><td style="padding: 3px;">${c[0].innerText}</td><td class="text-left" style="padding: 3px 6px;"><b>${c[1].innerText}</b> ${c[2].innerText}</td><td style="font-weight:bold; padding: 3px;">${c[3].innerText}</td><td style="padding: 3px;">${c[4].innerText}</td><td class="text-left" style="font-size: 11px; padding: 3px 6px;">${c[5].innerText}</td></tr>`;
             });
-            html += `</tbody></table><div class="signature-section"><div class="sign-box"></div><div class="sign-box">ผู้กรอกข้อมูล ..................................................ครูผู้สอน<br><br>(${teacherName})<br><br>หัวหน้าคลินิก ............................................................................<br><br>(สุธีกานต์ รินคำ)</div></div>`;
+            html += `</tbody></table><div class="signature-section"><div class="sign-box"></div><div class="sign-box">ผู้กรอกข้อมูล ..................................................ครูผู้สอน<br><br>(${teacherName})<br><br>หัวหน้าคลินิก ............................................................................<br><br>(น.ส.สุธีกานต์ รินคำ)</div></div>`;
         }
 
         html += `<script>window.onload = function() { setTimeout(() => { window.print(); }, 500); };<\/script></body></html>`;
